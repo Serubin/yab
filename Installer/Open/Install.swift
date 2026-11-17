@@ -12,7 +12,8 @@ import Security
 // the keychain, lives outside the bundle and isn't touched.
 
 final class Install: @unchecked Sendable {
-    static let bundleID = "dev.serafim.fast"
+    // build.sh writes the payload's id here; the launcher's own signature seals it.
+    static let bundleID = Bundle.main.object(forInfoDictionaryKey: "YabPayloadID") as? String ?? "dev.serafim.fast"
     static let name = "yab.app"
 
     enum Failure: LocalizedError {

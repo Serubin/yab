@@ -44,7 +44,7 @@ FARM_RUNTIME="$HOME/.local/state/yab-farm/runtime/farm.py"
 if [ -f "$FARM_RUNTIME" ]; then /usr/bin/python3 "$FARM_RUNTIME" _may_run_here || exit 1; fi
 CONFIG="${1:-release}"
 STEP="${2:-app}"
-case "$STEP" in prod|dmg|ship) . scripts/release/xcode-env.sh ;; esac
+case "$STEP" in prod|dmg|ship) [ ! -f scripts/release/xcode-env.sh ] || . scripts/release/xcode-env.sh ;; esac
 # A disposable launch preview has its own bundle metadata and never enters
 # the ordinary dev-app cache, whose key is shared with normal builds.
 if [ "$STEP" = app ] && [ "${YAB_LAUNCH_PREVIEW:-}" = 1 ]; then
@@ -161,7 +161,10 @@ if [ "$STEP" = "app" ]; then
 else
   DISPLAY_NAME="yab"
   USER_DISPLAY_NAME="Yab"
-  BUNDLE_ID="dev.serafim.fast"
+  # A fork's own id; one ending in .dev would make the app think it is Yab Dev (Store.development).
+  BUNDLE_ID="${YAB_BUNDLE_ID:-dev.serafim.fast}"
+  [[ "$BUNDLE_ID" =~ ^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$ && "$BUNDLE_ID" != *.dev ]] \
+    || { echo "YAB_BUNDLE_ID ($BUNDLE_ID) isn't a reverse-DNS id, or ends in .dev" >&2; exit 1; }
 fi
 APP="build/$DISPLAY_NAME.app"
 VERSION="$(tr -d '[:space:]' < VERSION)"
@@ -849,7 +852,10 @@ else
 fi
 codesign --verify --deep --strict "$APP"
 
-case "$STEP" in prod|dmg|ship) python3 scripts/release/sdk_guard.py "$APP" ;; esac
+case "$STEP" in prod|dmg|ship)
+  if [ -f scripts/release/sdk_guard.py ]; then python3 scripts/release/sdk_guard.py "$APP"
+  else echo "note: scripts/release/sdk_guard.py isn't in this tree; SDK guard skipped" >&2; fi ;;
+esac
 
 echo "built: $APP ($VERSION, build $BUILD)"
 case "$STEP" in app|prod) exit 0 ;; esac
@@ -935,7 +941,7 @@ cat > "$LAUNCHER/Contents/Info.plist" <<PLIST
   <key>CFBundleName</key><string>Open Yab</string>
   <key>CFBundleDisplayName</key><string>Open Yab</string>
   <key>CFBundleExecutable</key><string>Open yab</string>
-  <key>CFBundleIdentifier</key><string>dev.serafim.fast.installer</string>
+  <key>CFBundleIdentifier</key><string>$BUNDLE_ID.installer</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>$BUILD</string>
@@ -947,6 +953,7 @@ cat > "$LAUNCHER/Contents/Info.plist" <<PLIST
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
   <key>YabImageStamp</key><string>$STAMP</string>
+  <key>YabPayloadID</key><string>$BUNDLE_ID</string>
 </dict>
 </plist>
 PLIST
