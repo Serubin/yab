@@ -1356,7 +1356,6 @@ final class Extensions: NSObject, ObservableObject {
                     save()
                 }
             }
-            try WebKitIPCBoundary.validateExtensions(at: (Array(contexts.keys).filter { $0 != item.id } + [item.id]).map { Extensions.folder(for: $0) })
             let context = WKWebExtensionContext(for: found)
             context.uniqueIdentifier = item.id
             // The same origin every launch. WebKit picks a fresh one
@@ -1378,6 +1377,11 @@ final class Extensions: NSObject, ObservableObject {
             // and never the ones it was kept from.
             applyAccess(context)
             Extensions.allowPrivate(context, Store.settings.bool(forKey: "extensions.private"))
+            // After applyAccess: WebKit copies each script once per granted pattern.
+            var catalogs: [(folder: URL, grants: WebKitIPCBoundary.Grants?)] = contexts.filter { $0.key != item.id }
+                .map { (folder: Extensions.folder(for: $0.key), grants: WebKitIPCBoundary.Grants($0.value)) }
+            catalogs.append((folder: Extensions.folder(for: item.id), grants: WebKitIPCBoundary.Grants(context)))
+            try WebKitIPCBoundary.validateExtensions(catalogs)
             if signIn == nil { ExtensionRules.prepare(context, storage: storage(of: item.id), owner: controller) }
             let began = CACurrentMediaTime()
             do {
