@@ -1,4 +1,5 @@
-# Signed, notarized release of this fork: Yab with WebKit and Chromium (stock CEF).
+# Signed, notarized release of this fork: Yab with WebKit and Chromium (stock CEF),
+# or WebKit only. Each flavor has its own feed, so an install stays on its own.
 #
 # Safety, read before changing this file:
 #
@@ -28,6 +29,12 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      engines:
+        description: Page engines to bundle
+        type: choice
+        options: [both, webkit]
+        default: both
 
 permissions: {}
 
@@ -51,6 +58,7 @@ jobs:
       contents: write
     outputs:
       publish: ${{ steps.meta.outputs.publish }}
+      feed_dir: ${{ steps.meta.outputs.feed_dir }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -74,25 +82,37 @@ jobs:
         env:
           REPO: ${{ github.repository }}
           OWNER: ${{ github.repository_owner }}
+          ENGINES: ${{ inputs.engines }}
         run: |
+          set -euo pipefail
           version="$(tr -d '[:space:]' < VERSION)"
           build="$(date -u +%Y%m%d%H%M)"
-          tag="v$version-$build"
+          # Feed folders under the Pages site; Update.site is the folder, the host is the same.
+          case "$ENGINES" in
+            both) feed_dir=. other_dir=webkit suffix= ;;
+            webkit) feed_dir=webkit other_dir=. suffix=-webkit ;;
+            *) echo "::error::unknown engines: $ENGINES"; exit 1 ;;
+          esac
+          tag="v$version-$build$suffix"
           publish=false
           [ "$GITHUB_REF" = refs/heads/canary ] && publish=true
           owner="$(tr '[:upper:]' '[:lower:]' <<<"$OWNER")"
+          site="https://$owner.github.io/${REPO#*/}"
           {
             echo "version=$version"
             echo "build=$build"
             echo "tag=$tag"
             echo "publish=$publish"
+            echo "site=$site"
+            echo "feed_dir=$feed_dir"
+            echo "other_dir=$other_dir"
           } >> "$GITHUB_OUTPUT"
           {
             echo "YAB_BUILD_NUMBER=$build"
-            echo "YAB_DOWNLOAD_URL=https://$owner.github.io/${REPO#*/}"
+            echo "YAB_DOWNLOAD_URL=$site/${feed_dir#.}"
             echo "YAB_CHANGELOG_URL=https://github.com/$REPO/releases/tag/$tag"
           } >> "$GITHUB_ENV"
-          echo "Yab $version, build $build, tag $tag, publish feed: $publish"
+          echo "Yab $version ($ENGINES), build $build, tag $tag, feed $site/${feed_dir#.}, publish: $publish"
 
       # build.sh reuses a working .build/dmgbuild rather than pip-installing unpinned.
       - name: dmgbuild, pinned by hash
@@ -109,6 +129,7 @@ jobs:
           .build/dmgbuild/bin/dmgbuild --help > /dev/null
 
       - name: Fetch CEF
+        if: inputs.engines == 'both'
         run: |
           set -euo pipefail
           cef="$(bash scripts/cef/fetch.sh)"
@@ -117,6 +138,7 @@ jobs:
           echo "YAB_CEF_DIR=$cef" >> "$GITHUB_ENV"
 
       - name: Build YabCore
+        if: inputs.engines == 'both'
         run: |
           set -euo pipefail
           helper_app="$(bash YabCore/build.sh | tail -1)"
@@ -175,20 +197,29 @@ jobs:
 
       - name: Build, sign and notarize Yab
         env:
-          YAB_CEF: "1"
+          YAB_CEF: ${{ inputs.engines == 'both' && '1' || '0' }}
         run: ./build.sh release ship
 
       - name: Check what was built
         env:
           BUILD: ${{ steps.meta.outputs.build }}
+          ENGINES: ${{ inputs.engines }}
         run: |
           set -euo pipefail
           app="build/yab.app"
           id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist")"
           [ "$id" = "$YAB_BUNDLE_ID" ] || { echo "::error::bundle id is $id"; exit 1; }
           [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Contents/Info.plist")" = "$BUILD" ]
-          test -x "$app/Contents/MacOS/YabCore"
-          test -d "$app/Contents/Frameworks/Chromium Embedded Framework.framework"
+          cef="$app/Contents/Frameworks/Chromium Embedded Framework.framework"
+          if [ "$ENGINES" = both ]; then
+            test -x "$app/Contents/MacOS/YabCore"
+            test -d "$cef"
+          else
+            [ ! -e "$app/Contents/MacOS/YabCore" ] && [ ! -e "$cef" ] \
+              || { echo "::error::a WebKit-only build carries Chromium"; exit 1; }
+          fi
+          feed="$(/usr/libexec/PlistBuddy -c 'Print :YabFeed' "$app/Contents/Info.plist")"
+          [ "$feed" = "${YAB_DOWNLOAD_URL%/}/appcast.json" ] || { echo "::error::YabFeed is $feed"; exit 1; }
           lipo -archs "$app/Contents/MacOS/yab" | grep -qw x86_64
           codesign --verify --deep --strict "$app"
           spctl --assess --type execute -vv "$app"
@@ -200,7 +231,12 @@ jobs:
         env:
           REPO: ${{ github.repository }}
           TAG: ${{ steps.meta.outputs.tag }}
+          SITE: ${{ steps.meta.outputs.site }}
+          FEED_DIR: ${{ steps.meta.outputs.feed_dir }}
+          OTHER_DIR: ${{ steps.meta.outputs.other_dir }}
+          PUBLISH: ${{ steps.meta.outputs.publish }}
         run: |
+          set -euo pipefail
           /usr/bin/python3 -I - build/appcast.json "https://github.com/$REPO/releases/download/$TAG" <<'PY'
           import json, sys
           path, base = sys.argv[1], sys.argv[2]
@@ -211,8 +247,21 @@ jobs:
           print(json.dumps(cast, indent=2))
           PY
           [ ! -d build/yab.app.dSYM ] || ditto -c -k --keepParent build/yab.app.dSYM build/yab.app.dSYM.zip
-          mkdir -p build/feed
-          cp build/appcast.json build/feed/appcast.json
+          mkdir -p "build/feed/$FEED_DIR" "build/feed/$OTHER_DIR"
+          cp build/appcast.json "build/feed/$FEED_DIR/appcast.json"
+          # A Pages deploy replaces the whole site, so carry the other flavor's live feed over.
+          if [ "$PUBLISH" = true ]; then
+            other="$SITE/${OTHER_DIR#.}"; other="${other%/}/appcast.json"
+            code="$(curl -sS --retry 3 -H 'Cache-Control: no-cache' -o build/other-appcast.json \
+              -w '%{http_code}' "$other?run=$GITHUB_RUN_ID")"
+            case "$code" in
+              200) /usr/bin/python3 -I -c 'import json,sys; json.load(open(sys.argv[1]))' build/other-appcast.json
+                   cp build/other-appcast.json "build/feed/$OTHER_DIR/appcast.json" ;;
+              404) echo "no feed at $other yet" ;;
+              *) echo "::error::$other answered $code; not deploying a site without it"; exit 1 ;;
+            esac
+          fi
+          find build/feed -type f
 
       - name: GitHub release
         env:
@@ -223,15 +272,23 @@ jobs:
           BUILD: ${{ steps.meta.outputs.build }}
           PUBLISH: ${{ steps.meta.outputs.publish }}
           REF_NAME: ${{ github.ref_name }}
+          ENGINES: ${{ inputs.engines }}
         run: |
           set -euo pipefail
           channel=(--prerelease)
           [ "$PUBLISH" = true ] && channel=(--latest)
+          [ "$PUBLISH" = true ] && [ "$ENGINES" = webkit ] && channel=(--latest=false)
+          title="Yab $VERSION ($BUILD)"
+          engines="Chromium tabs use stock CEF."
+          if [ "$ENGINES" = webkit ]; then
+            title="Yab $VERSION ($BUILD, WebKit only)"
+            engines="WebKit only."
+          fi
           files=(build/yab.dmg build/yab.zip build/appcast.json)
           [ ! -f build/yab.app.dSYM.zip ] || files+=(build/yab.app.dSYM.zip)
           gh release create "$TAG" --repo "$REPO" --target "$GITHUB_SHA" "${channel[@]}" \
-            --title "Yab $VERSION ($BUILD)" \
-            --notes "Built from \`$REF_NAME\` at $GITHUB_SHA. Signed and notarized; Chromium tabs use stock CEF." \
+            --title "$title" \
+            --notes "Built from \`$REF_NAME\` at $GITHUB_SHA. Signed and notarized. $engines" \
             "${files[@]}"
 
       - name: Feed for GitHub Pages
@@ -257,7 +314,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}appcast.json
+      url: ${{ steps.deploy.outputs.page_url }}${{ needs.build.outputs.feed_dir == 'webkit' && 'webkit/' || '' }}appcast.json
     steps:
       - id: deploy
         uses: actions/deploy-pages@v4
