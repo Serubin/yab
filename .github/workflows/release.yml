@@ -14,7 +14,7 @@
 # - Everything fetched from outside (CEF, YabCore's tools, dmgbuild by hash)
 #   is in place before the signing key is; the key is imported non-exportable.
 # - First-party actions only, pinned to a major tag as ci.yml does.
-# - Repository variable YAB_XCODE (e.g. /Applications/Xcode_26.1.app) pins
+# - Repository variable YAB_XCODE (e.g. /Applications/Xcode_27.2.app) pins
 #   the toolchain; without it the runner image's default Xcode is used.
 #
 # Secrets (environment `release`):
@@ -43,7 +43,8 @@ env:
 jobs:
   build:
     name: Build, sign, notarize, release
-    runs-on: macos-26
+    # macOS 27 and Xcode 27 (a preview image): Yab's macOS 27 fixes compile only with Xcode 27.
+    runs-on: xcode-27
     timeout-minutes: 300
     environment: release
     permissions:
