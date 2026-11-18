@@ -1,0 +1,66 @@
+# Daily merge of upstream yetanotherbrowser/yab main into this fork's main and canary.
+
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+env:
+  UPSTREAM_URL: https://github.com/yetanotherbrowser/yab.git
+  UPSTREAM_BRANCH: main
+  BRANCHES: main canary
+
+jobs:
+  sync:
+    name: Merge upstream
+    if: github.repository == 'Serubin/yab'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          # GITHUB_TOKEN may not push commits that touch .github/workflows; SYNC_TOKEN needs contents and workflows write.
+          token: ${{ secrets.SYNC_TOKEN || github.token }}
+
+      - name: Merge and push
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Keeps the fork's push credential off the upstream fetch.
+          git -c http.https://github.com/.extraheader= \
+            fetch --no-tags "$UPSTREAM_URL" "+refs/heads/$UPSTREAM_BRANCH:refs/remotes/upstream/$UPSTREAM_BRANCH"
+
+          failed=()
+          for branch in $BRANCHES; do
+            git checkout -q -B "$branch" "origin/$branch"
+            if git merge-base --is-ancestor "upstream/$UPSTREAM_BRANCH" HEAD; then
+              echo "$branch: up to date"
+              continue
+            fi
+            if ! git -c core.hooksPath=/dev/null merge --no-edit \
+                -m "Merge upstream $UPSTREAM_BRANCH into $branch" "upstream/$UPSTREAM_BRANCH"; then
+              git diff --name-only --diff-filter=U | sed "s/^/::error::$branch conflict: /"
+              git merge --abort
+              failed+=("$branch")
+              continue
+            fi
+            git push origin "HEAD:refs/heads/$branch"
+            echo "$branch: merged $(git rev-parse --short "upstream/$UPSTREAM_BRANCH")" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "::error::Merge conflicts on: ${failed[*]}. Merge upstream by hand."
+            exit 1
+          fi
