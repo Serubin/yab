@@ -39,9 +39,10 @@ env:
   YAB_SIGN_IDENTITY: "-"
 
 jobs:
-  checks:
-    name: Parse and design checks
-    runs-on: macos-26
+  # Python over git only, so it runs on Linux and needs no macOS runner.
+  design:
+    name: Design check
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
@@ -56,26 +57,36 @@ jobs:
           else
             echo "ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
           fi
-      # Every changed Swift file parses (scripts/swift-parse-check, as the
-      # pre-commit hook does for staged files).
-      - name: Swift parse check
-        run: scripts/swift-parse-check --base "${{ steps.base.outputs.ref }}"
       # Lines the branch adds in Sources/ keep to the design system.
       - name: Design check
         run: ./design-check --base "${{ steps.base.outputs.ref }}"
 
-  build:
-    name: Build Yab Dev
+  # One macOS job for everything: hosted macOS capacity runs out, and each extra job is another wait.
+  build-test:
+    name: Build and test
     runs-on: macos-26
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Toolchain
         run: |
           xcodebuild -version
           swift --version
+      - name: Base commit
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            echo "ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          fi
+      # Every changed Swift file parses (scripts/swift-parse-check, as the
+      # pre-commit hook does for staged files).
+      - name: Swift parse check
+        run: scripts/swift-parse-check --base "${{ steps.base.outputs.ref }}"
       # SwiftPM's build folder, keyed on the package and the toolchain. A fork's
       # run reads the cache of the branch it targets and can't write to it.
       - uses: actions/cache@v4
@@ -84,43 +95,22 @@ jobs:
           key: spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
           restore-keys: |
             spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
+      # The mail engine first: it builds without the app and fails fast.
+      - name: MailCore tests
+        run: swift test --filter MailCoreTests
       - name: Build the app bundle (ad hoc signed)
         run: ./build.sh
       - name: Check the bundle
         run: |
           codesign --verify --deep --strict "build/yab Dev.app"
           codesign -dv "build/yab Dev.app" 2>&1 | grep -E 'Identifier|Signature'
-
-  test:
-    name: Swift tests
-    runs-on: macos-26
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/cache@v4
-        with:
-          path: .build
-          key: spm-test-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
-          restore-keys: |
-            spm-test-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
-      # The mail engine first: it builds without the app and fails fast.
-      - name: MailCore tests
-        run: swift test --filter MailCoreTests
       # The suites that cover what the branch changed (scripts/runs/tests_for.py
       # picks them by file name). The whole suite does not finish on a clean
       # Mac yet (see the full-suite job below), so it is not a required check.
       - name: Suites for the changed files
         shell: bash -o pipefail {0}
         run: |
-          if [ "${{ github.event_name }}" = pull_request ]; then
-            base="${{ github.event.pull_request.base.sha }}"
-          else
-            base="${{ github.event.before }}"
-          fi
-          filter="$(python3 scripts/runs/tests_for.py --since "$base" 2>/dev/null)"
+          filter="$(python3 scripts/runs/tests_for.py --since "${{ steps.base.outputs.ref }}" 2>/dev/null)"
           echo "suites: ${filter:-none}"
           if [ -z "$filter" ] || [ "$filter" = all ]; then
             echo "Nothing narrower than the whole suite matched; the full-suite job covers it."
@@ -142,7 +132,7 @@ jobs:
   # stops at 60 minutes. Make it required once it finishes.
   full-suite:
     name: Full swift test (advisory)
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: macos-26
     timeout-minutes: 60
     continue-on-error: true
@@ -153,9 +143,9 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: .build
-          key: spm-test-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
+          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
           restore-keys: |
-            spm-test-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
+            spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
       - name: All tests
         shell: bash -o pipefail {0}
         run: swift test 2>&1 | tee swift-test.log
