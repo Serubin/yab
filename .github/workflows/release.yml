@@ -1,0 +1,262 @@
+# Signed, notarized release of this fork: Yab with WebKit and Chromium (stock CEF).
+#
+# Safety, read before changing this file:
+#
+# - Manual trigger only (`workflow_dispatch`). Nothing a pull request or a
+#   fork's code does can start it, so the signing secrets never meet code a
+#   maintainer of this fork didn't merge.
+# - Secrets live in the `release` environment, not the repository. Restrict
+#   that environment's deployment branches to `canary`, plus any branch you
+#   mean to cut prereleases from (Settings > Environments).
+# - Only `canary` publishes the update feed (GitHub Pages) and the "latest"
+#   release. Any other ref yields a prerelease that no installed copy updates to.
+# - GitHub-hosted runners only, no cache: a signed build starts from a clean tree.
+# - Everything fetched from outside (CEF, YabCore's tools, dmgbuild by hash)
+#   is in place before the signing key is; the key is imported non-exportable.
+# - First-party actions only, pinned to a major tag as ci.yml does.
+# - Repository variable YAB_XCODE (e.g. /Applications/Xcode_26.1.app) pins
+#   the toolchain; without it the runner image's default Xcode is used.
+#
+# Secrets (environment `release`):
+#   MACOS_CERT_P12         Developer ID Application certificate and key, .p12, base64
+#   MACOS_CERT_PASSWORD    the .p12's password
+#   NOTARY_KEY_P8          App Store Connect API key (.p8 file contents)
+#   NOTARY_KEY_ID          that key's ID
+#   NOTARY_ISSUER_ID       that key's issuer ID
+
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  YAB_BUNDLE_ID: net.serubin.yab
+  # Pinned in docs/cef-packaging.md; fetch.sh only checks the CDN's own index.
+  CEF_SHA1: 7359a9d293dd5c480bec3f18b762731b483b0e13
+
+jobs:
+  build:
+    name: Build, sign, notarize, release
+    runs-on: macos-26
+    timeout-minutes: 300
+    environment: release
+    permissions:
+      contents: write
+    outputs:
+      publish: ${{ steps.meta.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Toolchain
+        env:
+          YAB_XCODE: ${{ vars.YAB_XCODE }}
+        run: |
+          set -euo pipefail
+          if [ -n "$YAB_XCODE" ]; then
+            test -d "$YAB_XCODE/Contents/Developer" || { echo "::error::no Xcode at $YAB_XCODE"; exit 1; }
+            echo "DEVELOPER_DIR=$YAB_XCODE/Contents/Developer" >> "$GITHUB_ENV"
+            export DEVELOPER_DIR="$YAB_XCODE/Contents/Developer"
+          fi
+          xcodebuild -version
+          swift --version
+
+      - name: Version, build number and tag
+        id: meta
+        env:
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          version="$(tr -d '[:space:]' < VERSION)"
+          build="$(date -u +%Y%m%d%H%M)"
+          tag="v$version-$build"
+          publish=false
+          [ "$GITHUB_REF" = refs/heads/canary ] && publish=true
+          owner="$(tr '[:upper:]' '[:lower:]' <<<"$OWNER")"
+          {
+            echo "version=$version"
+            echo "build=$build"
+            echo "tag=$tag"
+            echo "publish=$publish"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "YAB_BUILD_NUMBER=$build"
+            echo "YAB_DOWNLOAD_URL=https://$owner.github.io/${REPO#*/}"
+            echo "YAB_CHANGELOG_URL=https://github.com/$REPO/releases/tag/$tag"
+          } >> "$GITHUB_ENV"
+          echo "Yab $version, build $build, tag $tag, publish feed: $publish"
+
+      # build.sh reuses a working .build/dmgbuild rather than pip-installing unpinned.
+      - name: dmgbuild, pinned by hash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/dmgbuild.txt" <<'REQ'
+          dmgbuild==1.6.7 --hash=sha256:37ee5771c377beb3203d9164aae8046ffed8531c06edf9227f5788b3c599b1bf
+          ds-store==1.3.3 --hash=sha256:b92a371efbf1b4ccce2a04d1ed13fceacc4736c81ba09cf5aefb74c088160a35
+          mac-alias==2.2.3 --hash=sha256:7362b521d2132ef92f606a37abfed5fcd849ceb2f28b6f9743e014b02af92f0d
+          REQ
+          python3 -m venv .build/dmgbuild
+          .build/dmgbuild/bin/pip install --quiet --require-hashes --only-binary :all: --no-deps \
+            -r "$RUNNER_TEMP/dmgbuild.txt"
+          .build/dmgbuild/bin/dmgbuild --help > /dev/null
+
+      - name: Fetch CEF
+        run: |
+          set -euo pipefail
+          cef="$(bash scripts/cef/fetch.sh)"
+          grep -q "^$CEF_SHA1 " "$cef/.verified" \
+            || { echo "::error::CEF archive isn't the pinned $CEF_SHA1"; exit 1; }
+          echo "YAB_CEF_DIR=$cef" >> "$GITHUB_ENV"
+
+      - name: Build YabCore
+        run: |
+          set -euo pipefail
+          helper_app="$(bash YabCore/build.sh | tail -1)"
+          test -x "$helper_app/Contents/MacOS/YabCore"
+          echo "YAB_CEF_HELPER=$helper_app/Contents/MacOS/YabCore" >> "$GITHUB_ENV"
+
+      - name: Signing keychain
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          umask 077
+          for name in MACOS_CERT_P12 MACOS_CERT_PASSWORD NOTARY_KEY_P8 NOTARY_KEY_ID NOTARY_ISSUER_ID; do
+            [ -n "${!name}" ] || { echo "::error::secret $name is not set in the release environment"; exit 1; }
+          done
+          secrets_dir="$RUNNER_TEMP/yab-signing"
+          mkdir -p "$secrets_dir"
+          keychain="$RUNNER_TEMP/yab-release.keychain-db"
+          password_file="$secrets_dir/keychain-password"
+          openssl rand -hex 32 > "$password_file"
+          security create-keychain -p "$(cat "$password_file")" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$(cat "$password_file")" "$keychain"
+          printf '%s' "$MACOS_CERT_P12" | base64 --decode > "$secrets_dir/cert.p12"
+          security import "$secrets_dir/cert.p12" -k "$keychain" -f pkcs12 -x \
+            -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          rm -f "$secrets_dir/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$(cat "$password_file")" "$keychain" > /dev/null
+          existing=()
+          while IFS= read -r line; do
+            line="${line#"${line%%[![:space:]]*}"}"
+            existing+=("${line//\"/}")
+          done < <(security list-keychains -d user)
+          security list-keychains -d user -s "$keychain" "${existing[@]}"
+          identities="$(security find-identity -v -p codesigning "$keychain" \
+            | grep -o '"Developer ID Application: [^"]*"' | tr -d '"' || true)"
+          [ "$(grep -c . <<<"$identities")" = 1 ] \
+            || { echo "::error::expected exactly one Developer ID Application identity in the .p12"; exit 1; }
+          printf '%s\n' "$NOTARY_KEY_P8" > "$secrets_dir/notary.p8"
+          xcrun notarytool store-credentials yab-fork --key "$secrets_dir/notary.p8" \
+            --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER_ID" --keychain "$keychain" > /dev/null
+          rm -f "$secrets_dir/notary.p8"
+          {
+            echo "YAB_SIGN_IDENTITY=$identities"
+            echo "YAB_SIGN_KEYCHAIN=$keychain"
+            echo "YAB_RELEASE_PASSWORD_FILE=$password_file"
+            echo "YAB_NOTARY_KEYCHAIN=$keychain"
+            echo "YAB_NOTARY_PROFILE=yab-fork"
+          } >> "$GITHUB_ENV"
+          echo "signing as: $identities"
+
+      - name: Build, sign and notarize Yab
+        env:
+          YAB_CEF: "1"
+        run: ./build.sh release ship
+
+      - name: Check what was built
+        env:
+          BUILD: ${{ steps.meta.outputs.build }}
+        run: |
+          set -euo pipefail
+          app="build/yab.app"
+          id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist")"
+          [ "$id" = "$YAB_BUNDLE_ID" ] || { echo "::error::bundle id is $id"; exit 1; }
+          [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Contents/Info.plist")" = "$BUILD" ]
+          test -x "$app/Contents/MacOS/YabCore"
+          test -d "$app/Contents/Frameworks/Chromium Embedded Framework.framework"
+          lipo -archs "$app/Contents/MacOS/yab" | grep -qw x86_64
+          codesign --verify --deep --strict "$app"
+          spctl --assess --type execute -vv "$app"
+          xcrun stapler validate "$app"
+          xcrun stapler validate build/yab.dmg
+          spctl --assess --type open --context context:primary-signature -vv build/yab.dmg
+
+      - name: Point the appcast at this release's files
+        env:
+          REPO: ${{ github.repository }}
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          /usr/bin/python3 -I - build/appcast.json "https://github.com/$REPO/releases/download/$TAG" <<'PY'
+          import json, sys
+          path, base = sys.argv[1], sys.argv[2]
+          cast = json.load(open(path))
+          cast['url'] = base + '/yab.zip'
+          cast['dmg'] = base + '/yab.dmg'
+          json.dump(cast, open(path, 'w'), indent=2)
+          print(json.dumps(cast, indent=2))
+          PY
+          [ ! -d build/yab.app.dSYM ] || ditto -c -k --keepParent build/yab.app.dSYM build/yab.app.dSYM.zip
+          mkdir -p build/feed
+          cp build/appcast.json build/feed/appcast.json
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          BUILD: ${{ steps.meta.outputs.build }}
+          PUBLISH: ${{ steps.meta.outputs.publish }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          channel=(--prerelease)
+          [ "$PUBLISH" = true ] && channel=(--latest)
+          files=(build/yab.dmg build/yab.zip build/appcast.json)
+          [ ! -f build/yab.app.dSYM.zip ] || files+=(build/yab.app.dSYM.zip)
+          gh release create "$TAG" --repo "$REPO" --target "$GITHUB_SHA" "${channel[@]}" \
+            --title "Yab $VERSION ($BUILD)" \
+            --notes "Built from \`$REF_NAME\` at $GITHUB_SHA. Signed and notarized; Chromium tabs use stock CEF." \
+            "${files[@]}"
+
+      - name: Feed for GitHub Pages
+        if: steps.meta.outputs.publish == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/feed
+
+      - name: Remove the signing keychain
+        if: always()
+        run: |
+          [ -z "${YAB_SIGN_KEYCHAIN:-}" ] || security delete-keychain "$YAB_SIGN_KEYCHAIN" || true
+          rm -rf "$RUNNER_TEMP/yab-signing"
+
+  feed:
+    name: Publish the update feed
+    needs: build
+    if: needs.build.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}appcast.json
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
