@@ -14,7 +14,7 @@ contribution process does not apply here. Ignore:
 - the pull request template, and mentioning known test failures in a PR;
 - upstream's commit subject style. Commits use the `/commit` skill's format.
 
-Pull requests go inside the fork (`--repo Serubin/yab --base main`), never
+Pull requests go inside the fork (`--repo Serubin/yab --base canary`), never
 against upstream. The build, test, proof, design-system, command-field and
 settings rules still apply.
 
