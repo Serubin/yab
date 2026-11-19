@@ -7,6 +7,12 @@ import SyncKit
 enum AppIconStyle: String, CaseIterable, Identifiable {
     case original
     case standard = "pane-standard"
+    // Pane's own, free for anyone to wear (design/pane-icons).
+    case paneSolo = "pane-solo"
+    case paneTwoPills = "pane-two-pills"
+    case paneInverse = "pane-inverse"
+    case paneMidnight = "pane-midnight"
+    case paneOldFriend = "pane-old-friend"
     // Halloween 2026 (Halloween.swift): here until November 2, then only
     // the ones worn by then.
     case pumpkin = "16-halloween-pumpkin"
