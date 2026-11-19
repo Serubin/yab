@@ -161,7 +161,7 @@ enum AgentHistory {
         }
         let named = span.map { " " + $0.label.replacingOccurrences(of: "From your ", with: "this ").lowercased() } ?? ""
         var out = "# What the user did in their browser\(named)\n\n"
-        out += "_Pages grouped by what they were doing, in Yab on this Mac. Private tabs and pages an agent worked in are never kept. "
+        out += "_Pages grouped by what they were doing, in \(Brand.name) on this Mac. Private tabs and pages an agent worked in are never kept. "
             + "When you write from this, say in one plain line what you left out, and give the pages you used as links with their times._\n"
         guard !threads.isEmpty else { return out + "\nNothing for that." }
         var day = ""

@@ -252,7 +252,7 @@ struct BoostSiteBlock: View {
             guard await Questions.shared.ask(question) else { return }
             let folder = boosts.library.folder(record.id).path
             ask("""
-            Share my boost "\(record.name)" (\(record.id)) to the Yab Store. Its files are in \(folder) (manifest.json, BOOST.md, style.css).
+            Share my boost "\(record.name)" (\(record.id)) to the Store. Its files are in \(folder) (manifest.json, BOOST.md, style.css).
             Follow docs/store.md "yab-plugins": with my GitHub account (gh), fork yetanotherbrowser/yab-plugins, add boosts/\(record.id)/ with manifest.json, BOOST.md (keep my words and its checks), page/style.css and listing.json {name, intent, host, by: my GitHub handle, preview}, run `npm run validate` there, and open a pull request titled "Add \(record.name) for \(record.sites.first.map(Browser.site) ?? "")". Do not change anything else. Post the pull request's link here.
             """)
         }

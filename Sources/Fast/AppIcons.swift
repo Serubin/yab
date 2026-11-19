@@ -40,6 +40,8 @@ enum AppIconStyle: String, CaseIterable, Identifiable {
     /// Shown once yours: a post's icons, and the surprise while any is left.
     @MainActor static var choices: [Self] {
         allCases.filter { style in
+            // Only icons whose art is in the bundle: Yab's alternates don't ship.
+            if style != .original, style.image(dark: false) == nil { return false }
             if style == .standard { return Store.development }
             if style == .firstEdition { return style.unlocked }
             if style.halloween { return style.unlocked }

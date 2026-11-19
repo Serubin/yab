@@ -310,7 +310,7 @@ struct AgentsIntro: View {
             return Words(title: "Allow Gemini in Google", detail: "Opening Google's sign-in…",
                          button: "Show Sign-In", enabled: true, shows: true, cancel: true, ring: true)
         case .signingIn("gemini"):
-            let detail = geminiChoice?.email.map { "A tab in \(geminiChoice?.place ?? "Yab") is asking. You're signed in there as \($0), so it's one Allow." }
+            let detail = geminiChoice?.email.map { "A tab in \(geminiChoice?.place ?? Brand.name) is asking. You're signed in there as \($0), so it's one Allow." }
                 ?? "A private \(Brand.name) tab is asking. Sign in to the Google account you want, then Allow."
             return Words(title: "Allow Gemini in Google", detail: detail,
                          button: "Show Sign-In", enabled: true, shows: true, cancel: true, ring: true)

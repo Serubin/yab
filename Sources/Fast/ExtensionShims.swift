@@ -2056,7 +2056,7 @@ enum ExtensionShims {
             if let old = awake[id] { IOPMAssertionRelease(old) }
             var assertion: IOPMAssertionID = 0
             let kind = (display ? kIOPMAssertionTypePreventUserIdleDisplaySleep : kIOPMAssertionTypePreventUserIdleSystemSleep) as CFString
-            if IOPMAssertionCreateWithName(kind, IOPMAssertionLevel(kIOPMAssertionLevelOn), "An extension in Yab" as CFString, &assertion) == kIOReturnSuccess {
+            if IOPMAssertionCreateWithName(kind, IOPMAssertionLevel(kIOPMAssertionLevelOn), "An extension in \(Brand.name)" as CFString, &assertion) == kIOReturnSuccess {
                 awake[id] = assertion
                 releaseOnQuit()
             }
@@ -2068,7 +2068,7 @@ enum ExtensionShims {
             // One per extension, declared again each time: a known id
             // updates the assertion in place instead of adding one.
             var assertion = active[id] ?? 0
-            if IOPMAssertionDeclareUserActivity("An extension in Yab" as CFString, kIOPMUserActiveLocal, &assertion) == kIOReturnSuccess {
+            if IOPMAssertionDeclareUserActivity("An extension in \(Brand.name)" as CFString, kIOPMUserActiveLocal, &assertion) == kIOReturnSuccess {
                 active[id] = assertion
                 releaseOnQuit()
             }

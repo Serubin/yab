@@ -441,7 +441,7 @@ final class StoreCatalog: ObservableObject {
         Task {
             guard await MailNotifySystem().permission() == .allowed else { return }
             let content = UNMutableNotificationContent()
-            content.title = "Yab Store"
+            content.title = "Store"
             content.body = words
             try? await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil))
         }

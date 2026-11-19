@@ -5211,9 +5211,9 @@ enum AgentCLI {
                         print("  · Needs you: \(needs)")
                         let choices = got["choices"] as? [String] ?? []
                         print("    " + (choices + ["or your own words"]).joined(separator: " · "))
-                        if person == "tty" { print("    answer here, or in Yab") }
+                        if person == "tty" { print("    answer here, or in \(Brand.name)") }
                     } else {
-                        print("  · Needs you in Yab: \(needs)")
+                        print("  · Needs you in \(Brand.name): \(needs)")
                     }
                 }
                 // The terminal back after a while, the task still waiting in
@@ -5221,8 +5221,8 @@ enum AgentCLI {
                 // turn), and for a person too, on what only Yab can take, in
                 // case a terminal only looked like one (a PTY an agent runs).
                 if person != "tty" || kind != "pick", let since, Date().timeIntervalSince(since) > patience {
-                    print("\nStill waiting in Yab for: \(needs)")
-                    if person == "caller" { print("tell your user now: Yab waits for them to do this on their Mac. The task carries on there once they do.") }
+                    print("\nStill waiting in \(Brand.name) for: \(needs)")
+                    if person == "caller" { print("tell your user now: \(Brand.name) waits for them to do this on their Mac. The task carries on there once they do.") }
                     print("carry on: \(command) session resume \(session)")
                     exit(3)
                 }

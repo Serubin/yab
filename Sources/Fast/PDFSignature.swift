@@ -194,7 +194,7 @@ final class PDFSignatureStamp: PDFAnnotation {
         picture = signature.image
         png = signature.png
         contents = signature.id
-        setValue("Yab", forAnnotationKey: .textLabel)
+        setValue(Brand.name, forAnnotationKey: .textLabel)
     }
 
     override func draw(with box: PDFDisplayBox, in context: CGContext) {

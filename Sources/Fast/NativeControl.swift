@@ -658,7 +658,7 @@ final class NativeControl {
                     closeSteps[receipt.id] = step
                     browser.toaster.pop("Closed " + Self.tabCount(closing.closed.count), mark: "xmark", undo: { [weak browser] in browser?.undo(step: step) })
                 } else if before != after {
-                    browser.toaster.pop("\(descriptor["title"] as? String ?? "Yab updated")", mark: "checkmark", undo: undoable ? { [weak self, weak browser] in
+                    browser.toaster.pop("\(descriptor["title"] as? String ?? "\(Brand.name) updated")", mark: "checkmark", undo: undoable ? { [weak self, weak browser] in
                         guard let self, let browser else { return }
                         do { _ = try self.undo(receipt.id, session: session.id, browser: browser) }
                         catch let error as NativeFailure { browser.announce(error.message) }

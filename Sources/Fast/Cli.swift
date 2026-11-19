@@ -81,7 +81,7 @@ enum Cli {
             print(usage)
             exit(0)
         case "-V", "--version", "version":
-            print("Yab \(Guide.version)")
+            print("\(Brand.name) \(Guide.version)")
             exit(0)
         case "agent":
             AgentCLI.run(rest)
@@ -230,7 +230,7 @@ enum Cli {
         let found = Wire.ask(socket, ["do": "app-import", "source": name, "check": true])
         if let error = found["error"] as? String { fail(error) }
         let source = found["source"] as? String ?? name
-        print("Bringing \(source)'s sign-ins into Yab. macOS may ask for \(source)'s key: Always Allow.")
+        print("Bringing \(source)'s sign-ins into \(Brand.name). macOS may ask for \(source)'s key: Always Allow.")
         let got = Wire.ask(socket, ["do": "app-import", "source": source])
         if let error = got["error"] as? String { fail(error) }
         print("\(got["source"] as? String ?? name): \(got["passwords"] as? Int ?? 0) passwords, \(got["cookies"] as? Int ?? 0) cookies.")
@@ -249,7 +249,7 @@ enum Cli {
             printJSON(said)
             exit(got["error"] == nil ? 0 : 1)
         }
-        if let error = got["error"] as? String { print(error.hasPrefix("Yab isn't running") ? "Yab isn't running." : error); exit(1) }
+        if let error = got["error"] as? String { print(error.hasPrefix("\(Brand.name) isn't running") ? "\(Brand.name) isn't running." : error); exit(1) }
         let pid = got["pid"] as? Int ?? 0
         let working = got["working"] as? Int ?? 0, waiting = got["waiting"] as? Int ?? 0
         var line = got["lingering"] as? Bool == true ? "\(Brand.name) is finishing its tasks before it quits (pid \(pid))"
@@ -434,7 +434,7 @@ enum Cli {
             let prompt = rest.joined(separator: " ")
             guard !prompt.isEmpty else { fail("usage: \(AgentSetup.command) every \"weekdays 9:00\" \"what to do\"", code: 2) }
             let got = ask(["do": "agent-routine-add", "when": when, "prompt": prompt])
-            print("Routine \(got["id"] ?? "") set for \(got["when"] ?? when). It runs while Yab is open; what it finds comes to your new tab.")
+            print("Routine \(got["id"] ?? "") set for \(got["when"] ?? when). It runs while \(Brand.name) is open; what it finds comes to your new tab.")
             exit(0)
         }
     }
@@ -500,7 +500,7 @@ enum Cli {
             codex    \(status.codex ? "✓ skill \(AgentSetup.skill), MCP \(AgentSetup.server)" : found.codex == nil ? "not installed" : "-")
             """)
             for trouble in troubles { FileHandle.standardError.write(Data((trouble + "\n").utf8)) }
-            if troubles.isEmpty { print("\nReady. New agent sessions will find Yab; try: \(c) guide") }
+            if troubles.isEmpty { print("\nReady. New agent sessions will find \(Brand.name); try: \(c) guide") }
             exit(troubles.isEmpty ? 0 : 1)
         }
         dispatchMain()

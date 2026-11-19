@@ -366,14 +366,15 @@ build_icons() {
   # STYLE-dark.png, when present, is the picture the dark .icns shows.
   # STYLE.icon is an Icon Composer bundle of vector layers; its dark .icns
   # is its own dark fill under the same layers.
-  for artwork in Icon/Alternates/*.png Icon/Alternates/*.icon; do
+  # Icon/Alternates is Yab's artwork (TRADEMARKS.md); Pane ships only its own.
+  for artwork in Icon/PaneAlternates/*.png Icon/PaneAlternates/*.icon; do
     [ -e "$artwork" ] || continue
     style="$(basename "$artwork")"
     style="${style%.*}"
     case "$style" in *-dark) continue ;; esac
     # A document owns its artwork layout; a same-named PNG may stay as the
     # untouched source picture without being compiled over that document.
-    if [ -f "$artwork" ] && [ -d "Icon/Alternates/$style.icon" ]; then continue; fi
+    if [ -f "$artwork" ] && [ -d "Icon/PaneAlternates/$style.icon" ]; then continue; fi
     mkdir -p "$ICONS/$style-build" "$ICONS/$style-dark-build"
     if [ -d "$artwork" ]; then
       cp -R "$artwork" "$ICONS/$style.icon"
@@ -400,8 +401,8 @@ if dark:
     icon["fill-specializations"] = [{"value": dark[0]["value"]}]
 json.dump(icon, open(path, "w"), indent=2)
 PY
-    elif [ -f "Icon/Alternates/$style-dark.png" ]; then
-      cp "Icon/Alternates/$style-dark.png" "$ICONS/$style-dark.icon/Assets/art.png"
+    elif [ -f "Icon/PaneAlternates/$style-dark.png" ]; then
+      cp "Icon/PaneAlternates/$style-dark.png" "$ICONS/$style-dark.icon/Assets/art.png"
     fi
     xcrun actool "$ICONS/$style-dark.icon" --compile "$ICONS/$style-dark-build" \
       --output-partial-info-plist "$ICONS/$style-dark-build/partial.plist" \
@@ -474,10 +475,8 @@ else
 fi
 cp "$ICON_CACHE/Assets.car" "$ICON_CACHE/pane.icns" "$APP/Contents/Resources/"
 cp -R "$ICON_CACHE/AppIcons" "$APP/Contents/Resources/"
-# The mark, the picture Welcome draws (Logomark, Design.swift).
-cp Icon/Mark.png "$APP/Contents/Resources/Mark.png"
-# Yab for iPhone's icon, for the rows that offer it (PhoneBeta.swift).
-cp Icon/iPhone.png "$APP/Contents/Resources/iPhone.png"
+# The mark, the picture Welcome draws (Logomark, Design.swift); Yab's own stays out.
+if [ -f Icon/PaneMark.png ]; then cp Icon/PaneMark.png "$APP/Contents/Resources/Mark.png"; fi
 # The notices the licenses of code inside the app ask to travel with it.
 cp THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/Acknowledgements.txt"
 # The icons of the apps About › Credits thanks (CreditRow).
@@ -510,9 +509,8 @@ test -s "$APP/Contents/Resources/PageScripts/extension-shims.js"
 rm -rf "$APP/Contents/Resources/DarkReader"
 cp -R Resources/DarkReader "$APP/Contents/Resources/DarkReader"
 test -s "$APP/Contents/Resources/DarkReader/dynamic-theme-fixes.config"
-# The best friend charm's halves, one per color (CharmDraw.swift, Invites.swift).
+# The friend charm's halves are Yab's art, so none ship (CharmDraw.swift).
 rm -rf "$APP/Contents/Resources/Charm"
-cp -R Resources/Charm "$APP/Contents/Resources/Charm"
 # Google's own marks for the welcome's Google step (WelcomeEnd.swift).
 cp -R Resources/Google "$APP/Contents/Resources/Google"
 # The welcome sample's sites' own favicons (WelcomeSiteMark).
@@ -536,6 +534,8 @@ cp -R Resources/AgentIcons "$APP/Contents/Resources/AgentIcons"
 # folder per skill, each a SKILL.md.
 rm -rf "$APP/Contents/Resources/skills"
 cp -R Skills "$APP/Contents/Resources/skills"
+# Upstream writes them as Yab; renamed here so merges keep the sources as-is.
+find "$APP/Contents/Resources/skills" -name SKILL.md -exec perl -pi -e "s/\bYab\b/Pane/g" {} +
 # The Dock's tile while yab isn't running (DockTile/DockTile.swift): it keeps
 # the App Icon chosen in Appearance, which macOS forgets on quit. Both kinds
 # of Mac, since it runs inside the Dock, not inside yab.
@@ -922,7 +922,7 @@ xcrun actool "$DARK/pane.icon" --compile "$DARK" \
   --development-region en --target-device mac --platform macosx \
   --minimum-deployment-target "$MINIMUM" --errors --warnings > /dev/null
 cp "$DARK/Assets.car" "$DARK/pane.icns" "$LAUNCHER/Contents/Resources/"
-cp Icon/Mark.png "$LAUNCHER/Contents/Resources/Mark.png"
+if [ -f Icon/PaneMark.png ]; then cp Icon/PaneMark.png "$LAUNCHER/Contents/Resources/Mark.png"; fi
 # Which image this launcher came in, so it puts away that one and no other.
 STAMP="$BUILD-$(uuidgen)"
 cat > "$LAUNCHER/Contents/Info.plist" <<PLIST

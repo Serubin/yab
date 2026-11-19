@@ -507,7 +507,7 @@ final class PDFDesk: ObservableObject {
 
     /// Ours: signatures and lines of text the mode put on the pages.
     static func ours(_ annotation: PDFAnnotation) -> Bool {
-        annotation is PDFSignatureStamp || (annotation.type == "FreeText" && annotation.value(forAnnotationKey: .textLabel) as? String == "Yab")
+        annotation is PDFSignatureStamp || (annotation.type == "FreeText" && annotation.value(forAnnotationKey: .textLabel) as? String == Brand.name)
     }
 
     func pick(_ annotation: PDFAnnotation?) {

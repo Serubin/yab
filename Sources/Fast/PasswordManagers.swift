@@ -629,7 +629,7 @@ extension PasswordManagers {
 
         /// For the agents' guide: "Bitwarden (Yab unlocks), 1Password (you unlock)".
         var described: String {
-            list.map { "\(PasswordManagers.name($0.provider)) (\(mode($0.provider) == .yab ? "Yab unlocks" : "you unlock"))" }
+            list.map { "\(PasswordManagers.name($0.provider)) (\(mode($0.provider) == .yab ? "\(Brand.name) unlocks" : "you unlock"))" }
                 .joined(separator: ", ")
         }
 

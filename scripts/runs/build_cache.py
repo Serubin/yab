@@ -86,8 +86,8 @@ def icon_key(root, step, minimum, toolchain):
         bundle_icon = os.environ.get("YAB_BUNDLE_ICON")
         if bundle_icon:
             paths.extend((root / bundle_icon).rglob("*"))
-    paths.extend((root / "Icon/Alternates").glob("*.png"))
-    paths.extend((root / "Icon/Alternates").glob("*.icon/**/*"))
+    paths.extend((root / "Icon/PaneAlternates").glob("*.png"))
+    paths.extend((root / "Icon/PaneAlternates").glob("*.icon/**/*"))
     inputs = [("cache-helper", digest(Path(__file__).resolve()))]
     inputs.extend((str(p.relative_to(root)), digest(p)) for p in sorted(set(paths)) if p.is_file())
     value = [step, minimum, toolchain, inputs]

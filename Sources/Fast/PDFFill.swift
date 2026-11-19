@@ -212,7 +212,7 @@ enum PDFFill {
         note.border = border
         note.alignment = .left
         note.contents = text
-        note.setValue("Yab", forAnnotationKey: .textLabel)
+        note.setValue(Brand.name, forAnnotationKey: .textLabel)
         return note
     }
 

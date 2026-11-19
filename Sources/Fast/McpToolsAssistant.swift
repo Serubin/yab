@@ -88,7 +88,7 @@ extension Mcp {
                             : "Space: \(got["space"] ?? "") (your tabs open there, signed in as it is).",
                          "Asks first: \((got["mode"] as? String) == "ask" ? "before signing in and anything that sends, pays or deletes" : (got["mode"] as? String) == "bypass" ? "never (the user chose this)" : "before anything that sends, pays or deletes")."]
             lines.append("Mail: \(got["mail"] as? Bool == true ? "on" : "off"). Messages codes: \(got["messages"] as? Bool == true ? "on" : "off"). Saved cards and addresses: \(got["cards"] as? Bool == true ? "on" : "off").")
-            lines.append("Tasks: \(got["tasks"] as? Bool == true ? "available (task)" : "unavailable, nobody connected in Yab").")
+            lines.append("Tasks: \(got["tasks"] as? Bool == true ? "available (task)" : "unavailable, nobody connected in \(Brand.name)").")
             if let never = got["never"] as? [String], !never.isEmpty { lines.append("Never opens: \(never.joined(separator: ", ")).") }
             if let allowed = got["allowedSites"] as? [String], !allowed.isEmpty { lines.append("Explicitly allowed sites: \(allowed.joined(separator: ", ")).") }
             if let only = got["only"] as? [String], !only.isEmpty { lines.append("Opens only: \(only.joined(separator: ", ")).") }
@@ -145,7 +145,7 @@ extension Mcp {
         let lower = text.lowercased()
         let status: String?
         if lower.contains("using this tab right now") { status = "user_busy_here" }
-        else if lower.contains("isn't running") || lower.contains("agents are off in yab") { status = "mac_offline" }
+        else if lower.contains("isn't running") || lower.contains("agents are off in \(Brand.name.lowercased())") { status = "mac_offline" }
         else if lower.contains("captcha") { status = "captcha" }
         else if lower.contains("sign in") || lower.contains("signed out") || lower.contains("log in") { status = "login_needed" }
         else if lower.contains("said not now") || lower.contains("said no") || lower.contains("never allows") { status = "denied" }

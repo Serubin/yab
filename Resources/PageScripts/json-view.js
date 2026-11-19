@@ -795,7 +795,7 @@
     rowsEl = shadow.querySelector('.rows');
     menuEl = shadow.querySelector('.menu');
     thumbEl = shadow.querySelector('.thumb');
-    if (skipped) topEl.innerHTML = '<div class="skip">Yab skipped <code>' + esc(skipped.text) + '</code> before the JSON.</div>';
+    if (skipped) topEl.innerHTML = '<div class="skip">Pane skipped <code>' + esc(skipped.text) + '</code> before the JSON.</div>';
     // The body WebKit made stays, hidden, for agents and extensions; the
     // canvas around the viewer is its ground, light or dark.
     sheet = new CSSStyleSheet();

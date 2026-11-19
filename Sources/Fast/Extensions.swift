@@ -1313,7 +1313,7 @@ final class Extensions: NSObject, ObservableObject {
         if let standIn { return await standIn.value }
         let task = Task { @MainActor [weak self] in
             let folder = Store.folder.appendingPathComponent("Extension Stand-In", isDirectory: true)
-            let manifest = #"{"manifest_version":3,"name":"Yab","version":"1.0"}"#
+            let manifest = #"{"manifest_version":3,"name":"\#(Brand.name)","version":"1.0"}"#
             let written = await Task.detached(priority: .userInitiated) { () -> Bool in
                 do {
                     try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
