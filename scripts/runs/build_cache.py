@@ -189,6 +189,8 @@ def app_key(root, config, arch=""):
         google = [digest(env_file)] if env_file.is_file() else []
     value = {"config": config, "arch": arch, "step": "app", "wmo": os.environ.get("YAB_WMO", ""), "icon": icon,
              "google": google, "toolchain": toolchain_identity(), "inputs": inputs}
+    if os.environ.get("YAB_VERSION"):
+        value["version"] = os.environ["YAB_VERSION"]
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
 

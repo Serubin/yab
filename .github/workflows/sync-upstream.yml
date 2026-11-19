@@ -1,10 +1,11 @@
-# Daily merge of upstream yetanotherbrowser/yab main into this fork's main and canary.
+# Hourly merge of upstream yetanotherbrowser/yab main into this fork's main and canary,
+# then a release of canary when upstream bumped VERSION or the fork has changes since the last one.
 
 name: Sync upstream
 
 on:
   schedule:
-    - cron: "17 9 * * *"
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions: {}
@@ -64,3 +65,82 @@ jobs:
             echo "::error::Merge conflicts on: ${failed[*]}. Merge upstream by hand."
             exit 1
           fi
+
+  release:
+    name: Release canary if it has news
+    needs: sync
+    # Also after a conflict on main: canary's own changes still deserve a release.
+    if: ${{ !cancelled() && github.repository == 'Serubin/yab' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: canary
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Decide and dispatch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags "$UPSTREAM_URL" "+refs/heads/$UPSTREAM_BRANCH:refs/remotes/upstream/$UPSTREAM_BRANCH"
+          head="$(git rev-parse HEAD)"
+          say() { echo "$1" | tee -a "$GITHUB_STEP_SUMMARY"; }
+
+          busy="$(gh run list -R "$REPO" --workflow release.yml --limit 20 --json status \
+            --jq '[.[] | select(.status != "completed")] | length')"
+          if [ "$busy" != 0 ]; then say "release: one is already running or queued"; exit 0; fi
+
+          # Releases that shipped but whose Pages deploy failed: redeploy, up to three attempts.
+          read -r run_id attempt < <(gh run list -R "$REPO" --workflow release.yml --branch canary \
+            --status completed --limit 1 --json databaseId,attempt \
+            --jq '.[0] | "\(.databaseId // "-") \(.attempt // 0)"' || echo "- 0")
+          if [ "$run_id" != - ]; then
+            feed_job="$(gh run view "$run_id" -R "$REPO" --json jobs \
+              --jq '[.jobs[] | select(.name == "Publish the update feeds" and .conclusion == "failure")][0].databaseId // ""')"
+            if [ -n "$feed_job" ] && [ "$attempt" -lt 3 ]; then
+              gh run rerun "$run_id" -R "$REPO" --job "$feed_job"
+              say "release: redeploying the feeds of run $run_id (attempt $((attempt + 1)))"
+              exit 0
+            fi
+          fi
+
+          # A failed release of this very commit isn't retried every hour; a new commit or a manual run is.
+          read -r last_sha last_conclusion < <(gh run list -R "$REPO" --workflow release.yml --branch canary \
+            --limit 1 --json headSha,conclusion --jq '.[0] | "\(.headSha // "-") \(.conclusion // "-")"' || echo "- -")
+          if [ "$last_sha" = "$head" ] && [ "$last_conclusion" != success ]; then
+            say "release: the last run for ${head:0:12} ended $last_conclusion; not retrying on a timer"
+            exit 0
+          fi
+
+          tag="$(gh release list -R "$REPO" --exclude-drafts --exclude-pre-releases --limit 50 \
+            --json tagName,publishedAt \
+            --jq '[.[] | select(.tagName | startswith("v"))] | sort_by(.publishedAt) | last | .tagName // ""')"
+          reason=""
+          if [ -z "$tag" ]; then
+            reason="no release yet"
+          else
+            base="$(git rev-list -n 1 "refs/tags/$tag")"
+            if [ "$base" = "$head" ]; then say "release: $tag is canary's head"; exit 0; fi
+            was="$(git show "$base:VERSION" | tr -d '[:space:]')"
+            now="$(tr -d '[:space:]' < VERSION)"
+            if [ "$was" != "$now" ]; then
+              reason="upstream $was -> $now"
+            else
+              # Fork commits that touch the app; docs and CI alone don't warrant a signed build.
+              changed="$(git rev-list --no-merges --count "$base..HEAD" ^"upstream/$UPSTREAM_BRANCH" \
+                -- . ':(exclude)*.md' ':(exclude)docs' ':(exclude).github')"
+              [ "$changed" = 0 ] || reason="fork changes since $tag: $changed"
+            fi
+          fi
+          if [ -z "$reason" ]; then say "release: nothing new since $tag beyond upstream commits"; exit 0; fi
+
+          gh workflow run release.yml -R "$REPO" --ref canary -f engines=all
+          say "release: started for ${head:0:12} ($reason)"
