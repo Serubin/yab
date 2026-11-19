@@ -1,11 +1,13 @@
-# Hourly merge of upstream yetanotherbrowser/yab main into this fork's main and canary,
-# then a release of canary when upstream bumped VERSION or the fork has changes since the last one.
+# Hourly merge of upstream yetanotherbrowser/yab main into this fork's main and canary, and
+# half an hour later a release of canary when upstream bumped VERSION or the fork has changes since the last one.
 
 name: Sync upstream
 
 on:
   schedule:
-    - cron: "17 * * * *"
+    # Each job keys on its own cron string; keep them in step with the `if:` lines below.
+    - cron: "0 * * * *"
+    - cron: "30 * * * *"
   workflow_dispatch:
 
 permissions: {}
@@ -22,7 +24,7 @@ env:
 jobs:
   sync:
     name: Merge upstream
-    if: github.repository == 'Serubin/yab'
+    if: github.repository == 'Serubin/yab' && github.event.schedule != '30 * * * *'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -69,8 +71,8 @@ jobs:
   release:
     name: Release canary if it has news
     needs: sync
-    # Also after a conflict on main: canary's own changes still deserve a release.
-    if: ${{ !cancelled() && github.repository == 'Serubin/yab' }}
+    # Runs when sync was skipped or hit a conflict on main: canary's own changes still deserve a release.
+    if: ${{ !cancelled() && github.repository == 'Serubin/yab' && github.event.schedule != '0 * * * *' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
