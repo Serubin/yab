@@ -157,3 +157,68 @@ jobs:
           path: swift-test.log
           retention-days: 14
           if-no-files-found: ignore
+
+  # Chromium tabs against the self-built patched CEF SDK pinned in
+  # scripts/cef/patched-sdk.json. Advisory until it has run clean for a while.
+  chromium-patched:
+    name: Build Yab Dev with patched CEF (advisory)
+    runs-on: macos-26
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      # Job-level `if` can't read the tree, so every later step keys on this one.
+      - name: SDK pinned
+        id: pin
+        run: |
+          if [ -f scripts/cef/patched-sdk.json ]; then echo present=true >> "$GITHUB_OUTPUT"
+          else echo "No patched SDK pinned yet; nothing to build."; fi
+      # Fails fast, before the download, when YabCore/cef-patches moved on.
+      - name: Patch series matches the SDK
+        if: steps.pin.outputs.present == 'true'
+        run: python3 -I scripts/cef/patched_receipt.py --check scripts/cef/patched-sdk.json
+      - uses: actions/cache@v4
+        if: steps.pin.outputs.present == 'true'
+        with:
+          path: ~/.local/state/yab-spike-cef/patched
+          key: cef-patched-${{ hashFiles('scripts/cef/patched-sdk.json') }}
+      # An empty YAB_CEF_DIR would make the builds fall back to stock CEF.
+      - name: Fetch the patched SDK
+        if: steps.pin.outputs.present == 'true'
+        run: |
+          dir="$(bash scripts/cef/fetch-patched.sh)"
+          test -f "$dir/yab-owncef.json"
+          echo "YAB_CEF_DIR=$dir" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        if: steps.pin.outputs.present == 'true'
+        with:
+          path: .build
+          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
+          restore-keys: |
+            spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
+      - name: Build YabCore
+        if: steps.pin.outputs.present == 'true'
+        env:
+          YAB_CEF_API_VERSION: "999999"
+          YABCORE_BUILD_DIR: ${{ runner.temp }}/yabcore
+          YAB_FARM_OUT: ${{ runner.temp }}/yabcore-out
+        run: |
+          test -n "$YAB_CEF_DIR"
+          mkdir -p "$YAB_FARM_OUT"
+          bash YabCore/build.sh
+          helper="$(cat "$YAB_FARM_OUT/app-path.txt")/Contents/MacOS/YabCore"
+          test -x "$helper"
+          echo "YAB_CEF_HELPER=$helper" >> "$GITHUB_ENV"
+      - name: Build the app bundle with CEF (ad hoc signed)
+        if: steps.pin.outputs.present == 'true'
+        env:
+          YAB_CEF: "1"
+          YAB_UNIVERSAL: "0"
+        run: |
+          test -n "$YAB_CEF_DIR" && test -n "$YAB_CEF_HELPER"
+          ./build.sh
+      - name: Check the bundle
+        if: steps.pin.outputs.present == 'true'
+        run: codesign --verify --deep --strict "build/yab Dev.app"
