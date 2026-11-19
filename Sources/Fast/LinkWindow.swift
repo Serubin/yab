@@ -1121,9 +1121,6 @@ private struct LinkBar: View {
                 .frame(width: Lights.run, height: LinkRoom.bar)
                 .padding(.leading, 18 - Lights.lead)
             LinkField(browser: browser, tab: tab, bar: bar, steer: steer)
-            if !tab.isBlank {
-                SiteControlsDoor(browser: browser, tab: tab, side: Door.Size.band.side, glyph: Door.Size.band.glyph)
-            }
             OpenButton(browser: browser, bar: bar, home: home, action: keep, spaces: spaces)
         }
         .padding(.trailing, LinkRoom.inset)
@@ -1218,7 +1215,7 @@ struct LinkFieldHandle: NSViewRepresentable {
 /// the whole address in it, to change, as Little Arc's command bar does. Under the
 /// pointer its left end has the browser's own doors, reload, back and
 /// forward, grayed where there is nowhere to go and held for the pages that
-/// way, and its right end the link, which copies it. Out from under it the
+/// way, and its right end the link, which copies it, and Site Controls. Out from under it the
 /// field is the site alone, but for the stop while the page is coming and
 /// a door a key just used, shown a moment. The doors keep their room
 /// either way, so the site never moves.
@@ -1232,8 +1229,11 @@ private struct LinkField: View {
     @State private var flashing = false
     @State private var unflash: DispatchWorkItem?
     @State private var linkHovering = false
+    @ObservedObject private var controls = SiteControlsState.shared
 
     private static let height: CGFloat = 28
+    /// The link's plate, and Site Controls' beside it.
+    private static let plate: CGFloat = 20
     /// Doors 2 in from the field's edges, a radius to match.
     private static let doors = Door.Size(side: height - 4, glyph: 11, gap: 0)
     /// Room for the site clear of the doors, on both sides so it stays centered.
@@ -1252,7 +1252,7 @@ private struct LinkField: View {
                 .overlay {
                     LinkFieldHandle(enabled: browser.fieldGuest !== tab, click: bar.raise)
                         .padding(.leading, 2 + Self.doors.helm) // design: an undrawn hit area, clear of the doors
-                        .padding(.trailing, 25) // design: an undrawn hit area, clear of the copy button
+                        .padding(.trailing, 25 + (tab.isBlank ? 0 : Self.plate + 2)) // design: an undrawn hit area, clear of the copy button and Site Controls
                 }
             HStack(spacing: 0) {
                 Helm(browser: browser, tab: tab, reads: false, steer: steer, resting: !(lit || flashing), reloadFirst: true)
@@ -1260,6 +1260,7 @@ private struct LinkField: View {
                     .animation(Motion.quick, value: lit || flashing)
                 Spacer(minLength: 0)
                 copy
+                if !tab.isBlank { controlsDoor.padding(.leading, 2) }
             }
             .padding(.leading, 2)
             .padding(.trailing, 5) // design: as it was, only moved out of the old editing branch: the doors 2 in, the link's 20 pt plate 4 in round its mark
@@ -1314,7 +1315,7 @@ private struct LinkField: View {
         Button { bar.copy(tab.address) } label: {
             CopyMark(ticked: false, side: (10 * Glyphs.scale).rounded())
                 .foregroundStyle(linkHovering ? Palette.ink : Palette.muted(on: tone))
-                .frame(width: 20, height: 20)
+                .frame(width: Self.plate, height: Self.plate)
                 .background(
                     RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
                         .fill(linkHovering ? Palette.hover(on: tone) : .clear)
@@ -1328,6 +1329,15 @@ private struct LinkField: View {
         .opacity(lit && tab.address != nil ? 1 : 0)
         .allowsHitTesting(lit)
         .animation(Motion.quick, value: lit)
+    }
+
+    /// Shown with the link, and kept while its panel hangs from it.
+    private var controlsDoor: some View {
+        let shown = lit || controls.openFor == tab.id
+        return SiteControlsDoor(browser: browser, tab: tab, side: Self.plate, corner: Radius.small, glyph: 11)
+            .opacity(shown ? 1 : 0)
+            .allowsHitTesting(shown)
+            .animation(Motion.quick, value: shown)
     }
 }
 
