@@ -2503,7 +2503,7 @@ private struct ChatColumnScheme: ViewModifier {
         let prefs = browser.prefs
         guard prefs.backdrop != .none else { return nil }
         let dark = window == .dark
-        let swatch = Tone(prefs.swatch.color(dark: dark, custom: prefs.backdropColor), lifted: true, glass: prefs.wearsGlass)
+        let swatch = Tone(prefs.lookColor(dark: dark), lifted: true, glass: prefs.wearsGlass)
         guard prefs.backdrop == .site, !prefs.wearsGlass else { return swatch.scheme }
         let site = browser.worn.color.map { Tone($0, lifted: true) }
         return (Worn<EmptyView>.worn(site, mode: .site, dark: dark) ? site : swatch)?.scheme
@@ -2569,7 +2569,7 @@ private struct ChatCardGround<Card: Shape>: View {
 
     var body: some View {
         if #available(macOS 26.0, *), LiquidGlass.wanted {
-            let space = Color(nsColor: browser.prefs.swatch.color(dark: scheme == .dark, custom: browser.prefs.backdropColor))
+            let space = Color(nsColor: browser.prefs.lookColor(dark: scheme == .dark))
             Color.clear
                 .glassEffect(.regular.tint(space.opacity(scheme == .dark ? 0.22 : 0.14)).interactive(), in: shape)
                 .overlay(shape.fill(Palette.ink.opacity(over ? 0.04 : 0)))

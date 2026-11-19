@@ -23,7 +23,7 @@ struct FieldMenu: View {
     /// size it is drawn at, so its lines stay sharp.
     private func picture(_ compact: Bool) -> NSImage {
         let paint = SpacePaint(prefs)
-        let key = ["\(compact)", scheme == .dark ? "dark" : "light", paint.swatch, paint.color, "\(paint.grain)"].joined(separator: " ")
+        let key = ["\(compact)", scheme == .dark ? "dark" : "light", paint.swatch, paint.color, "\(paint.grain)", paint.dark?.color ?? ""].joined(separator: " ")
         if let kept = pictures.kept[key] { return kept }
         let renderer = ImageRenderer(content: FieldPicture(prefs: prefs, compact: compact).environment(\.colorScheme, scheme))
         renderer.scale = 2

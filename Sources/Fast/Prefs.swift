@@ -547,6 +547,24 @@ final class Preferences: ObservableObject, Relaying {
         willSet { relay.send(\.backdropColors, newValue) }
         didSet { if !projectingSpacePaint { store.set(backdropColors, forKey: "backdrop.colors") } }
     }
+    /// The dark window's own color and linked colors; nil deepens the light ones.
+    var lookDark: SpacePaint.Dark? {
+        willSet { relay.send(\.lookDark, newValue) }
+        didSet {
+            if lookDark != oldValue { DarkPages.lookChanged() }
+            guard !projectingSpacePaint else { return }
+            if let lookDark, let data = try? JSONEncoder().encode(lookDark) {
+                store.set(data, forKey: "backdrop.dark")
+            } else {
+                store.removeObject(forKey: "backdrop.dark")
+            }
+        }
+    }
+
+    /// The window's color for this brightness, its own dark one when picked.
+    func lookColor(dark: Bool) -> NSColor {
+        SpacePaint.color(swatch: swatch, own: backdropColor, dark: dark, darkOwn: lookDark)
+    }
 
     /// These local defaults are also the selected space's paint.
     /// Project an explicit paint into this window only; a legacy space
@@ -560,11 +578,13 @@ final class Preferences: ObservableObject, Relaying {
         let transparency = paint?.transparency ?? other.backdropTransparency
         let grain = paint?.grain ?? other.grain
         let colors = paint?.colors ?? other.backdropColors
+        let dark = paint.map(\.dark) ?? other.lookDark
         if self.swatch != swatch { self.swatch = swatch }
         if backdropColor != color { backdropColor = color }
         if backdropTransparency != transparency { backdropTransparency = transparency }
         if self.grain != grain { self.grain = grain }
         if backdropColors != colors { backdropColors = colors }
+        if lookDark != dark { lookDark = dark }
     }
     /// The colors turn a step with each new tab (LookCard): only with two
     /// or more of them, where there is something to turn.
@@ -590,6 +610,16 @@ final class Preferences: ObservableObject, Relaying {
             store.set(lookMode, forKey: "backdrop.mode")
             if lookMode != oldValue { DarkPages.appearanceChanged() }
         }
+    }
+    /// The look card's Light or Dark tab, worn while the card is open on a
+    /// space that goes with Appearance; never kept.
+    var lookPreview: LookMode? = nil {
+        willSet { relay.send(\.lookPreview, newValue) }
+    }
+    /// The light or dark the window wears now: the space's own, else the card's tab.
+    var wornLookMode: String { Self.worn(mode: lookMode, preview: lookPreview) }
+    nonisolated static func worn(mode: String, preview: LookMode?) -> String {
+        mode.isEmpty ? preview?.rawValue ?? "" : mode
     }
     /// The window frame is Liquid Glass, the color a tint on it: the step
     /// past the transparency wave's end (LookSlider). On a Mac without
@@ -623,7 +653,7 @@ final class Preferences: ObservableObject, Relaying {
 
     /// How see-through the window's color is worn: on glass, as its tint.
     func wornTransparency(dark: Bool) -> Double {
-        wearsGlass ? WindowGlassPolicy.transparency(for: swatch.color(dark: dark, custom: backdropColor)) : backdropTransparency
+        wearsGlass ? WindowGlassPolicy.transparency(for: lookColor(dark: dark)) : backdropTransparency
     }
     /// How strongly the drawings show, 0...1.
     var lookDrawingsStrength: Double {
@@ -1140,6 +1170,7 @@ final class Preferences: ObservableObject, Relaying {
         darkPages = DarkMode.read(in: store)
         darkLook = DarkLook.read(in: store)
         backdropColors = ArcSidebar.repaired((store.stringArray(forKey: "backdrop.colors") ?? []).filter { NSColor(hex: $0) != nil })
+        lookDark = store.data(forKey: "backdrop.dark").flatMap { try? JSONDecoder().decode(SpacePaint.Dark.self, from: $0) }
         lookShift = store.bool(forKey: "backdrop.shift")
         lookSite = store.bool(forKey: "backdrop.site-tint")
         lookDrawings = LookDrawings.Set(rawValue: store.string(forKey: "backdrop.drawings") ?? "")?.rawValue ?? ""

@@ -1448,7 +1448,7 @@ struct ContentView: View {
     private var backdrop: NSColor? {
         guard browser.prefs.backdrop != .none else { return nil }
         if privateWindow { return Self.privateBackdrop }
-        return browser.prefs.swatch.color(dark: scheme == .dark, custom: browser.prefs.backdropColor)
+        return browser.prefs.lookColor(dark: scheme == .dark)
     }
 
     /// A private window wears none of your spaces' looks: one dark gray,
@@ -1465,7 +1465,7 @@ struct ContentView: View {
     private var edgeBackdrop: NSColor? {
         guard browser.prefs.edgeBackdrop else { return nil }
         if privateWindow { return Self.privateBackdrop }
-        return browser.prefs.swatch.color(dark: scheme == .dark, custom: browser.prefs.backdropColor)
+        return browser.prefs.lookColor(dark: scheme == .dark)
     }
 
     /// The space's look is on glass: its color a tint on the window's

@@ -150,6 +150,9 @@ final class NativeControl {
             watches.append(browser.prefs.changes(\.backdropColors).dropFirst().sink { [weak self, weak browser] _ in
                 if let browser { self?.changes.changed("space:" + browser.spaceID.uuidString) }
             })
+            watches.append(browser.prefs.changes(\.lookDark).dropFirst().sink { [weak self, weak browser] _ in
+                if let browser { self?.changes.changed("space:" + browser.spaceID.uuidString) }
+            })
             watches.append(browser.prefs.changes(\.usesMail).dropFirst().sink { [weak self] _ in self?.changes.changed("mail-enabled") })
             watches.append(browser.changes(\.spaceID).dropFirst().sink { [weak self] _ in self?.changes.changed("active-space") })
             var layout = browser.tabs.filter { !$0.shy && !$0.bench }.map(\.id)
@@ -371,6 +374,7 @@ final class NativeControl {
         let paint = space.id == browser.spaceID ? SpacePaint(browser.prefs) : space.paint ?? SpacePaint(browser.prefs)
         return .object(["id": .string(space.id.uuidString), "name": .string(space.name), "color": .string(paint.color),
                         "swatch": .string(paint.swatch), "grain": .number(paint.grain), "transparency": .number(paint.transparency), "glass": .bool(paint.glass), "colors": .array(paint.colors.map(NativeValue.string)),
+                        "darkColor": .string(paint.dark?.color ?? ""), "darkColors": .array((paint.dark?.colors ?? []).map(NativeValue.string)),
                         "separateSignIns": .bool(space.ownSignIns), "authStoreId": .string(space.profileID.uuidString)])
     }
 
@@ -915,6 +919,19 @@ final class NativeControl {
                 paint.colors = parsed
             }
             if case .number(let grain) = arguments["grain"] { paint.grain = grain }
+            if arguments["darkColors"] != nil, string(arguments["darkColor"]).map(\.isEmpty) ?? true {
+                throw NativeFailure("invalid_arguments", "Give darkColor with darkColors")
+            }
+            if let raw = string(arguments["darkColor"]) {
+                if raw.isEmpty { paint.dark = nil } else {
+                    guard let dark = NSColor(hex: raw) else { throw NativeFailure("invalid_arguments", "Give a valid hex dark color, or an empty one to match light") }
+                    let stops = try strings(arguments["darkColors"]).map { raw -> NSColor in
+                        guard let color = NSColor(hex: raw) else { throw NativeFailure("invalid_arguments", "Every dark gradient stop needs a valid hex color") }
+                        return color
+                    }
+                    paint.dark = SpacePaint.Dark(color: dark, colors: stops)
+                }
+            }
             browser.setSpacePaint(space.id, to: paint)
         case "space.switch": try switchSpace(target, browser: browser)
         case "space.delete":
@@ -1271,6 +1288,8 @@ final class NativeControl {
                     if case .number(let amount) = state["transparency"] { paint.transparency = amount }
                     if case .bool(let on) = state["glass"] { paint.glass = on }
                     if case .number(let grain) = state["grain"] { paint.grain = grain }
+                    let dark = string(state["darkColor"]) ?? ""
+                    paint.dark = NSColor(hex: dark).map { SpacePaint.Dark(color: $0, colors: strings(state["darkColors"]).compactMap(NSColor.init(hex:))) }
                     paint.colors = strings(state["colors"]); browser.setSpacePaint(space.id, to: paint)
                 }
             case "space.switch": if case .string(let previous) = receipt.before { try switchSpace(previous, browser: browser) }

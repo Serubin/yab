@@ -156,7 +156,7 @@ final class SpaceWash {
     /// (Preferences.edgeBackdrop).
     static func worn(_ prefs: Preferences) -> Paint? {
         guard prefs.backdrop == .color || prefs.edgeBackdrop else { return nil }
-        return worn(SpacePaint(prefs), prefs: prefs)
+        return worn(SpacePaint.worn(prefs), prefs: prefs)
     }
 
     static func worn(_ paint: SpacePaint?, prefs: Preferences) -> Paint? {
@@ -170,7 +170,7 @@ final class SpaceWash {
     /// sidebar out over the page wears its space's theme with the sidebar
     /// hidden (feedback #165). Nil on the site's color.
     static func card(_ prefs: Preferences) -> Paint? {
-        card(SpacePaint(prefs), prefs: prefs)
+        card(SpacePaint.worn(prefs), prefs: prefs)
     }
 
     static func card(_ paint: SpacePaint?, prefs: Preferences) -> Paint? {
@@ -185,7 +185,7 @@ final class SpaceWash {
     static func grounded(_ paint: SpacePaint? = nil, in browser: Browser) -> Paint? {
         let prefs = browser.prefs
         if browser.windowPurpose == .privateOnly { return Paint(color: ContentView.privateBackdrop, grain: prefs.grain) }
-        let paint = paint ?? SpacePaint(prefs)
+        let paint = paint ?? SpacePaint.worn(prefs)
         return !prefs.sideShut || browser.sideCard ? card(paint, prefs: prefs) : worn(paint, prefs: prefs)
     }
 
@@ -193,7 +193,7 @@ final class SpaceWash {
     /// wears it on a color (LookCard.colors); as it is with no site color.
     static func sited(_ paint: Paint, prefs: Preferences, site: NSColor?) -> Paint {
         guard let site else { return paint }
-        let look = SpacePaint(prefs)
+        let look = SpacePaint.worn(prefs)
         let dark = LookMode(rawValue: look.mode)?.scheme.map { $0 == .dark }
             ?? (NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua)
         var sited = paint
@@ -207,7 +207,7 @@ final class SpaceWash {
         let dark = LookMode(rawValue: paint.mode)?.scheme.map { $0 == .dark }
             ?? (NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua)
         return Paint(color: paint.color(dark: dark), grain: paint.grain,
-                     colors: paint.colors.compactMap(NSColor.init(hex:)).map { dark ? $0.deepened : $0 },
+                     colors: paint.linked(dark: dark),
                      transparency: paint.wornTransparency(dark: dark), glass: paint.glass && WindowGlassPolicy.supported,
                      drawings: LookDrawings.Set(rawValue: paint.drawings), drawingsStrength: paint.drawingsStrength)
     }

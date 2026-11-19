@@ -358,6 +358,7 @@ private final class SpaceForm: ObservableObject {
     /// The space's own light or dark, and glass past the wave's end.
     @Published var mode: String
     @Published var glass: Bool
+    @Published var dark: SpacePaint.Dark?
     @Published var profile: UUID?
     @Published var search: String?
     @Published var searchCustom: String?
@@ -384,6 +385,7 @@ private final class SpaceForm: ObservableObject {
         strength = paint.drawingsStrength
         mode = paint.mode
         glass = paint.glass
+        dark = paint.dark
         profile = nil
         search = space.search
         searchCustom = space.searchCustom
@@ -411,6 +413,7 @@ private final class SpaceForm: ObservableObject {
         strength = worn.drawingsStrength
         mode = ""
         glass = worn.glass
+        dark = nil
         profile = browser.spaces.first?.id
     }
 
@@ -419,7 +422,7 @@ private final class SpaceForm: ObservableObject {
     var paint: SpacePaint {
         get {
             SpacePaint(swatch: swatch, color: custom, grain: grain, colors: colors, transparency: transparency,
-                       shift: shift, site: site, drawings: drawings, drawingsStrength: strength, mode: mode, glass: glass)
+                       shift: shift, site: site, drawings: drawings, drawingsStrength: strength, mode: mode, glass: glass, dark: dark)
         }
         set {
             if swatch != newValue.picked { swatch = newValue.picked; swatchByHand = true }
@@ -433,6 +436,7 @@ private final class SpaceForm: ObservableObject {
             strength = newValue.drawingsStrength
             mode = newValue.mode
             glass = newValue.glass
+            dark = newValue.dark
         }
     }
 
@@ -638,9 +642,9 @@ private struct SpacePage: View {
     private var dots: some View {
         LookPicker(paint: Binding(get: { form.paint }, set: { form.paint = $0; paint() }),
                    named: Spaces.isEmoji(form.icon) ? "\(form.icon) \(shownName)" : shownName,
-                   forAll: browser.spaces.count > 1 && !fresh ? { browser.spaces.forEach { browser.setSpacePaint($0.id, to: form.paint) } } : nil) {
-            if !form.colors.isEmpty { prefs.backdrop = .color }
-        }
+                   forAll: browser.spaces.count > 1 && !fresh ? { browser.spaces.forEach { browser.setSpacePaint($0.id, to: form.paint) } } : nil,
+                   onPick: { if !form.colors.isEmpty { prefs.backdrop = .color } },
+                   preview: form.id == browser.spaceID ? Binding(get: { prefs.lookPreview }, set: { prefs.lookPreview = $0 }) : nil)
     }
 
 

@@ -125,10 +125,37 @@ struct SpacePaint: Codable, Equatable {
     /// past the transparency wave's end. `transparency` is kept for the way
     /// back.
     var glass = false
+    /// The colors a dark window wears, picked apart from the light ones;
+    /// nil wears the light ones deepened.
+    var dark: Dark? = nil
+
+    /// A dark window's own color and linked colors, worn as they are.
+    struct Dark: Codable, Equatable {
+        /// "RRGGBB", as SpacePaint's own.
+        var color: String
+        var colors: [String] = []
+
+        init(color: NSColor, colors: [NSColor] = []) {
+            self.color = color.hex
+            self.colors = colors.prefix(2).map(\.hex)
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            let color = try c.decode(String.self, forKey: .color)
+            guard NSColor(hex: color) != nil else {
+                throw DecodingError.dataCorruptedError(forKey: .color, in: c, debugDescription: "Not a color")
+            }
+            self.color = color
+            colors = Array((try c.decodeIfPresent([String].self, forKey: .colors) ?? []).filter { NSColor(hex: $0) != nil }.prefix(2))
+        }
+
+        var own: NSColor { NSColor(hex: color) ?? .black }
+    }
 
     init(swatch: Swatch, color: NSColor, grain: Double, colors: [String] = [], transparency: Double = 0,
          shift: Bool = false, site: Bool = false, drawings: String = "", drawingsStrength: Double = LookDrawings.standard,
-         mode: String = "", glass: Bool = false) {
+         mode: String = "", glass: Bool = false, dark: Dark? = nil) {
         self.swatch = swatch.rawValue
         self.color = color.hex
         self.grain = grain
@@ -140,13 +167,14 @@ struct SpacePaint: Codable, Equatable {
         self.drawingsStrength = min(1, max(0, drawingsStrength))
         self.mode = LookMode(rawValue: mode)?.rawValue ?? ""
         self.glass = glass
+        self.dark = dark
     }
 
     // Grain was on or off before it had an amount, and a build from then
     // reads this file too: "grain" stays on or off, the amount goes beside.
     // What the look card added is written only when it isn't the default,
     // so a space that never used it reads as it always did.
-    private enum CodingKeys: String, CodingKey { case swatch, color, grain, grainAmount, colors, transparency, shift, site, drawings, drawingsStrength, mode, glass }
+    private enum CodingKeys: String, CodingKey { case swatch, color, grain, grainAmount, colors, transparency, shift, site, drawings, drawingsStrength, mode, glass, dark }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -162,6 +190,8 @@ struct SpacePaint: Codable, Equatable {
         drawingsStrength = min(1, max(0, try c.decodeIfPresent(Double.self, forKey: .drawingsStrength) ?? LookDrawings.standard))
         mode = LookMode(rawValue: try c.decodeIfPresent(String.self, forKey: .mode) ?? "")?.rawValue ?? ""
         glass = try c.decodeIfPresent(Bool.self, forKey: .glass) ?? false
+        // An unreadable dark color falls back to the light one deepened, not the whole look lost.
+        dark = (try? c.decodeIfPresent(Dark.self, forKey: .dark)) ?? nil
     }
 
     func encode(to encoder: Encoder) throws {
@@ -178,19 +208,44 @@ struct SpacePaint: Codable, Equatable {
         if drawingsStrength != LookDrawings.standard { try c.encode(drawingsStrength, forKey: .drawingsStrength) }
         if !mode.isEmpty { try c.encode(mode, forKey: .mode) }
         if glass { try c.encode(glass, forKey: .glass) }
+        if let dark { try c.encode(dark, forKey: .dark) }
     }
 
     @MainActor init(_ prefs: Preferences) {
         self.init(swatch: prefs.swatch, color: prefs.backdropColor, grain: prefs.grain, colors: prefs.backdropColors, transparency: prefs.backdropTransparency,
                   shift: prefs.lookShift, site: prefs.lookSite, drawings: prefs.lookDrawings, drawingsStrength: prefs.lookDrawingsStrength,
-                  mode: prefs.lookMode, glass: prefs.lookGlass)
+                  mode: prefs.lookMode, glass: prefs.lookGlass, dark: prefs.lookDark)
+    }
+
+    /// As the window wears it now: the look card's Light or Dark tab in place of Auto.
+    @MainActor static func worn(_ prefs: Preferences) -> SpacePaint {
+        var paint = SpacePaint(prefs)
+        paint.mode = prefs.wornLookMode
+        return paint
     }
 
     var picked: Swatch { Swatch(rawValue: swatch) ?? .gray }
     var own: NSColor { NSColor(hex: color) ?? NSColor(srgbRed: 0.5, green: 0.72, blue: 0.64, alpha: 1) }
 
     /// The window's color for this brightness.
-    func color(dark: Bool) -> NSColor { picked.color(dark: dark, custom: own) }
+    func color(dark: Bool) -> NSColor { Self.color(swatch: picked, own: own, dark: dark, darkOwn: self.dark) }
+
+    /// The linked colors after the main one, as a window of this brightness wears them.
+    func linked(dark: Bool) -> [NSColor] { Self.linked(colors, dark: dark, darkOwn: self.dark) }
+
+    /// The one rule for a look's color, for a SpacePaint and for Preferences alike.
+    static func color(swatch: Swatch, own: NSColor, dark: Bool, darkOwn: Dark?) -> NSColor {
+        if dark, let darkOwn { return darkOwn.own }
+        return swatch.color(dark: dark, custom: own)
+    }
+
+    static func linked(_ colors: [String], dark: Bool, darkOwn: Dark?) -> [NSColor] {
+        if dark, let darkOwn { return darkOwn.colors.compactMap(NSColor.init(hex:)) }
+        return colors.compactMap(NSColor.init(hex:)).map { dark ? $0.deepened : $0 }
+    }
+
+    /// The dark colors as worn now: its own, or the light ones deepened.
+    var darkWorn: Dark { dark ?? Dark(color: color(dark: true), colors: linked(dark: true)) }
 
     /// No color: white or black with the window, its own color white and
     /// no linked ones, so nothing tints it.
@@ -198,6 +253,7 @@ struct SpacePaint: Codable, Equatable {
         swatch = Swatch.plain.rawValue
         color = Swatch.plainSeed
         colors = []
+        dark = nil
     }
 
     /// How see-through its color is worn: on glass, as the glass's tint
@@ -207,7 +263,7 @@ struct SpacePaint: Codable, Equatable {
     }
 
     func gradient(dark: Bool) -> [Color] {
-        colors.compactMap(NSColor.init(hex:)).map { Color(nsColor: dark ? $0.deepened : $0) }
+        linked(dark: dark).map { Color(nsColor: $0) }
     }
 
     @MainActor func wear(_ prefs: Preferences) {
@@ -222,6 +278,7 @@ struct SpacePaint: Codable, Equatable {
         if prefs.lookDrawingsStrength != drawingsStrength { prefs.lookDrawingsStrength = drawingsStrength }
         if prefs.lookMode != mode { prefs.lookMode = mode }
         if prefs.lookGlass != glass { prefs.lookGlass = glass }
+        if prefs.lookDark != dark { prefs.lookDark = dark }
     }
 }
 

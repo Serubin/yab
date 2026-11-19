@@ -35,6 +35,7 @@ final class LookCard: ObservableObject {
             prefs.backdropColor = prefs.swatch.start(custom: prefs.backdropColor)
             prefs.swatch = .custom
         }
+        prefs.lookPreview = nil
         opened = SpacePaint(prefs)
         open = true
         listen()
@@ -43,6 +44,7 @@ final class LookCard: ObservableObject {
     func close() {
         guard open else { return }
         open = false
+        browser?.prefs.lookPreview = nil
         saveNow()
         if let keys { NSEvent.removeMonitor(keys) }
         keys = nil
@@ -105,14 +107,14 @@ final class LookCard: ObservableObject {
     func turn(_ browser: Browser) { browser.lookStep += 1 }
 
     static func turns(_ prefs: Preferences) -> Bool {
-        prefs.backdrop != .site && prefs.lookShift && !prefs.backdropColors.isEmpty
+        prefs.backdrop != .site && prefs.lookShift && !(prefs.backdropColors.isEmpty && (prefs.lookDark?.colors.isEmpty ?? true))
     }
 
     /// The colors after the main one, as the window wears them: a page with
     /// a color of its own, with Take the site's color on, tints the last of
     /// them halfway, or makes a second one from the main color.
     nonisolated static func colors(_ paint: SpacePaint, dark: Bool, site: NSColor?) -> [NSColor] {
-        var colors = paint.colors.compactMap(NSColor.init(hex:)).map { dark ? $0.deepened : $0 }
+        var colors = paint.linked(dark: dark)
         guard paint.site, let site = site?.usingColorSpace(.sRGB) else { return colors }
         if let last = colors.last?.usingColorSpace(.sRGB) {
             colors[colors.count - 1] = last.blended(withFraction: 0.55, of: site) ?? last
@@ -135,6 +137,7 @@ final class LookCard: ObservableObject {
             "ownDark": BrowserWindows.shared.window(for: browser)?.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua,
             "wornNow": paint.color(dark: Links.window?.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua).hex,
             "drawings": paint.drawings, "strength": paint.drawingsStrength,
+            "dark": paint.dark?.color ?? "", "darkColors": paint.dark?.colors ?? [],
             "color": paint.color, "colors": paint.colors, "grain": paint.grain, "transparency": paint.transparency,
             "backdrop": browser.prefs.backdrop.rawValue,
             "saved": browser.space.paint.map { $0 == paint } ?? false,
@@ -172,6 +175,7 @@ final class LookCard: ObservableObject {
         if let colors = request["colors"] as? [String] { prefs.backdropColors = colors.filter { NSColor(hex: $0) != nil } }
         if let hex = request["color"] as? String, let color = NSColor(hex: hex) { prefs.backdropColor = color; prefs.swatch = .custom }
         if let swatch = (request["swatch"] as? String).flatMap(Swatch.init) { pick(swatch, prefs: prefs) }
+        if let hex = request["dark"] as? String { prefs.lookDark = NSColor(hex: hex).map { SpacePaint.Dark(color: $0) } }
         // No Color, as its dot on the Grays page picks it.
         if request["plain"] as? Bool == true { LookFields.prefs(prefs).plain?.wrappedValue = true }
         if request["step"] as? Bool == true { turn(browser) }
@@ -232,7 +236,10 @@ struct LookCardLayer: View {
         }
         // Tabs opened turn the colors (Shift with tabs).
         .onChange(of: browser.tabs.count, initial: true) { _, _ in card.counted(browser) }
-        .onChange(of: browser.spaceID) { _, _ in card.counted(browser) }
+        .onChange(of: browser.spaceID) { _, _ in
+            card.counted(browser)
+            browser.prefs.lookPreview = nil
+        }
         .background(LookModeScheme(prefs: browser.prefs, privateWindow: browser.windowPurpose == .privateOnly))
     }
 
@@ -399,7 +406,7 @@ struct LookModeScheme: View {
 
     private var scheme: ColorScheme {
         if privateWindow { return .dark }
-        switch LookMode(rawValue: prefs.lookMode) ?? .auto {
+        switch LookMode(rawValue: prefs.wornLookMode) ?? .auto {
         case .light: return .light
         case .dark: return .dark
         case .auto: return appDark ? .dark : .light
@@ -461,6 +468,32 @@ struct LookFields {
     /// No Color (Swatch.plain), the Grays page's first dot; none where a
     /// look has no window to follow light and dark.
     var plain: Binding<Bool>? = nil
+    /// The dark window's own colors, nil to deepen the light ones; none
+    /// where a look has no dark of its own to pick.
+    var dark: Binding<SpacePaint.Dark?>? = nil
+    /// The dark colors as worn now: its own, or the light ones deepened.
+    var darkWorn: () -> SpacePaint.Dark = { SpacePaint.Dark(color: .black) }
+    /// The window the look is worn on wears the tab picked; none where there is no such window.
+    var preview: Binding<LookMode?>? = nil
+
+    /// The same look with its color and linked colors the dark window's:
+    /// a change makes them its own.
+    func darkened(_ dark: Binding<SpacePaint.Dark?>) -> LookFields {
+        var fields = self
+        let worn = darkWorn
+        fields.color = Binding(get: { worn().own }, set: { color in
+            var next = worn()
+            next.color = color.hex
+            dark.wrappedValue = next
+        })
+        fields.colors = Binding(get: { worn().colors }, set: { colors in
+            var next = worn()
+            next.colors = Array(colors.filter { NSColor(hex: $0) != nil }.prefix(2))
+            dark.wrappedValue = next
+        })
+        fields.plain = nil
+        return fields
+    }
 
     /// The space on screen's, worn as it changes.
     @MainActor static func prefs(_ prefs: Preferences) -> LookFields {
@@ -479,7 +512,10 @@ struct LookFields {
                        var next = SpacePaint(prefs)
                        next.wearPlain()
                        next.wear(prefs)
-                   }))
+                   }),
+                   dark: Binding(get: { prefs.lookDark }, set: { prefs.lookDark = $0 }),
+                   darkWorn: { SpacePaint(prefs).darkWorn },
+                   preview: Binding(get: { prefs.lookPreview }, set: { prefs.lookPreview = $0 }))
     }
 
     /// A look held whole and written back whole. The editor starts from a
@@ -498,7 +534,8 @@ struct LookFields {
                    plain: Binding(get: { paint.wrappedValue.picked == .plain }, set: { on in
                        guard on else { return }
                        paint.wrappedValue.wearPlain()
-                   }))
+                   }),
+                   dark: paint.dark, darkWorn: { paint.wrappedValue.darkWorn })
     }
 }
 
@@ -519,17 +556,45 @@ struct LookControls: View {
     /// A color moved by hand.
     var picked: () -> Void = {}
     @Environment(\.colorScheme) private var scheme
+    /// The tab picked by hand; until then the one the window wears.
+    @State private var tab: LookMode?
+
+    /// Which colors the editor changes: a space held light or dark has only
+    /// those; one that goes with Appearance has a tab for each.
+    private var editsDark: Bool {
+        guard look.dark != nil else { return false }
+        switch LookMode(rawValue: look.mode?.wrappedValue ?? "") ?? .auto {
+        case .light: return false
+        case .dark: return true
+        case .auto: return (chosenTab ?? (scheme == .dark ? .dark : .light)) == .dark
+        }
+    }
+
+    private var chosenTab: LookMode? { look.preview?.wrappedValue ?? tab }
+
+    private var tabbed: Bool {
+        look.dark != nil && (LookMode(rawValue: look.mode?.wrappedValue ?? "") ?? .auto) == .auto
+    }
+
+    private var shown: LookFields {
+        guard editsDark, let dark = look.dark else { return look }
+        return look.darkened(dark)
+    }
 
     var body: some View {
+        let shown = shown
         VStack(alignment: .leading, spacing: 0) {
             Group {
                 VStack(alignment: .leading, spacing: 6) {
-                    ColorEditor(color: look.color, transparency: look.transparency, grain: look.grain,
-                                colors: look.colors, mode: look.mode, corner: corner, glass: look.glass, plain: look.plain,
-                                width: width, onPick: picked)
-                    if !look.colors.wrappedValue.isEmpty || offersSite {
+                    if tabbed { tabs }
+                    ColorEditor(color: shown.color, transparency: shown.transparency, grain: shown.grain,
+                                colors: shown.colors, mode: shown.mode, corner: corner, glass: shown.glass, plain: shown.plain,
+                                deep: editsDark, width: width, onPick: picked)
+                        .id(editsDark)
+                    let turnable = !look.colors.wrappedValue.isEmpty || !(look.dark?.wrappedValue?.colors.isEmpty ?? true)
+                    if turnable || offersSite {
                         VStack(spacing: 0) {
-                            if !look.colors.wrappedValue.isEmpty {
+                            if turnable {
                                 LookSwitchRow(title: "Shift with tabs", detail: "Each new tab moves your colors a step.", isOn: look.shift)
                                 if offersSite { Divider() }
                             }
@@ -558,6 +623,28 @@ struct LookControls: View {
         .frame(width: width, alignment: .leading)
     }
 
+    /// Light and Dark, the colors each window wears; Match Light once the
+    /// dark ones are your own.
+    private var tabs: some View {
+        HStack(spacing: 2) {
+            ForEach([LookMode.light, .dark], id: \.self) { item in
+                let on = editsDark == (item == .dark)
+                Button(item.title) {
+                    tab = item
+                    look.preview?.wrappedValue = item
+                }
+                    .buttonStyle(.yab(on ? .secondary : .quiet, .small))
+                    .accessibilityAddTraits(on ? .isSelected : [])
+            }
+            Spacer(minLength: 0)
+            if editsDark, let dark = look.dark, dark.wrappedValue != nil {
+                Button("Match Light") { dark.wrappedValue = nil }
+                    .buttonStyle(.yab(.quiet, .small))
+            }
+        }
+        .frame(width: width)
+    }
+
     private func section<Body: View>(_ title: String, value: String? = nil, first: Bool = false, @ViewBuilder body: () -> Body) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             if !first { Divider().padding(.top, 12) }
@@ -572,7 +659,8 @@ struct LookControls: View {
 
     private func drawingTile(_ set: LookDrawings.Set?) -> some View {
         let on = (set?.rawValue ?? "") == look.drawings.wrappedValue
-        let ground = Swatch.custom.color(dark: scheme == .dark, custom: look.color.wrappedValue)
+        let ground = look.dark == nil ? Swatch.custom.color(dark: scheme == .dark, custom: look.color.wrappedValue)
+            : editsDark ? look.darkWorn().own : look.color.wrappedValue
         return Button { look.drawings.wrappedValue = set?.rawValue ?? "" } label: {
             VStack(spacing: 4) {
                 RoundedRectangle(cornerRadius: Radius.control, style: .continuous)

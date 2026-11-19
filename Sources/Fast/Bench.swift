@@ -8920,7 +8920,7 @@ final class Bench {
             }
             let glassWindow = BrowserWindows.shared.window(for: browser) ?? Links.window
             let dark = (glassWindow?.effectiveAppearance ?? NSApp.effectiveAppearance).bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-            let worn = browser.prefs.swatch.color(dark: dark, custom: browser.prefs.backdropColor)
+            let worn = browser.prefs.lookColor(dark: dark)
             func glassBackdrop(in view: NSView) -> WindowBackdropView? {
                 if let found = view as? WindowBackdropView { return found }
                 return view.subviews.lazy.compactMap { glassBackdrop(in: $0) }.first

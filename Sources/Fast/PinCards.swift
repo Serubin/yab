@@ -205,7 +205,7 @@ struct PinPreview: View {
     var body: some View {
         let words = glance.query
         let items = glance.pinItems
-        let appearance = LookMode(rawValue: browser.prefs.lookMode)?.scheme ?? scheme
+        let appearance = LookMode(rawValue: browser.prefs.wornLookMode)?.scheme ?? scheme
         VStack(alignment: .leading, spacing: 0) {
             if halves {
                 VStack(spacing: 0) {

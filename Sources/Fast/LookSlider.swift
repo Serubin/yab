@@ -617,6 +617,8 @@ struct LookPicker<Footer: View>: View {
     /// No dot of its own: only the popover, over what it is laid behind
     /// (Appearance's Look row with spaces).
     var dotless = false
+    /// The window this look is worn on, to wear the Light or Dark tab picked while open.
+    var preview: Binding<LookMode?>? = nil
     @State private var open = false
     /// The look the popover opened on, for Reset.
     @State private var opened: SpacePaint? = nil
@@ -626,7 +628,7 @@ struct LookPicker<Footer: View>: View {
         // Beside it: the controls are taller than the room under a row.
         .popover(isPresented: $open, arrowEdge: .leading) {
             VStack(alignment: .leading, spacing: 0) {
-                LookControls(look: .paint($paint),
+                LookControls(look: previewing(.paint($paint)),
                              corner: AnyView(LookCorner(changed: opened.map { $0 != paint } ?? false,
                                                         reset: { if let opened { paint = opened } }, forAll: forAll)),
                              picked: onPick)
@@ -641,6 +643,14 @@ struct LookPicker<Footer: View>: View {
             // After the menu it was picked in has gone.
             DispatchQueue.main.async { if !open { toggle() } }
         }
+        .onChange(of: open) { _, on in if !on { preview?.wrappedValue = nil } }
+        .onDisappear { preview?.wrappedValue = nil }
+    }
+
+    private func previewing(_ look: LookFields) -> LookFields {
+        var look = look
+        look.preview = preview
+        return look
     }
 
     @ViewBuilder private var anchor: some View {
@@ -668,7 +678,7 @@ struct LookPicker<Footer: View>: View {
 
 extension LookPicker where Footer == EmptyView {
     init(paint: Binding<SpacePaint>, named: String, forAll: (() -> Void)? = nil, onPick: @escaping () -> Void = {},
-         asked: Binding<Bool>? = nil, dotless: Bool = false) {
-        self.init(paint: paint, named: named, forAll: forAll, onPick: onPick, footer: { EmptyView() }, asked: asked, dotless: dotless)
+         asked: Binding<Bool>? = nil, dotless: Bool = false, preview: Binding<LookMode?>? = nil) {
+        self.init(paint: paint, named: named, forAll: forAll, onPick: onPick, footer: { EmptyView() }, asked: asked, dotless: dotless, preview: preview)
     }
 }
