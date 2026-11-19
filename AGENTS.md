@@ -18,6 +18,15 @@ Pull requests go inside the fork (`--repo Serubin/yab --base canary`), never
 against upstream. The build, test, proof, design-system, command-field and
 settings rules still apply.
 
+Releases (`.github/workflows/release.yml`) build two flavors, WebKit with
+Chromium and WebKit only, each with its own feed on GitHub Pages. A release
+is versioned upstream's `VERSION` plus a fork revision, `0.47.19-r3`; the
+revision restarts at r1 when upstream bumps `VERSION`. Don't edit `VERSION`
+by hand. `sync-upstream.yml` merges upstream hourly and starts a release of
+`canary` when upstream bumped `VERSION` or `canary` has fork commits since
+the last release that touch more than Markdown, `docs/` or `.github/`. It
+also reruns a release's failed feed deploy, up to three attempts.
+
 ## Build and test
 
 - `./build.sh` builds Yab Dev, ad hoc signed, with no update feed, no

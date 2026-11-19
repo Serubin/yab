@@ -167,7 +167,10 @@ else
     || { echo "YAB_BUNDLE_ID ($BUNDLE_ID) isn't a reverse-DNS id, or ends in .dev" >&2; exit 1; }
 fi
 APP="build/$DISPLAY_NAME.app"
-VERSION="$(tr -d '[:space:]' < VERSION)"
+# YAB_VERSION replaces VERSION in the bundle and appcast, as a fork's 0.47.19-r3.
+VERSION="${YAB_VERSION:-$(tr -d '[:space:]' < VERSION)}"
+[[ "$VERSION" =~ ^[0-9]+(\.[0-9]+)*(-[A-Za-z0-9.]+)?$ ]] \
+  || { echo "version ($VERSION) isn't like 0.47.19 or 0.47.19-r3" >&2; exit 1; }
 # A build number that only ever goes up, so the updater can tell newer from
 # older without parsing version strings.
 # YAB_BUILD_NUMBER fixes it when two builds of one commit have to carry the

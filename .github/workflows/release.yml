@@ -1,16 +1,22 @@
-# Signed, notarized release of this fork: Yab with WebKit and Chromium (stock CEF),
-# or WebKit only. Each flavor has its own feed, so an install stays on its own.
+# Signed, notarized release of this fork in two flavors: Yab with WebKit and Chromium
+# (stock CEF), and WebKit only. Each flavor has its own feed, so an install stays on its own.
+#
+# Versions: upstream's VERSION plus a fork revision, 0.47.19-r3. The revision counts
+# this fork's canary releases of that upstream version and starts at r1 when it
+# changes; both flavors of one run share it. The app shows it as its version.
+# The updater compares only the 12-digit build number, which both flavors share too.
 #
 # Safety, read before changing this file:
 #
-# - Manual trigger only (`workflow_dispatch`). Nothing a pull request or a
-#   fork's code does can start it, so the signing secrets never meet code a
-#   maintainer of this fork didn't merge.
+# - Manual trigger (`workflow_dispatch`), by a person or by sync-upstream.yml on
+#   canary. Nothing a pull request or a fork's code does can start it, so the
+#   signing secrets never meet code a maintainer of this fork didn't merge.
 # - Secrets live in the `release` environment, not the repository. Restrict
 #   that environment's deployment branches to `canary`, plus any branch you
 #   mean to cut prereleases from (Settings > Environments).
-# - Only `canary` publishes the update feed (GitHub Pages) and the "latest"
-#   release. Any other ref yields a prerelease that no installed copy updates to.
+# - Only `canary` publishes the update feed (GitHub Pages), the "latest"
+#   release and takes an r number. Any other ref yields a prerelease versioned
+#   0.47.19-dev.<build> that no installed copy updates to.
 # - GitHub-hosted runners only, no cache: a signed build starts from a clean tree.
 # - Everything fetched from outside (CEF, YabCore's tools, dmgbuild by hash)
 #   is in place before the signing key is; the key is imported non-exportable.
@@ -31,10 +37,10 @@ on:
   workflow_dispatch:
     inputs:
       engines:
-        description: Page engines to bundle
+        description: "Flavors to build: all, chromium (WebKit + Chromium) or webkit (WebKit only)"
         type: choice
-        options: [both, webkit]
-        default: both
+        options: [all, chromium, webkit]
+        default: all
 
 permissions: {}
 
@@ -48,17 +54,95 @@ env:
   CEF_SHA1: 7359a9d293dd5c480bec3f18b762731b483b0e13
 
 jobs:
+  meta:
+    name: Version and flavors
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      upstream: ${{ steps.meta.outputs.upstream }}
+      version: ${{ steps.meta.outputs.version }}
+      build: ${{ steps.meta.outputs.build }}
+      publish: ${{ steps.meta.outputs.publish }}
+      site: ${{ steps.meta.outputs.site }}
+      matrix: ${{ steps.meta.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Version, build number and flavors
+        id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          ENGINES: ${{ inputs.engines }}
+        run: |
+          set -euo pipefail
+          upstream="$(tr -d '[:space:]' < VERSION)"
+          build="$(date -u +%Y%m%d%H%M)"
+          publish=false
+          [ "$GITHUB_REF" = refs/heads/canary ] && publish=true
+          if [ "$publish" = true ]; then
+            # Highest r already tagged for this upstream version, either flavor.
+            # An assignment, not a process substitution, so a failed lookup stops the run instead of yielding r1.
+            refs="$(gh api --paginate "repos/$REPO/git/matching-refs/tags/v$upstream-r" --jq '.[].ref')"
+            last=0
+            while IFS= read -r ref; do
+              n="${ref#"refs/tags/v$upstream-r"}"; n="${n%-webkit}"
+              [[ "$n" =~ ^[0-9]+$ ]] && (( 10#$n > last )) && last=$((10#$n))
+            done <<<"$refs"
+            version="$upstream-r$((last + 1))"
+          else
+            version="$upstream-dev.$build"
+          fi
+          # build.sh's rule, checked here so a bad version fails before hours of CEF and signing.
+          [[ "$version" =~ ^[0-9]+(\.[0-9]+)*(-[A-Za-z0-9.]+)?$ ]] \
+            || { echo "::error::version $version (upstream $upstream) isn't one build.sh accepts"; exit 1; }
+          owner="$(tr '[:upper:]' '[:lower:]' <<<"$OWNER")"
+          site="https://$owner.github.io/${REPO#*/}"
+          chromium='{"flavor":"chromium","feed_dir":".","suffix":""}'
+          webkit='{"flavor":"webkit","feed_dir":"webkit","suffix":"-webkit"}'
+          case "$ENGINES" in
+            all) include="[$chromium,$webkit]" ;;
+            chromium) include="[$chromium]" ;;
+            webkit) include="[$webkit]" ;;
+            *) echo "::error::unknown engines: $ENGINES"; exit 1 ;;
+          esac
+          {
+            echo "upstream=$upstream"
+            echo "version=$version"
+            echo "build=$build"
+            echo "publish=$publish"
+            echo "site=$site"
+            echo "matrix={\"include\":$include}"
+          } >> "$GITHUB_OUTPUT"
+          echo "Yab $version (upstream $upstream), build $build, flavors $ENGINES, publish: $publish" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
   build:
-    name: Build, sign, notarize, release
+    name: Build ${{ matrix.flavor }}
+    needs: meta
     # macOS 27 and Xcode 27 (a preview image): Yab's macOS 27 fixes compile only with Xcode 27.
     runs-on: xcode-27
     timeout-minutes: 300
     environment: release
     permissions:
       contents: write
-    outputs:
-      publish: ${{ steps.meta.outputs.publish }}
-      feed_dir: ${{ steps.meta.outputs.feed_dir }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.meta.outputs.matrix) }}
+    env:
+      FLAVOR: ${{ matrix.flavor }}
+      FEED_DIR: ${{ matrix.feed_dir }}
+      TAG: v${{ needs.meta.outputs.version }}${{ matrix.suffix }}
+      VERSION: ${{ needs.meta.outputs.version }}
+      UPSTREAM: ${{ needs.meta.outputs.upstream }}
+      BUILD: ${{ needs.meta.outputs.build }}
+      PUBLISH: ${{ needs.meta.outputs.publish }}
+      SITE: ${{ needs.meta.outputs.site }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -77,42 +161,18 @@ jobs:
           xcodebuild -version
           swift --version
 
-      - name: Version, build number and tag
-        id: meta
+      - name: Build settings
         env:
           REPO: ${{ github.repository }}
-          OWNER: ${{ github.repository_owner }}
-          ENGINES: ${{ inputs.engines }}
         run: |
           set -euo pipefail
-          version="$(tr -d '[:space:]' < VERSION)"
-          build="$(date -u +%Y%m%d%H%M)"
-          # Feed folders under the Pages site; Update.site is the folder, the host is the same.
-          case "$ENGINES" in
-            both) feed_dir=. other_dir=webkit suffix= ;;
-            webkit) feed_dir=webkit other_dir=. suffix=-webkit ;;
-            *) echo "::error::unknown engines: $ENGINES"; exit 1 ;;
-          esac
-          tag="v$version-$build$suffix"
-          publish=false
-          [ "$GITHUB_REF" = refs/heads/canary ] && publish=true
-          owner="$(tr '[:upper:]' '[:lower:]' <<<"$OWNER")"
-          site="https://$owner.github.io/${REPO#*/}"
           {
-            echo "version=$version"
-            echo "build=$build"
-            echo "tag=$tag"
-            echo "publish=$publish"
-            echo "site=$site"
-            echo "feed_dir=$feed_dir"
-            echo "other_dir=$other_dir"
-          } >> "$GITHUB_OUTPUT"
-          {
-            echo "YAB_BUILD_NUMBER=$build"
-            echo "YAB_DOWNLOAD_URL=$site/${feed_dir#.}"
-            echo "YAB_CHANGELOG_URL=https://github.com/$REPO/releases/tag/$tag"
+            echo "YAB_VERSION=$VERSION"
+            echo "YAB_BUILD_NUMBER=$BUILD"
+            echo "YAB_DOWNLOAD_URL=$SITE/${FEED_DIR#.}"
+            echo "YAB_CHANGELOG_URL=https://github.com/$REPO/releases/tag/$TAG"
           } >> "$GITHUB_ENV"
-          echo "Yab $version ($ENGINES), build $build, tag $tag, feed $site/${feed_dir#.}, publish: $publish"
+          echo "Yab $VERSION ($FLAVOR), build $BUILD, tag $TAG, feed $SITE/${FEED_DIR#.}"
 
       # build.sh reuses a working .build/dmgbuild rather than pip-installing unpinned.
       - name: dmgbuild, pinned by hash
@@ -129,7 +189,7 @@ jobs:
           .build/dmgbuild/bin/dmgbuild --help > /dev/null
 
       - name: Fetch CEF
-        if: inputs.engines == 'both'
+        if: matrix.flavor == 'chromium'
         run: |
           set -euo pipefail
           cef="$(bash scripts/cef/fetch.sh)"
@@ -138,7 +198,7 @@ jobs:
           echo "YAB_CEF_DIR=$cef" >> "$GITHUB_ENV"
 
       - name: Build YabCore
-        if: inputs.engines == 'both'
+        if: matrix.flavor == 'chromium'
         run: |
           set -euo pipefail
           helper_app="$(bash YabCore/build.sh | tail -1)"
@@ -197,29 +257,27 @@ jobs:
 
       - name: Build, sign and notarize Yab
         env:
-          YAB_CEF: ${{ inputs.engines == 'both' && '1' || '0' }}
+          YAB_CEF: ${{ matrix.flavor == 'chromium' && '1' || '0' }}
         run: ./build.sh release ship
 
       - name: Check what was built
-        env:
-          BUILD: ${{ steps.meta.outputs.build }}
-          ENGINES: ${{ inputs.engines }}
         run: |
           set -euo pipefail
           app="build/yab.app"
-          id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist")"
-          [ "$id" = "$YAB_BUNDLE_ID" ] || { echo "::error::bundle id is $id"; exit 1; }
-          [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Contents/Info.plist")" = "$BUILD" ]
+          plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$app/Contents/Info.plist"; }
+          [ "$(plist CFBundleIdentifier)" = "$YAB_BUNDLE_ID" ] || { echo "::error::bundle id is $(plist CFBundleIdentifier)"; exit 1; }
+          [ "$(plist CFBundleVersion)" = "$BUILD" ] || { echo "::error::build is $(plist CFBundleVersion)"; exit 1; }
+          [ "$(plist CFBundleShortVersionString)" = "$VERSION" ] \
+            || { echo "::error::version is $(plist CFBundleShortVersionString)"; exit 1; }
           cef="$app/Contents/Frameworks/Chromium Embedded Framework.framework"
-          if [ "$ENGINES" = both ]; then
+          if [ "$FLAVOR" = chromium ]; then
             test -x "$app/Contents/MacOS/YabCore"
             test -d "$cef"
           else
             [ ! -e "$app/Contents/MacOS/YabCore" ] && [ ! -e "$cef" ] \
               || { echo "::error::a WebKit-only build carries Chromium"; exit 1; }
           fi
-          feed="$(/usr/libexec/PlistBuddy -c 'Print :YabFeed' "$app/Contents/Info.plist")"
-          [ "$feed" = "${YAB_DOWNLOAD_URL%/}/appcast.json" ] || { echo "::error::YabFeed is $feed"; exit 1; }
+          [ "$(plist YabFeed)" = "${YAB_DOWNLOAD_URL%/}/appcast.json" ] || { echo "::error::YabFeed is $(plist YabFeed)"; exit 1; }
           lipo -archs "$app/Contents/MacOS/yab" | grep -qw x86_64
           codesign --verify --deep --strict "$app"
           spctl --assess --type execute -vv "$app"
@@ -230,11 +288,6 @@ jobs:
       - name: Point the appcast at this release's files
         env:
           REPO: ${{ github.repository }}
-          TAG: ${{ steps.meta.outputs.tag }}
-          SITE: ${{ steps.meta.outputs.site }}
-          FEED_DIR: ${{ steps.meta.outputs.feed_dir }}
-          OTHER_DIR: ${{ steps.meta.outputs.other_dir }}
-          PUBLISH: ${{ steps.meta.outputs.publish }}
         run: |
           set -euo pipefail
           /usr/bin/python3 -I - build/appcast.json "https://github.com/$REPO/releases/download/$TAG" <<'PY'
@@ -247,55 +300,40 @@ jobs:
           print(json.dumps(cast, indent=2))
           PY
           [ ! -d build/yab.app.dSYM ] || ditto -c -k --keepParent build/yab.app.dSYM build/yab.app.dSYM.zip
-          mkdir -p "build/feed/$FEED_DIR" "build/feed/$OTHER_DIR"
-          cp build/appcast.json "build/feed/$FEED_DIR/appcast.json"
-          # A Pages deploy replaces the whole site, so carry the other flavor's live feed over.
-          if [ "$PUBLISH" = true ]; then
-            other="$SITE/${OTHER_DIR#.}"; other="${other%/}/appcast.json"
-            code="$(curl -sS --retry 3 -H 'Cache-Control: no-cache' -o build/other-appcast.json \
-              -w '%{http_code}' "$other?run=$GITHUB_RUN_ID")"
-            case "$code" in
-              200) /usr/bin/python3 -I -c 'import json,sys; json.load(open(sys.argv[1]))' build/other-appcast.json
-                   cp build/other-appcast.json "build/feed/$OTHER_DIR/appcast.json" ;;
-              404) echo "no feed at $other yet" ;;
-              *) echo "::error::$other answered $code; not deploying a site without it"; exit 1 ;;
-            esac
-          fi
-          find build/feed -type f
 
       - name: GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          TAG: ${{ steps.meta.outputs.tag }}
-          VERSION: ${{ steps.meta.outputs.version }}
-          BUILD: ${{ steps.meta.outputs.build }}
-          PUBLISH: ${{ steps.meta.outputs.publish }}
           REF_NAME: ${{ github.ref_name }}
-          ENGINES: ${{ inputs.engines }}
         run: |
           set -euo pipefail
           channel=(--prerelease)
-          [ "$PUBLISH" = true ] && channel=(--latest)
-          [ "$PUBLISH" = true ] && [ "$ENGINES" = webkit ] && channel=(--latest=false)
-          title="Yab $VERSION ($BUILD)"
+          if [ "$PUBLISH" = true ]; then
+            channel=(--latest)
+            [ "$FLAVOR" = webkit ] && channel=(--latest=false)
+          fi
+          title="Yab $VERSION"
           engines="Chromium tabs use stock CEF."
-          if [ "$ENGINES" = webkit ]; then
-            title="Yab $VERSION ($BUILD, WebKit only)"
+          if [ "$FLAVOR" = webkit ]; then
+            title="Yab $VERSION (WebKit only)"
             engines="WebKit only."
           fi
           files=(build/yab.dmg build/yab.zip build/appcast.json)
           [ ! -f build/yab.app.dSYM.zip ] || files+=(build/yab.app.dSYM.zip)
           gh release create "$TAG" --repo "$REPO" --target "$GITHUB_SHA" "${channel[@]}" \
             --title "$title" \
-            --notes "Built from \`$REF_NAME\` at $GITHUB_SHA. Signed and notarized. $engines" \
+            --notes "Upstream Yab $UPSTREAM, build $BUILD. Built from \`$REF_NAME\` at $GITHUB_SHA. Signed and notarized. $engines" \
             "${files[@]}"
 
-      - name: Feed for GitHub Pages
-        if: steps.meta.outputs.publish == 'true'
-        uses: actions/upload-pages-artifact@v4
+      - name: Keep the appcast for the feed
+        if: needs.meta.outputs.publish == 'true'
+        uses: actions/upload-artifact@v4
         with:
-          path: build/feed
+          name: feed-${{ matrix.flavor }}
+          path: build/appcast.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Remove the signing keychain
         if: always()
@@ -304,9 +342,10 @@ jobs:
           rm -rf "$RUNNER_TEMP/yab-signing"
 
   feed:
-    name: Publish the update feed
-    needs: build
-    if: needs.build.outputs.publish == 'true'
+    name: Publish the update feeds
+    needs: [meta, build]
+    # Runs when one flavor failed too: the one that shipped still gets its feed.
+    if: ${{ !cancelled() && needs.meta.result == 'success' && needs.meta.outputs.publish == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -314,7 +353,48 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}${{ needs.build.outputs.feed_dir == 'webkit' && 'webkit/' || '' }}appcast.json
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: feed-*
+          path: built
+
+      - name: Assemble the site
+        id: site
+        env:
+          SITE: ${{ needs.meta.outputs.site }}
+        run: |
+          set -euo pipefail
+          shipped=0
+          # A Pages deploy replaces the whole site, so a flavor this run didn't ship keeps its live feed.
+          for pair in chromium:. webkit:webkit; do
+            flavor="${pair%%:*}" dir="${pair#*:}"
+            mkdir -p "feed/$dir"
+            if [ -f "built/feed-$flavor/appcast.json" ]; then
+              cp "built/feed-$flavor/appcast.json" "feed/$dir/appcast.json"
+              shipped=$((shipped + 1))
+              continue
+            fi
+            live="$SITE/${dir#.}"; live="${live%/}/appcast.json"
+            code="$(curl -sS --retry 3 -H 'Cache-Control: no-cache' -o "feed/$dir/appcast.json" \
+              -w '%{http_code}' "$live?run=$GITHUB_RUN_ID")"
+            case "$code" in
+              200) python3 -I -c 'import json,sys; json.load(open(sys.argv[1]))' "feed/$dir/appcast.json" ;;
+              404) rm -f "feed/$dir/appcast.json"; echo "no feed at $live yet" ;;
+              *) echo "::error::$live answered $code; not deploying a site without it"; exit 1 ;;
+            esac
+          done
+          echo "shipped=$shipped" >> "$GITHUB_OUTPUT"
+          find feed -type f
+          [ "$shipped" -gt 0 ] || echo "::warning::no flavor shipped; the feeds stay as they are"
+
+      - name: Feed for GitHub Pages
+        if: steps.site.outputs.shipped != '0'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: feed
+
       - id: deploy
+        if: steps.site.outputs.shipped != '0'
         uses: actions/deploy-pages@v4
