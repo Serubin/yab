@@ -152,14 +152,14 @@ trap ran EXIT
 # own name (Store.name). The executable is pane in both.
 NAME="pane"
 if [ "$STEP" = "app" ]; then
-  DISPLAY_NAME="pane Dev"
+  DISPLAY_NAME="Pane Dev"
   USER_DISPLAY_NAME="Pane Dev"
   BUNDLE_ID="net.serubin.pane.dev"
   if [ "${YAB_LAUNCH_PREVIEW:-}" = 1 ]; then
     BUNDLE_ID="net.serubin.pane.launcharrival.dev"
   fi
 else
-  DISPLAY_NAME="pane"
+  DISPLAY_NAME="Pane"
   USER_DISPLAY_NAME="Pane"
   BUNDLE_ID="net.serubin.pane"
 fi
@@ -899,7 +899,7 @@ fi
 # than yab's, so that on a Mac yab can't run on it can say why. yab.app
 # goes inside it whole, signature and staple untouched: the launcher is
 # signed around it, not through it.
-LAUNCHER="build/installer/Open pane.app"
+LAUNCHER="build/installer/Open Pane.app"
 rm -rf build/installer
 mkdir -p "$LAUNCHER/Contents/MacOS" "$LAUNCHER/Contents/Resources/Payload"
 for ARCH in arm64 x86_64; do
@@ -909,7 +909,7 @@ done
 lipo -create build/installer/open-arm64 build/installer/open-x86_64 -output "$LAUNCHER/Contents/MacOS/Open pane"
 rm -f build/installer/open-*
 strip -x "$LAUNCHER/Contents/MacOS/Open pane"
-ditto "$APP" "$LAUNCHER/Contents/Resources/Payload/$NAME.app"
+ditto "$APP" "$LAUNCHER/Contents/Resources/Payload/$DISPLAY_NAME.app"
 # The disk image's window is dark whatever the Mac's look, so Open yab and
 # the volume wear the icon on its dark square in both looks: Icon/pane.icon
 # again, its light look's square ("automatic") made the dark one's.
@@ -981,10 +981,10 @@ if [ -x "$DMGBUILD" ] \
 then
   "$DMGBUILD" -s Installer/dmg.py \
     -D launcher="$LAUNCHER" -D background="$ART/background.tiff" -D icon="$DARK/pane.icns" \
-    "$NAME" "$DMG" >/dev/null
+    "$USER_DISPLAY_NAME" "$DMG" >/dev/null
 else
   echo "note: no dmgbuild, a plain disk image, without its window laid out" >&2
-  hdiutil create -volname "$NAME" -srcfolder "$LAUNCHER" -ov -format UDZO -quiet "$DMG"
+  hdiutil create -volname "$USER_DISPLAY_NAME" -srcfolder "$LAUNCHER" -ov -format UDZO -quiet "$DMG"
 fi
 rm -rf build/installer
 if [ -n "$IDENTITY" ]; then

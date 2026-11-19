@@ -115,12 +115,12 @@ struct WelcomePickTests {
         let saved = (stage.pretend, stage.agent)
         defer { (stage.pretend, stage.agent) = saved }
         let states: [(WelcomePretend.Connect, String, Bool, Bool)] = [
-            (.notInstalled, "Yab sets it up, then you sign in", false, false),
+            (.notInstalled, "\(Brand.name) sets it up, then you sign in", false, false),
             (.signedOut, "Signed out", false, false), (.signedIn, "Signed in", false, false),
             (.installing, "Setting up", true, false), (.codexTerminal, "Paste in Terminal", true, false),
             (.signingIn, "Signing in", true, false),
             (.just, "Connected", false, true), (.connected, "Connected", false, true),
-            (.failInstall, "Yab sets it up, then you sign in", false, false),
+            (.failInstall, "\(Brand.name) sets it up, then you sign in", false, false),
             (.failSignIn, "Signed out", false, false), (.failTools, "Signed in", false, false),
         ]
         for cli in WelcomeConnect.order {

@@ -72,7 +72,7 @@ step() {
 if want build; then
   step swift-build swift build
   step build-app ./build.sh
-  step codesign codesign -dv "build/pane Dev.app"
+  step codesign codesign -dv "build/Pane Dev.app"
 fi
 if want lint; then
   step parse-check scripts/swift-parse-check --base HEAD

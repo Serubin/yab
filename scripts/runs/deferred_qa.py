@@ -1260,7 +1260,7 @@ def fetch_nightly(version, out, site=None, opener=None):
     zipped = folder / 'pane.zip'
     zipped.write_bytes(archive)
     subprocess.run(['ditto', '-x', '-k', str(zipped), str(folder)], check=True)
-    return folder / 'pane.app'
+    return folder / 'Pane.app'
 
 
 def unit_run(root, commit, store, output):

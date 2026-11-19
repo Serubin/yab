@@ -36,5 +36,5 @@ if [ "${1:-}" != "again" ]; then
   echo "world \"$WORLD\" wiped"
 fi
 
-[ -d "build/pane.app" ] || ./build.sh release
-open -n --env YAB_PROBE="$WORLD" "build/pane.app"
+[ -d "build/Pane.app" ] || ./build.sh release
+open -n --env YAB_PROBE="$WORLD" "build/Pane.app"

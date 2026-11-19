@@ -20,7 +20,7 @@ struct WelcomeAgentTests {
     }
 
     @Test func anUnknownBrowserOrYabKeepsThePreference() {
-        let bundles: [String?] = [nil, "", "unknown", "dev.serafim.fast", "dev.serafim.fast.dev"]
+        let bundles: [String?] = [nil, "", "unknown", "net.serubin.pane", "net.serubin.pane.dev", "dev.serafim.fast", "dev.serafim.fast.dev"]
         for saved in [false, true] {
             for bundle in bundles {
                 var look = WelcomeHeldLook(sidebar: saved)

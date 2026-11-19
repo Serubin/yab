@@ -28,11 +28,11 @@ enum DefaultBrowserImport {
         return Bundle(url: app)?.bundleIdentifier
     }
 
-    /// nil leaves a person's existing preference alone, including Yab itself.
+    /// nil leaves a person's existing preference alone, including for Pane and upstream Yab.
     static func sidebar(for bundle: String?) -> Bool? {
         guard let bundle, !bundle.isEmpty, bundle != "unknown",
               bundle != Bundle.main.bundleIdentifier,
-              !Store.bundleFamily(bundle) else { return nil }
+              !Store.bundleFamily(bundle), !bundle.hasPrefix("dev.serafim.fast") else { return nil }
         return bundle == TabImport.arc || bundle == TabImport.dia
     }
 }

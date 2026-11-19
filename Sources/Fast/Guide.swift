@@ -165,7 +165,7 @@ enum Guide {
     With \(Brand.name) in /Applications, run this once, then open a new terminal:
 
     ```bash
-    /Applications/pane.app/Contents/MacOS/pane setup
+    /Applications/Pane.app/Contents/MacOS/pane setup
     ```
 
     This adds the command to PATH and installs the browser skill and MCP connection for Claude Code
@@ -414,7 +414,7 @@ enum Guide {
     Install \(Brand.name) in /Applications, then run:
 
     ```bash
-    /Applications/pane.app/Contents/MacOS/pane setup
+    /Applications/Pane.app/Contents/MacOS/pane setup
     ```
 
     Open a new terminal so PATH includes ~/.local/bin. This installs the command plus a browser

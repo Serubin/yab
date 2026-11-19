@@ -13,7 +13,7 @@ import Security
 
 final class Install: @unchecked Sendable {
     static let bundleID = "net.serubin.pane"
-    static let name = "pane.app"
+    static let name = "Pane.app"
 
     enum Failure: LocalizedError {
         case invalidPayload, occupied, notWritable, canceled, busy

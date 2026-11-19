@@ -68,7 +68,7 @@ public enum Relaunch {
     /// nothing LaunchServices counts as that application is left running.
     ///
     /// The app is not the only one: YabCore makes itself a UI element of the
-    /// same bundle (LSBundlePath pane.app, net.serubin.pane), and it winds down
+    /// same bundle (LSBundlePath Pane.app, net.serubin.pane), and it winds down
     /// after the app has gone, the longer the more tabs and extensions it had.
     /// An open of the bundle in that time finds "Yab" running in that
     /// YabCore on its way out and launches nothing: Yab closed and never

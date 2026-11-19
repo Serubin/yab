@@ -79,7 +79,7 @@ enum AppIconStyle: String, CaseIterable, Identifiable {
         if Bundle.main.bundleIdentifier != nil { return Bundle.main.resourceURL }
         let repo = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        return repo.appendingPathComponent("build/pane Dev.app/Contents/Resources")
+        return repo.appendingPathComponent("build/Pane Dev.app/Contents/Resources")
     }
 
     /// Whether this one can be worn: friends' icons only once unlocked.
@@ -159,7 +159,7 @@ enum AppIconStyle: String, CaseIterable, Identifiable {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-        let resources = repo.appendingPathComponent("build/pane Dev.app/Contents/Resources")
+        let resources = repo.appendingPathComponent("build/Pane Dev.app/Contents/Resources")
         return NSImage(contentsOf: resources.appendingPathComponent(relativePath))
     }
 

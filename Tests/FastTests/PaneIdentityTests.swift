@@ -42,7 +42,7 @@ struct PaneIdentityTests {
             #expect(!arguments.contains { $0.hasPrefix("yab") || $0.hasPrefix("fast") }, "\(arguments)")
         }
         #expect(!AgentSetup.ours("/Applications/yab.app/Contents/MacOS/yab"))
-        #expect(AgentSetup.ours("/Applications/pane.app/Contents/MacOS/pane"))
+        #expect(AgentSetup.ours("/Applications/Pane.app/Contents/MacOS/pane"))
     }
 
     @Test func upstreamsPathLineStays() {

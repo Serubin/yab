@@ -171,7 +171,7 @@ struct MailConsentTests {
         // Any call, a change too, asks to read first, saying who reads it under whose terms.
         #expect(w.call("agent-mail-act", ["act": "archive", "thread": "me@example.com|t1"]).handled)
         #expect(w.session.permit?.kind == .mailRead)
-        #expect(w.session.permit?.detail.contains("Anthropic’s terms. Yab keeps no copy.") == true)
+        #expect(w.session.permit?.detail.contains("Anthropic’s terms. Pane keeps no copy.") == true)
         Agents.shared.answer(chat: w.session.id, yes: true)
         // A yes for this chat, not the switch: only the person turns that on.
         #expect(!MailCenter.agentsAllowed)
