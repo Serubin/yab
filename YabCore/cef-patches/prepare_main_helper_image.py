@@ -101,7 +101,7 @@ def prepare(args):
     plan=expected_parent(args.parent_plan,args.policy_header)
     original=args.helper.resolve();target=args.output.resolve();receipt=args.receipt.resolve();sidecar=receipt.with_name(receipt.name+'.compiled.swift')
     if target.exists() or receipt.exists() or sidecar.exists() or args.helper.is_symlink():raise ValueError('Fresh independent helper/receipt only; original ad-hoc app stays immutable')
-    if target.name!='YabCore' or original==target:raise ValueError('Fixed native filename, independent output required')
+    if target.name!='PaneCore' or original==target:raise ValueError('Fixed native filename, independent output required')
     entitlements=source_root/'scripts/cef/helper-entitlements.plist';ent_sha=sha(entitlements);expected_ent=plistlib.loads(entitlements.read_bytes())
     old=image(original);target.parent.mkdir(parents=True,exist_ok=True)
     POLICY.fresh_write(target,original.read_bytes());os.chmod(target,stat.S_IMODE(original.stat().st_mode))
@@ -152,7 +152,7 @@ def verify(args):
             if old[key]!=row['original'][key]:raise ValueError('Original experimental ad-hoc API test artifact changed')
     if args.embedded:
         target=args.embedded
-        if target.name!='YabCore' or target.parent.name!='MacOS' or target.parent.parent.name!='Contents' or target.parent.parent.parent.suffix!='.app': raise ValueError('Exact nested parent helper path required')
+        if target.name!='PaneCore' or target.parent.name!='MacOS' or target.parent.parent.name!='Contents' or target.parent.parent.parent.suffix!='.app': raise ValueError('Exact nested parent helper path required')
         final=image(args.embedded,plan.leaf_sha1)
         for key in ('sha256','identifier','codeDirectory','uuids','leafSHA256','team','entitlements'):
             if final[key]!=row['signed'][key]:raise ValueError('Actual embedded/final signed helper changed: '+key)

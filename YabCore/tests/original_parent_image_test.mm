@@ -15,11 +15,11 @@ int main() {
     if (OriginalParentImagePolicy::Current() || Ready()) return 1;
     if (InspectOriginalParentImage({},nullptr,nullptr)) return 2;
     if (!ParentFixedTopology("/owned/a.app","/owned/a.app/Contents/MacOS/Yab",
-            "/owned/a.app/Contents/MacOS/YabCore",@"Yab")) return 3;
+            "/owned/a.app/Contents/MacOS/PaneCore",@"Yab")) return 3;
     if (ParentFixedTopology("/owned/a.app","/owned/a.app/Contents/MacOS/Yab",
-            "/owned/a.app-other/Contents/MacOS/YabCore",@"Yab")) return 4;
+            "/owned/a.app-other/Contents/MacOS/PaneCore",@"Yab")) return 4;
     if (ParentFixedTopology("/owned/a.app","/owned/a.app/Contents/MacOS/../Yab",
-            "/owned/a.app/Contents/MacOS/YabCore",@"../Yab")) return 5;
+            "/owned/a.app/Contents/MacOS/PaneCore",@"../Yab")) return 5;
     char path[]="/private/tmp/yab-parent-image-XXXXXX";
     if (!mkdtemp(path)) return 6;
     NSString* root=@(path);

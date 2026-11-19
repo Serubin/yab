@@ -45,12 +45,12 @@ int main() {
   // The browser host now owns an app inside the UI app. Its clone directory
   // and owner matching must use that nearest app, not the UI app's identity.
   NSString* outer = [@(base) stringByAppendingPathComponent:@"Yab.app/Contents"];
-  NSString* inner = [outer stringByAppendingPathComponent:@"Frameworks/YabCore.app/Contents"];
+  NSString* inner = [outer stringByAppendingPathComponent:@"Frameworks/PaneCore.app/Contents"];
   [NSFileManager.defaultManager createDirectoryAtPath:inner withIntermediateDirectories:YES attributes:nil error:nil];
   [@{@"CFBundleIdentifier": @"dev.serafim.fast"} writeToFile:[outer stringByAppendingPathComponent:@"Info.plist"] atomically:YES];
   [@{@"CFBundleIdentifier": @"dev.serafim.fast.core"} writeToFile:[inner stringByAppendingPathComponent:@"Info.plist"] atomically:YES];
-  CHECK(ContainingBundleID(std::string(outer.UTF8String) + "/MacOS/YabCore") == "dev.serafim.fast");
-  CHECK(ContainingBundleID(std::string(inner.UTF8String) + "/MacOS/YabCore") == "dev.serafim.fast.core");
+  CHECK(ContainingBundleID(std::string(outer.UTF8String) + "/MacOS/PaneCore") == "dev.serafim.fast");
+  CHECK(ContainingBundleID(std::string(inner.UTF8String) + "/MacOS/PaneCore") == "dev.serafim.fast.core");
   const time_t now = ::time(nullptr);
   std::string old = Make(folder, "code_sign_clone.OLDOLD", now - 3600);
   std::string recent = Make(folder, "code_sign_clone.NEWNEW", now - 5);
@@ -66,7 +66,7 @@ int main() {
 
   // Two YabCores: one started 100 s ago (its path a hard link: says
   // nothing), one an hour and a half ago run from inside HELDHD's copy.
-  std::vector<Owner> owners = {{"", now - 100}, {held + "/Yab.app.bundle/Contents/MacOS/YabCore", now - 90}};
+  std::vector<Owner> owners = {{"", now - 100}, {held + "/Yab.app.bundle/Contents/MacOS/PaneCore", now - 90}};
   CHECK(Stale(old, now - 3600, owners, 30));
   CHECK(!Stale(held, now - 3600, owners, 30));
   CHECK(!Stale(recent, now - 5, owners, 30));

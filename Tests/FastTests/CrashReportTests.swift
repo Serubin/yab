@@ -21,7 +21,7 @@ final class CrashReportTests: XCTestCase {
     }
 
     func testUnversionedHelperNeverInheritsUploadingAppsBuild() {
-        let helper = #"{"app_name":"YabCore","app_version":"","build_version":"","slice_uuid":"8234e9fd-bf9a-38c0-a3be-446ada8ac4f9"}"# + "\n{}"
+        let helper = #"{"app_name":"PaneCore","app_version":"","build_version":"","slice_uuid":"8234e9fd-bf9a-38c0-a3be-446ada8ac4f9"}"# + "\n{}"
         let unknown = Crashes.uploadIdentity(helper)
         XCTAssertEqual(unknown.version, "unknown")
         XCTAssertEqual(unknown.build, "0")
@@ -76,10 +76,10 @@ final class CrashReportTests: XCTestCase {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
         let fixtures: [(String, String, TimeInterval)] = [
-            ("YabCore-1.ips", #"{"app_name":"YabCore","app_version":"","bug_type":"309"}"#, 120),
-            ("YabCore Helper (Renderer)-1.ips", #"{"bundleID":"net.serubin.pane.helper.renderer","bug_type":"309"}"#, 130),
-            ("YabCore Helper (GPU)-1.ips", #"{"bundleID":"net.serubin.pane.helper.gpu","bug_type":"288"}"#, 140),
-            ("YabCore Helper-2.ips", #"{"bundleID":"net.serubin.pane.helperish.other","bug_type":"288"}"#, 150),
+            ("YabCore-1.ips", #"{"app_name":"PaneCore","app_version":"","bug_type":"309"}"#, 120),
+            ("PaneCore Helper (Renderer)-1.ips", #"{"bundleID":"net.serubin.pane.helper.renderer","bug_type":"309"}"#, 130),
+            ("PaneCore Helper (GPU)-1.ips", #"{"bundleID":"net.serubin.pane.helper.gpu","bug_type":"288"}"#, 140),
+            ("PaneCore Helper-2.ips", #"{"bundleID":"net.serubin.pane.helperish.other","bug_type":"288"}"#, 150),
         ]
         for (name, header, seconds) in fixtures {
             let file = folder.appendingPathComponent(name)
@@ -87,7 +87,7 @@ final class CrashReportTests: XCTestCase {
             try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSince1970: seconds)], ofItemAtPath: file.path)
         }
         let found = Crashes.reports(after: Date(timeIntervalSince1970: 100), bundle: bundle, folder: folder)
-        XCTAssertEqual(found.map { $0.0.lastPathComponent }, ["YabCore-1.ips", "YabCore Helper (Renderer)-1.ips"])
+        XCTAssertEqual(found.map { $0.0.lastPathComponent }, ["YabCore-1.ips", "PaneCore Helper (Renderer)-1.ips"])
     }
 
     func testDiscoveryLooksInRetiredToo() throws {

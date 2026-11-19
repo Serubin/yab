@@ -608,12 +608,12 @@ enum Crashes {
         // The Chromium helper's processes are Yab too. Its browser process
         // lies in the app's Contents/MacOS, and macOS names no bundle for it.
         guard let reported = info["bundleID"] as? String else {
-            return (info["app_name"] as? String)?.hasPrefix("YabCore") == true
+            return (info["app_name"] as? String)?.hasPrefix("PaneCore") == true
         }
         return reported == bundle || reported.hasPrefix(bundle + ".helper")
     }
 
-    /// yab's own crash reports, its helper's too (YabCore, YabCore Helper),
+    /// yab's own crash reports, its helper's too (YabCore, PaneCore Helper),
     /// written after `date`, oldest first, in the
     /// folder and in its Retired, where macOS moves the ones it has handled.
     /// Saved reports can predate an update; finding one says nothing about

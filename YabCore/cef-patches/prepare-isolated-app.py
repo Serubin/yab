@@ -142,7 +142,7 @@ def prepare(args):
     info=plistlib.loads((source/'Contents/Info.plist').read_bytes())
     rewritten=task_info(info,args.task,bid)
     executable=info['CFBundleExecutable']; main=source/'Contents/MacOS'/executable
-    if not main.is_file() or main.is_symlink() or not (source/'Contents/MacOS/YabCore').is_file(): raise ValueError('Missing ordinary executable/native helper')
+    if not main.is_file() or main.is_symlink() or not (source/'Contents/MacOS/PaneCore').is_file(): raise ValueError('Missing ordinary executable/native helper')
     run(['codesign','--verify','--deep','--strict',source])
     outer=description(source); input_ent,raw_ent=entitlements(source)
     if plan.requirement is not None:

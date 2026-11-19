@@ -137,7 +137,7 @@ def main():
     parser.add_argument("--bin")
     parser.add_argument("--out", default=os.environ.get("YAB_FARM_OUT", "work/agent-needs-user"))
     args = parser.parse_args()
-    binary = args.bin or next(p for p in sorted(glob.glob("build/*.app/Contents/MacOS/*")) if not p.endswith("YabUpdater"))
+    binary = args.bin or next(p for p in sorted(glob.glob("build/*.app/Contents/MacOS/*")) if not p.endswith("PaneUpdater"))
     results = []
     with tempfile.TemporaryDirectory(prefix="yab-needs-") as scratch:
         path = str(Path(scratch) / "bench.sock")

@@ -130,7 +130,7 @@ enum CrashExitLogs {
     static func evidence(at: Date, process: String, pid: Int32, message: String,
                          run: CrashSessionLedger.Run) -> Evidence? {
         let system = ["kernel", "launchd", "runningboardd", "watchdogd", "ReportCrash", "memorypressure"]
-        let own = run.processIDs.contains(pid) && (process.lowercased() == OwnProcess.name || process.hasPrefix("YabCore"))
+        let own = run.processIDs.contains(pid) && (process.lowercased() == OwnProcess.name || process.hasPrefix("PaneCore"))
         let lower = message.lowercased()
         let namedPID = run.processIDs.first { value in
             message.range(of: "(?i)(?:\\b(?:pid|process(?: id)?)\\s*[:=/ ]\\s*\(value)\\b|\\[\(value)\\]|:\(value)\\])", options: .regularExpression) != nil
@@ -163,7 +163,7 @@ enum CrashExitLogs {
         let namespace = capture(in: lower, pattern: #"\bnamespace\s*[:= ]\s*(signal|jetsam|runningboard|watchdog|resource|dyld|codesigning)\b"#)?.uppercased()
         let codeText = termination ? capture(in: lower, pattern: #"\bcode\s*[:= ]\s*(0x[0-9a-f]+|[0-9]+)\b"#) : nil
         let code = codeText.flatMap { $0.hasPrefix("0x") ? UInt64($0.dropFirst(2), radix: 16) : UInt64($0) }
-        return Evidence(at: at, source: own ? (process.lowercased() == OwnProcess.name ? OwnProcess.name : "YabCore") : process,
+        return Evidence(at: at, source: own ? (process.lowercased() == OwnProcess.name ? OwnProcess.name : "PaneCore") : process,
                         kind: kind, signal: signal, status: status, correlatedPID: namedPID ?? (own ? pid : nil),
                         reason: reason, namespace: namespace, code: code,
                         domain: termination ? number(in: lower, pattern: #"\bdomain\s*[:= ]\s*(\d+)\b"#) : nil)

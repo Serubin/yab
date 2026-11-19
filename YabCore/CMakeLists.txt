@@ -10,8 +10,8 @@ find_package(CEF REQUIRED)
 add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 SET_CEF_TARGET_OUT_DIR()
 set(VERSION_SHORT "0.1.0")
-set(EXECUTABLE_NAME "YabCore")
-set(PRODUCT_NAME "YabCore")
+set(EXECUTABLE_NAME "PaneCore")
+set(PRODUCT_NAME "PaneCore")
 set(BUNDLE_ID_SUFFIX "")
 configure_file(src/Info.plist.in "${CMAKE_CURRENT_BINARY_DIR}/main-Info.plist" @ONLY)
 add_executable(YabCore MACOSX_BUNDLE src/main.mm src/core.mm src/transport.mm src/original_caller.mm src/site_notice_center.mm)
@@ -30,8 +30,8 @@ if(YABCORE_PARENT_POLICY_HEADER)
 endif()
 
 target_link_libraries(YabCore libcef_dll_wrapper ${CEF_STANDARD_LIBS} "-framework Cocoa" "-framework QuartzCore" "-framework Security" "-framework ApplicationServices" -lbsm)
-set_target_properties(YabCore PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/main-Info.plist")
-set(CEF_APP "${CEF_TARGET_OUT_DIR}/YabCore.app")
+set_target_properties(YabCore PROPERTIES OUTPUT_NAME "PaneCore" MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/main-Info.plist")
+set(CEF_APP "${CEF_TARGET_OUT_DIR}/PaneCore.app")
 # Unlike the sample's ln -sf, -sfn never follows an existing directory link
 # on an incremental relink, which would create Resources/Resources and A/A.
 set(CORE_FRAMEWORK "${CEF_APP}/Contents/Frameworks/Chromium Embedded Framework.framework")
@@ -48,7 +48,7 @@ foreach(suffix ${CEF_HELPER_APP_SUFFIXES})
   list(GET parts 1 target)
   list(GET parts 2 BUNDLE_ID_SUFFIX)
   set(BUNDLE_ID_SUFFIX ".helper${BUNDLE_ID_SUFFIX}")
-  set(EXECUTABLE_NAME "YabCore Helper${name}")
+  set(EXECUTABLE_NAME "PaneCore Helper${name}")
   set(PRODUCT_NAME "${EXECUTABLE_NAME}")
   configure_file(src/Info.plist.in "${CMAKE_CURRENT_BINARY_DIR}/helper${target}.plist" @ONLY)
   # Chrome's helpers link libSystem and libsandbox and export nothing; so do
@@ -82,7 +82,7 @@ foreach(suffix ${CEF_HELPER_APP_SUFFIXES})
 endforeach()
 # YabCore's post-build copies run only when YabCore itself links. A change to
 # the helpers alone (media_renderer.h) rebuilt them in Release and left
-# YabCore.app, and so Yab, with the old ones. The helpers are copied in on
+# PaneCore.app, and so Yab, with the old ones. The helpers are copied in on
 # every build: a few megabytes, and never a stale helper. (A link dependency
 # on them can't be named: make reads "Helper (GPU)" as an archive member.)
 add_custom_target(YabCore_HelperCopies ${HELPER_COPIES} VERBATIM)

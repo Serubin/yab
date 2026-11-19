@@ -52,13 +52,13 @@ from pathlib import Path
 import plistlib, shutil, sys
 app, binary = map(Path, sys.argv[1:])
 parent = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
-if binary.name == 'YabCore':
-    target = app / 'Contents/MacOS/YabCore'
+if binary.name == 'PaneCore':
+    target = app / 'Contents/MacOS/PaneCore'
     if target.is_symlink():
         target.unlink()
     shutil.copy2(binary, target)
 for suffix, identifier in [('', ''), (' (GPU)', '.gpu'), (' (Renderer)', '.renderer'), (' (Plugin)', '.plugin'), (' (Alerts)', '.alerts')]:
-    name = 'YabCore Helper' + suffix
+    name = 'PaneCore Helper' + suffix
     bundle = app / 'Contents/Frameworks' / (name + '.app')
     if bundle.is_symlink():
         bundle.unlink()
@@ -69,7 +69,7 @@ for suffix, identifier in [('', ''), (' (GPU)', '.gpu'), (' (Renderer)', '.rende
     # A real YabCore has a distinct CEF subprocess entry point. Never copy
     # its browser main into renderer/GPU bundles.
     source = binary.parent.parent / 'Frameworks' / (name + '.app') / 'Contents/MacOS' / name
-    if binary.name == 'YabCore' and not source.is_file():
+    if binary.name == 'PaneCore' and not source.is_file():
         sys.exit('CEF: real YabCore is missing its subprocess executable: ' + str(source))
     shutil.copy2(source if source.is_file() else binary, macos / name)
     info = dict(CFBundleName=name, CFBundleDisplayName=name, CFBundleExecutable=name,
@@ -110,23 +110,23 @@ codesign "${SIGN[@]}" "$FRAMEWORK"
 for SUFFIX in '' ' (GPU)' ' (Renderer)' ' (Plugin)' ' (Alerts)'; do
   ENT="$HERE/helper-entitlements.plist"
   case "$SUFFIX" in ' (GPU)'|' (Renderer)') ENT="$HERE/helper-jit-entitlements.plist" ;; esac
-  codesign "${SIGN[@]}" --entitlements "$ENT" "$FRAMEWORKS/YabCore Helper$SUFFIX.app"
+  codesign "${SIGN[@]}" --entitlements "$ENT" "$FRAMEWORKS/PaneCore Helper$SUFFIX.app"
 done
 # The normal assembly also contains a Dock tile plug-in. Its signature must
 # be made explicitly now that the parent is no longer signed with --deep.
 if [ -d "$APP/Contents/PlugIns/YabDockTile.docktileplugin" ]; then
   codesign "${SIGN[@]}" "$APP/Contents/PlugIns/YabDockTile.docktileplugin"
 fi
-if [ -f "$APP/Contents/MacOS/YabCore" ]; then
+if [ -f "$APP/Contents/MacOS/PaneCore" ]; then
   # Preserve the old code identifier for existing keychain access requirements
   # while changing its LaunchServices identity through the nested plist.
-  codesign "${SIGN[@]}" --entitlements "$HERE/helper-entitlements.plist" "$APP/Contents/MacOS/YabCore"
-  CORE_IDENTIFIER="$(codesign -dvv "$APP/Contents/MacOS/YabCore" 2>&1 | sed -n 's/^Identifier=//p')"
+  codesign "${SIGN[@]}" --entitlements "$HERE/helper-entitlements.plist" "$APP/Contents/MacOS/PaneCore"
+  CORE_IDENTIFIER="$(codesign -dvv "$APP/Contents/MacOS/PaneCore" 2>&1 | sed -n 's/^Identifier=//p')"
   [ -n "$CORE_IDENTIFIER" ] || { echo 'CEF: missing helper code identifier' >&2; exit 1; }
   python3 "$HERE/package_core.py" "$APP"
-  codesign "${SIGN[@]}" --identifier "$CORE_IDENTIFIER" --entitlements "$HERE/helper-entitlements.plist" "$FRAMEWORKS/YabCore.app"
+  codesign "${SIGN[@]}" --identifier "$CORE_IDENTIFIER" --entitlements "$HERE/helper-entitlements.plist" "$FRAMEWORKS/PaneCore.app"
 fi
-UPDATER="$APP/Contents/MacOS/YabUpdater"
+UPDATER="$APP/Contents/MacOS/PaneUpdater"
 if [ -f "$UPDATER" ]; then
   BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Contents/Info.plist")"
   codesign "${SIGN[@]}" --identifier "$BUNDLE_ID.updater" "$UPDATER"

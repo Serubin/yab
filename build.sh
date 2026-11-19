@@ -264,15 +264,15 @@ place Fast "$APP/Contents/MacOS/$NAME"
 # background process. The app enrolls it with SMAppService (Updater.Agent);
 # the plist's name is fixed, its label carries the bundle id, so yab and
 # yab Dev each have their own.
-place YabUpdater "$APP/Contents/MacOS/YabUpdater"
+place YabUpdater "$APP/Contents/MacOS/PaneUpdater"
 mkdir -p "$APP/Contents/Library/LaunchAgents"
-cat > "$APP/Contents/Library/LaunchAgents/YabUpdater.plist" <<PLIST
+cat > "$APP/Contents/Library/LaunchAgents/PaneUpdater.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
   <key>Label</key><string>$BUNDLE_ID.updater</string>
-  <key>BundleProgram</key><string>Contents/MacOS/YabUpdater</string>
+  <key>BundleProgram</key><string>Contents/MacOS/PaneUpdater</string>
   <key>AssociatedBundleIdentifiers</key><array><string>$BUNDLE_ID</string></array>
   <key>LimitLoadToSessionType</key><string>Aqua</string>
   <key>RunAtLoad</key><true/>
@@ -294,7 +294,7 @@ if [ "$CONFIG" = "release" ]; then
   rm -rf "$APP.dSYM"
   dsymutil "$APP/Contents/MacOS/$NAME" -o "$APP.dSYM" 2>/dev/null || echo "no dSYM this time" >&2
   strip -x "$APP/Contents/MacOS/$NAME"
-  strip -x "$APP/Contents/MacOS/YabUpdater"
+  strip -x "$APP/Contents/MacOS/PaneUpdater"
 fi
 
 # Cache compiled icons by their source bytes, packaging code and Xcode/SDK.
@@ -811,7 +811,7 @@ fi
 # one from the profile on a helper without one is a process macOS kills.
 # Then the app once more, without --deep, so its seal covers the helper as
 # it is now.
-UPDATER="$APP/Contents/MacOS/YabUpdater"
+UPDATER="$APP/Contents/MacOS/PaneUpdater"
 if [ "${YAB_CEF:-0}" = 1 ]; then
   case "$ARCH_KEY" in arm64|universal) ;; *) echo 'YAB_CEF=1 requires an arm64 slice' >&2; exit 1 ;; esac
   CEF_DIR="${YAB_CEF_DIR:-$(bash scripts/cef/fetch.sh)}"
@@ -825,7 +825,7 @@ if [ "${YAB_CEF:-0}" = 1 ]; then
   fi
   if [ "$STEP" != app ]; then
     case "$IDENTITY" in ''|-) echo 'CEF: production assembly requires Developer ID signing' >&2; exit 1 ;; esac
-    [ "$(basename "$CEF_HELPER")" = YabCore ] || { echo 'CEF: production helper must be YabCore, not a packaging stub' >&2; exit 1; }
+    [ "$(basename "$CEF_HELPER")" = PaneCore ] || { echo 'CEF: production helper must be PaneCore, not a packaging stub' >&2; exit 1; }
   fi
   YAB_SIGN_KEYCHAIN="${YAB_SIGN_KEYCHAIN:-}" bash scripts/cef/embed.sh \
     "$APP" "$CEF_DIR" "$CEF_HELPER" "${IDENTITY:--}" "$ENTITLEMENTS"

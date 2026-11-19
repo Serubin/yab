@@ -80,7 +80,7 @@ inline bool Stale(const std::string& copy, time_t born, const std::vector<Owner>
   return true;
 }
 
-// The executable's containing app identity, including a nested YabCore.app.
+// The executable's containing app identity, including a nested PaneCore.app.
 inline std::string ContainingBundleID(const std::string& executable) {
   size_t end = std::string::npos;
   for (const char* mark : {".app/", ".app.bundle/"}) {
@@ -107,7 +107,7 @@ inline bool Owners(const std::string& bundleID, const std::string& folder, pid_t
     char path[PROC_PIDPATHINFO_MAXSIZE];
     if (pids[i] <= 0 || proc_pidpath(pids[i], path, sizeof(path)) <= 0) continue;
     std::string executable(path);
-    static const std::string core[] = {".app/Contents/MacOS/YabCore", ".app.bundle/Contents/MacOS/YabCore"};
+    static const std::string core[] = {".app/Contents/MacOS/PaneCore", ".app.bundle/Contents/MacOS/PaneCore"};
     if (!executable.ends_with(core[0]) && !executable.ends_with(core[1])) continue;
     if (executable.rfind(folder + "/", 0) != 0 && ContainingBundleID(executable) != bundleID) continue;
     struct proc_bsdinfo info;

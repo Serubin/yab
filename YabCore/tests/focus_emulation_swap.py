@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A focused page swapped out of its renderer while YabCore emulates focus.
 
-Crash report 1153 (0.46.13, YabCore Helper (Renderer)): null dereference at
+Crash report 1153 (0.46.13, PaneCore Helper (Renderer)): null dereference at
 0x5c0 in blink::FrameSelection::FocusedOrActiveStateChanged <-
 FocusController::FocusHasChanged <- InspectorEmulationAgent::disable <-
 DevToolsSession::Detach <- WebDevToolsAgentImpl::WillBeDestroyed <-
@@ -161,7 +161,7 @@ def main():
         server.server_close()
         time.sleep(3)
         reports = []
-        for path in (Path.home() / 'Library/Logs/DiagnosticReports').glob('YabCore Helper (Renderer)*.ips'):
+        for path in (Path.home() / 'Library/Logs/DiagnosticReports').glob('PaneCore Helper (Renderer)*.ips'):
             if path.stat().st_mtime < started:
                 continue
             text = path.read_text(errors='replace')

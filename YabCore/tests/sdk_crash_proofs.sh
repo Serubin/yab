@@ -32,7 +32,7 @@ core() { # tree label sdk-key -> YabCore helper of that tree built on that SDK
     > "$ROOT/core-$label.log" 2>&1 || { tail -30 "$ROOT/core-$label.log" >&2; return 1; }
   local app; app="$(cat "$ROOT/core-$label/app-path.txt")"
   dwarfdump --uuid "$app/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework" | head -1 >&2
-  echo "$app/Contents/MacOS/YabCore"
+  echo "$app/Contents/MacOS/PaneCore"
 }
 
 OLD="$(core "$PWD" old "$OLD_SDK")" || exit 1
@@ -77,8 +77,8 @@ for proof in "${proofs[@]}"; do
     menu)
       lockf -k -s "${YAB_BUILD_LOCK:-/tmp/yab-build.lock}" clang++ -std=c++20 -fobjc-arc -framework Cocoa -framework QuartzCore \
         YabCore/tests/external_action_host.mm -o "$ROOT/external-action-host" || { status=1; continue; }
-      side menu-before crash python3 -u YabCore/cef-patches/popup-context-menu-probe.py --app "${OLD%/Contents/MacOS/YabCore}" --host "$ROOT/external-action-host" || status=1
-      side menu-after clean python3 -u YabCore/cef-patches/popup-context-menu-probe.py --app "${NEW%/Contents/MacOS/YabCore}" --host "$ROOT/external-action-host" || status=1 ;;
+      side menu-before crash python3 -u YabCore/cef-patches/popup-context-menu-probe.py --app "${OLD%/Contents/MacOS/PaneCore}" --host "$ROOT/external-action-host" || status=1
+      side menu-after clean python3 -u YabCore/cef-patches/popup-context-menu-probe.py --app "${NEW%/Contents/MacOS/PaneCore}" --host "$ROOT/external-action-host" || status=1 ;;
     snapshot)
       side snapshot-before crash python3 -u YabCore/tests/snapshot_renderer_gone.py "$OLD" --rounds 60 || status=1
       side snapshot-after clean python3 -u YabCore/tests/snapshot_renderer_gone.py "$NEW" --rounds 60 || status=1 ;;

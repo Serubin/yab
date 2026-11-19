@@ -6,7 +6,7 @@ import Security
 /// 1Password's checks its parent's code signature against the browsers it
 /// knows or was given (Settings › Browser › Add Browser records Yab.app's
 /// designated requirement, `identifier "net.serubin.pane"`). CEF's browser
-/// process is `Contents/MacOS/YabCore`, signed as identifier `YabCore`
+/// process is `Contents/MacOS/PaneCore`, signed as identifier `YabCore`
 /// without the restricted entitlement, so neither would ever accept it. Run
 /// this stdio-only door of the signed browser as the parent instead. Chromium
 /// still checks allowed_origins and owns native messaging's framing/limits.
@@ -77,7 +77,7 @@ enum ChromiumNativeHostLauncher {
     static func acceptedCaller() -> Bool {
         let parent = getppid()
         let bundle = Bundle.main.bundleURL.resolvingSymlinksInPath()
-        let helper = bundle.appendingPathComponent("Contents/MacOS/YabCore").resolvingSymlinksInPath()
+        let helper = bundle.appendingPathComponent("Contents/MacOS/PaneCore").resolvingSymlinksInPath()
         guard let browser = Bundle.main.executableURL?.resolvingSymlinksInPath(),
               let core = stamp(parent), let owner = stamp(Int32(core.parent)),
               core.executable == helper.path, owner.executable == browser.path else { return false }

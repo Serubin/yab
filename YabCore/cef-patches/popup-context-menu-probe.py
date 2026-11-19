@@ -123,7 +123,7 @@ def main():
             endpoint = directory / 'core.sock'
             env = dict(os.environ)
             env.pop('YAB_CEF_EXTENSION_WINDOWS', None)
-            helper = subprocess.Popen([str(args.app / 'Contents/MacOS/YabCore'), f'--socket={endpoint}',
+            helper = subprocess.Popen([str(args.app / 'Contents/MacOS/PaneCore'), f'--socket={endpoint}',
                 f'--data-root={directory / "data"}', '--no-sandbox', '--use-mock-keychain',
                 '--no-default-browser-check'], stdout=log, stderr=log, start_new_session=True, env=env)
             wait_socket(endpoint, helper)

@@ -64,7 +64,7 @@ struct PaneIdentityTests {
 
     @Test func crashWatchTakesOnlyPanesReports() throws {
         #expect(OwnProcess.report("pane-2026-11-19-101010.ips"))
-        #expect(OwnProcess.report("YabCore Helper (GPU)-1.ips"))
+        #expect(OwnProcess.report("PaneCore Helper (GPU)-1.ips"))
         #expect(!OwnProcess.report("yab-2026-11-19-101010.ips"))
 
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

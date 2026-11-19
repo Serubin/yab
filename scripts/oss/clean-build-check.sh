@@ -92,7 +92,7 @@ export YABCORE_BUILD_DIR="$WORK/yabcore"
 step yabcore-build env YAB_CEF_DIR="$CEF_DIR" YAB_FARM_OUT="$WORK/yabcore-out" bash YabCore/build.sh
 CORE_APP="$(tail -1 "$OUT/yabcore-build.log")"
 step build-app-cef env YAB_CEF=1 YAB_UNIVERSAL=0 YAB_CEF_DIR="$CEF_DIR" \
-  YAB_CEF_HELPER="$CORE_APP/Contents/MacOS/YabCore" ./build.sh
+  YAB_CEF_HELPER="$CORE_APP/Contents/MacOS/PaneCore" ./build.sh
 fi
 
 if [ -f "$OUT/swift-test.log" ]; then

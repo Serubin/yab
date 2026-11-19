@@ -47,7 +47,7 @@ public enum Relaunch {
     public static func start(bundle: URL, behind: Bool = false, installing: Int? = nil, reopen: Bool = true) throws {
         LaunchJournal.record("relaunch.request", target: bundle)
         let helper = Process()
-        helper.executableURL = bundle.appendingPathComponent("Contents/MacOS/YabUpdater")
+        helper.executableURL = bundle.appendingPathComponent("Contents/MacOS/PaneUpdater")
         if let installing {
             helper.arguments = [installFlag, String(ProcessInfo.processInfo.processIdentifier), String(installing)]
                 + (reopen ? ["--reopen"] : []) + (behind ? ["--background"] : [])
