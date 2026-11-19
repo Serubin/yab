@@ -113,28 +113,41 @@ enum WebKitIPCBoundary {
     struct Grants {
         var patterns: [WKWebExtension.MatchPattern]
         var allHosts: Bool
+        /// WebKit's file URL access, which adds a `file://` pass to all hosts.
+        var fileAccess: Bool
 
-        @MainActor init(_ context: WKWebExtensionContext) {
+        /// `fileAccess`: when nil, read from `context`.
+        @MainActor init(_ context: WKWebExtensionContext, fileAccess: Bool? = nil) {
             patterns = Array(context.grantedPermissionMatchPatterns.keys)
             allHosts = context.hasAccessToAllHosts
+            self.fileAccess = fileAccess ?? Grants.fileAccess(of: context)
         }
 
-        init(patterns: [WKWebExtension.MatchPattern], allHosts: Bool) {
+        init(patterns: [WKWebExtension.MatchPattern], allHosts: Bool, fileAccess: Bool = false) {
             self.patterns = patterns
             self.allHosts = allHosts
+            self.fileAccess = fileAccess
+        }
+
+        /// WebKit has no public getter for it; a WebKit without the SPI has no `file://` pass.
+        @MainActor static func fileAccess(of context: WKWebExtensionContext) -> Bool {
+            let get = NSSelectorFromString("_hasAccessToFileURLs")
+            guard context.responds(to: get) else { return false }
+            typealias Get = @convention(c) (AnyObject, Selector) -> Bool
+            return unsafeBitCast(context.method(for: get), to: Get.self)(context, get)
         }
     }
 
     /// How many user scripts and style sheets WebKit makes of `groups` under
     /// `grants`: each file once per granted pattern its group overlaps, or
-    /// once in all for all hosts (WebExtensionContext::addInjectedContent).
+    /// once for all hosts and once more for `file://` when file access is on
+    /// (WebExtensionContext::addInjectedContent).
     /// Never less than each file once, which grants given later can reach.
     static func injectedScripts(_ groups: [[String: Any]], grants: Grants?) -> Int {
         let files = groups.map { (($0["js"] as? [String])?.count ?? 0) + (($0["css"] as? [String])?.count ?? 0) }
         let once = files.reduce(0, +)
         guard let grants else { return once }
-        // The second pass is the file:// one WebKit adds when file access is on.
-        if grants.allHosts { return once * 2 }
+        if grants.allHosts { return grants.fileAccess ? once * 2 : once }
         var total = 0
         for granted in grants.patterns {
             for (group, count) in zip(groups, files) where count > 0 {
@@ -151,23 +164,29 @@ enum WebKitIPCBoundary {
 
     /// `validateExtensions(at:)` with each folder's grants, so the script
     /// budget counts what WebKit will inject rather than every file once.
+    /// A folder's content script groups: its manifest's and those registered at run time.
+    static func catalogGroups(at folder: URL) throws -> [[String: Any]] {
+        let manifestURL = folder.appendingPathComponent("manifest.json")
+        let size = try manifestURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? byteLimit
+        guard size < byteLimit / 2 else { throw error }
+        let manifest = try JSONSerialization.jsonObject(with: Data(contentsOf: manifestURL)) as? [String: Any] ?? [:]
+        guard allow([manifest], "extension manifest") else { throw error }
+        var groups = manifest["content_scripts"] as? [[String: Any]] ?? []
+        let registered = folder.appendingPathComponent("_yab/registered.json")
+        if FileManager.default.fileExists(atPath: registered.path) {
+            let size = try registered.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? byteLimit
+            guard size < byteLimit / 2 else { throw error }
+            let list = try JSONSerialization.jsonObject(with: Data(contentsOf: registered))
+            guard allow([list], "registered extension catalog") else { throw error }
+            groups += list as? [[String: Any]] ?? []
+        }
+        return groups
+    }
+
     static func validateExtensions(_ catalogs: [(folder: URL, grants: Grants?)]) throws {
         var count = 0
         for (folder, grants) in catalogs {
-            let manifestURL = folder.appendingPathComponent("manifest.json")
-            let size = try manifestURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? byteLimit
-            guard size < byteLimit / 2 else { throw error }
-            let manifest = try JSONSerialization.jsonObject(with: Data(contentsOf: manifestURL)) as? [String: Any] ?? [:]
-            guard allow([manifest], "extension manifest") else { throw error }
-            var groups = manifest["content_scripts"] as? [[String: Any]] ?? []
-            let registered = folder.appendingPathComponent("_yab/registered.json")
-            if FileManager.default.fileExists(atPath: registered.path) {
-                let size = try registered.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? byteLimit
-                guard size < byteLimit / 2 else { throw error }
-                let list = try JSONSerialization.jsonObject(with: Data(contentsOf: registered))
-                guard allow([list], "registered extension catalog") else { throw error }
-                groups += list as? [[String: Any]] ?? []
-            }
+            let groups = try catalogGroups(at: folder)
             let injected = injectedScripts(groups, grants: grants)
             guard injected <= scriptLimit - count else {
                 NSLog("WebKit IPC refused extension catalog: pattern expansion exceeds script budget")
