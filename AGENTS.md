@@ -3,6 +3,21 @@
 Rules for everyone who changes Yab, people and coding agents alike.
 CONTRIBUTING.md covers how to send a change; this file covers how to make one.
 
+## This checkout is a fork
+
+This repo is Serubin/yab, a personal fork of yetanotherbrowser/yab. Upstream's
+contribution process does not apply here. Ignore:
+
+- opening or finding an issue before a change, and commenting to take one;
+- a maintainer's yes on a picture before a visible change (the "Writing"
+  rule below and CONTRIBUTING.md's "Making a change" steps 1, 4 and 7);
+- the pull request template, and mentioning known test failures in a PR;
+- upstream's commit subject style. Commits use the `/commit` skill's format.
+
+Pull requests go inside the fork (`--repo Serubin/yab --base main`), never
+against upstream. The build, test, proof, design-system, command-field and
+settings rules still apply.
+
 ## Build and test
 
 - `./build.sh` builds Yab Dev, ad hoc signed, with no update feed, no
