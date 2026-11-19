@@ -144,7 +144,7 @@ struct NativeSetting {
         flag("mail-sense", "Sort and sum up on this Mac", key: "mail.sense", default: true),
         flag("mail-summaries", "Split summaries", key: "mail.summaries", default: false),
         flag("mail-pixels", "Block tracking pixels", key: "mail.pixels", default: true),
-        flag("mail-pdf-yab", "Open PDFs from Mail in Yab", key: "mail.pdf.yab", default: true),
+        flag("mail-pdf-yab", "Open PDFs from Mail in \(Brand.name)", key: "mail.pdf.yab", default: true),
         flag("mail-ahead", "Write replies ahead", key: "mail.ahead", default: false),
         count("mail-undo", "Undo send, in seconds", key: "mail.undo", default: 5, values: [5, 10, 20]),
         flag("mail-signature-replies", "Signature in replies and forwards", key: "mail.signature.replies", default: true),
@@ -253,7 +253,7 @@ struct NativeSetting {
         boolean("opt-shift-folders", "⌥⇧-click puts a tab in a folder", \.optShiftFolders),
         boolean("meeting-folders", "Group tabs for meetings", \.meetingFolders),
         boolean("today-every-window", "Today's tabs in every window", \.todayEveryWindow),
-        boolean("float-leave", "Picture in Picture automatically, when leaving a video's tab or Yab", \.floatsOnLeave),
+        boolean("float-leave", "Picture in Picture automatically, when leaving a video's tab or \(Brand.name)", \.floatsOnLeave),
         flag("float-snap", "Snap Picture in Picture to edges", key: Floater.snapToEdgesKey, default: true) { on in
             for browser in BrowserWindows.shared.browsers { browser.floater.snapToEdges(on) }
         },
@@ -368,9 +368,7 @@ enum NativeActions {
             action("live.stop", "Stop updating a live folder; its tabs stay as a plain folder", "liveFolder", [:], permission: "confirm"),
             action("mail.set_enabled", "Show or hide Mail without deleting accounts", "application", ["value": ["type": "boolean"]], required: ["value"], undo: true),
             action("mail.set_notify", "Set what an account's new mail notifies: off, needs (what needs you) or inbox (everything)", "mailAccount",
-                   ["value": ["type": "string", "enum": MailNotify.Mode.allCases.map(\.rawValue)]], required: ["value"], undo: true),
-            action("mail.set_read_statuses", "Turn an account's read statuses on or off (a tiny picture in sent mail tells when it was opened)", "mailAccount",
-                   ["value": ["type": "boolean"]], required: ["value"], undo: true, permission: "confirm")
+                   ["value": ["type": "string", "enum": MailNotify.Mode.allCases.map(\.rawValue)]], required: ["value"], undo: true)
         ] + (EngineRules.available ? [
             action("site.set_engine", "Open a site in Chromium or WebKit; new tabs and tabs waking take it", "application",
                    ["site": ["type": "string", "maxLength": 160, "description": "The exact host, as the address shows it: www.youtube.com"],
@@ -387,7 +385,7 @@ enum NativeActions {
     static let uiOnly: Set<String> = [
         "show-yab", "experimental-notes", "notes-root", "notes-new", "notes-daily", "notes-writing", "shield-lists", "experimental-mail",
         "experimental-requests", "experimental-menu-commands", "agents-row", "site-search", "quick-action:new-document", "quick-action:new-meeting",
-        "reachable", "bring-in", "engine-default", "bring-tabs", "import-firefox", "import-bookmarks-file", "import-history-file", "other-history",
+        "reachable", "bring-in", "engine-default", "bring-tabs", "import-firefox", "import-yab", "import-bookmarks-file", "import-history-file", "other-history",
         "import-extensions", "agents-ask-sound", "dev-agents-allowed", "agents-claude", "agents-codex", "agents-cursor", "agents-details",
         "dev-measure", "dev-servers", "dev-command", "dev-claude", "dev-codex", "dev-mcp", "agents-skills", "agents-model-tasks",
         "agents-model-commands", "agents-model-drafts", "agents-model-field", "models-add", "models-mac", "models-lists", "memory-notes",
@@ -402,7 +400,7 @@ enum NativeActions {
     static func classification(_ item: SettingsItem) -> String {
         if NativeSetting.all.contains(where: { $0.id == item.id }) { return "read_write" }
         if controlled.contains(item.id) { return "user_only" }
-        if ["mail", "mail-accounts", "mail-notify", "mail-reads", "snippets-list"].contains(item.id) { return "operation" }
+        if ["mail", "mail-accounts", "mail-notify", "snippets-list"].contains(item.id) { return "operation" }
         if ["page-font-size", "page-fonts", "page-minimum-font", "gradient"].contains(item.id) { return "read_write" }
         if ["spaces", "space-list", "add-space", "live-folders-add", "live-folders-repo", "link-routes", "link-routes-default", "awake-sites"].contains(item.id) { return "operation" }
         return "ui_only"

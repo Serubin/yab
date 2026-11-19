@@ -13,7 +13,7 @@ import OSLog
 /// Chrome and Safari read it: at most five site labels ("twitter", "x")
 /// count, and the caller must be one of the listed origins exactly.
 enum RelatedOrigins {
-    private static let log = Logger(subsystem: "dev.serafim.fast", category: "RelatedOrigins")
+    private static let log = Logger(subsystem: Store.productionBundleID, category: "RelatedOrigins")
 
     /// The most distinct labels a file may bring in, the standard's floor.
     static let labels = 5

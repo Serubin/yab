@@ -46,7 +46,7 @@ struct AgentRoutinesPage: View {
             .textCase(nil)
             .settingsAnchor("agents-routines-add")
         } footer: {
-            SettingsNote("Run scheduled tasks while Yab is open. Results appear in \(routineNewTabPlace(newTabKey.keys, plates: true)) and the task's chat. Terminal: \(AgentSetup.command) every \"weekdays 9:00\" \"check my mail\".")
+            SettingsNote("Run scheduled tasks while \(Brand.name) is open. Results appear in \(routineNewTabPlace(newTabKey.keys, plates: true)) and the task's chat. Terminal: \(AgentSetup.command) every \"weekdays 9:00\" \"check my mail\".")
         }
         .sheet(item: $editing.sheet) { sheet in
             RoutineEditor(browser: browser, sheet: sheet)
@@ -894,7 +894,7 @@ enum RoutineWhen {
             case everyDays: return ("Every Few Days…", key)
             case everyWeeks: return ("Every Few Weeks…", key)
             case "hourly": return ("Every Hour", key)
-            case "on open": return ("When Yab Opens", key)
+            case "on open": return ("When \(Brand.name) Opens", key)
             default: return (Routines.say(key).capitalized, key)
             }
         }

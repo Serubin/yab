@@ -93,7 +93,7 @@ enum MailAgent {
         let messages = store.messages(thread: id)
         let names = labelNames(store)
         return read(messages, thread: id, labels: said(messages.reduce(into: Set<String>()) { $0.formUnion($1.labels) }, names: names),
-                    reads: MailReads.seen(messages.map(\.rfcID), in: store), me: [store.me] + store.aliases, store: store)
+                    me: [store.me] + store.aliases, store: store)
     }
 
     /// The person's labels of a store by id, as mail_search and mail_read
@@ -109,13 +109,11 @@ enum MailAgent {
         return boxes.filter { labels.contains($0.0) }.map(\.1) + labels.compactMap { names[$0] }.sorted()
     }
 
-    /// `reads`: the person's own mail that went with a read status, by its
-    /// Message-ID, as its line says it (MailReads), "not opened yet" before.
     /// Its invitations said as what they are (MailInvites), with your
     /// answer where `store` knows it: data, never anything an agent
     /// answers, which only the person does.
     nonisolated static func read(_ messages: [MailMessage], thread id: String, labels: [String] = [],
-                                 reads: [String: MailReads.Seen] = [:], me: [String] = [], store: MailStore? = nil) -> String {
+                                 me: [String] = [], store: MailStore? = nil) -> String {
         guard let first = messages.first else { return "No thread \(id)." }
         // Its files numbered through the thread, as mail_file takes them.
         var number = 0
@@ -125,7 +123,6 @@ enum MailAgent {
             if !message.cc.isEmpty { head += "\nCc: " + message.cc.map(\.header).joined(separator: ", ") }
             if let replyTo = message.replyTo, !replyTo.isEmpty { head += "\nReply-To: " + replyTo.map(\.header).joined(separator: ", ") }
             head += "\nDate: \(when)\n"
-            if let seen = reads[message.rfcID] { head += "Read status: " + MailReads.told(seen) + "\n" }
             // Attachments and the pictures the words draw (inline), in
             // their parts' order.
             let files = (message.files ?? []).filter(\.listed)
@@ -979,7 +976,7 @@ enum MailAgent {
         case "create":
             let name = clean(request["label"] as? String ?? "")
             guard !name.isEmpty else { return ["error": "create needs label: the new label's name"] }
-            guard name.lowercased() != "yab", !name.lowercased().hasPrefix("yab/") else { return ["error": "yab/ names are Yab's own"] }
+            guard name.lowercased() != "yab", !name.lowercased().hasPrefix("yab/") else { return ["error": "yab/ names are \(Brand.name)'s own"] }
             guard engines.count == 1, let engine = engines.first else { return ["error": "the person has several mail accounts (\(accounts)): pass account"] }
             if let there = named(engine, name) { return ["text": "\(engine.account) has the label \(there.name) already."] }
             do {
@@ -993,7 +990,7 @@ enum MailAgent {
         case "rename":
             let name = clean(request["label"] as? String ?? ""), to = clean(request["to"] as? String ?? "")
             guard !name.isEmpty, !to.isEmpty else { return ["error": "rename needs label (its name now) and to (the new one)"] }
-            guard to.lowercased() != "yab", !to.lowercased().hasPrefix("yab/") else { return ["error": "yab/ names are Yab's own"] }
+            guard to.lowercased() != "yab", !to.lowercased().hasPrefix("yab/") else { return ["error": "yab/ names are \(Brand.name)'s own"] }
             let got = owner(name)
             guard case let (engine, label)? = got.found else { return ["error": got.why] }
             if label.name == to { return ["text": "\(label.name) has that name already."] }

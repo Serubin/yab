@@ -1017,9 +1017,9 @@ private struct WelcomeCountsCard: View {
             .padding(.top, 8)
         case .blocker:
             let name = found.blockers[0].name
-            choice(title: "Block ads with Yab", tick: extraTick,
+            choice(title: "Block ads with \(Brand.name)", tick: extraTick,
                    detail: yabBlocks ? "\(name) comes turned off: one blocker, the same lists."
-                                     : "\(name) blocks instead, and Yab\u{2019}s steps aside.",
+                                     : "\(name) blocks instead, and \(Brand.name)\u{2019}s steps aside.",
                    on: yabBlocks, turn: turnBlocks) {
                 mark(.init(symbol: "hand.raised", tint: .systemBlue))
             }

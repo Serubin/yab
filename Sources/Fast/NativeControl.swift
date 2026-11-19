@@ -100,7 +100,7 @@ final class NativeControl {
                 let descriptors = NativeActions.descriptors.filter { query.isEmpty || "\($0["id"] ?? "") \($0["title"] ?? "")".lowercased().contains(query) }
                 answer(["catalogVersion": NativeActions.version, "actions": descriptors, "canWrite": Self.writable(session)])
             case "agent-native-apply":
-                guard Self.writable(session) else { throw NativeFailure("read_only", "This task may read native state but cannot change Yab") }
+                guard Self.writable(session) else { throw NativeFailure("read_only", "This task may read native state but cannot change \(Brand.name)") }
                 answer(try apply(request, browser: browser, session: session))
             case "agent-native-operation":
                 let operation = request["operationId"] as? String ?? ""
@@ -423,9 +423,6 @@ final class NativeControl {
         case "site.keep_awake": return ("awake-sites", .array(AwakeSites.shared.sites.map(NativeValue.string)))
         case "mail.set_enabled": return ("mail-enabled", .bool(browser.prefs.usesMail))
         case "mail.set_notify": return ("mail-notify:" + target, .string(MailNotify.shared.mode(try mailAccount(target)).rawValue))
-        case "mail.set_read_statuses":
-            guard let store = MailCenter.shared.engines[try mailAccount(target)]?.store else { throw NativeFailure("not_found", "This account's mail isn't open yet") }
-            return ("mail-reads:" + target, .bool(MailReads.on(store)))
         case "live.add", "live.follow_repo": return ("live-folders:" + windowID(browser), liveList(browser))
         case "live.set", "live.update", "live.stop":
             let nest = try liveNest(target, browser: browser)
@@ -485,8 +482,7 @@ final class NativeControl {
             return ["id": account, "provider": "gmail", "connected": true, "signedOut": status?.signedOut ?? false,
                     "lastSynced": status?.synced?.ISO8601Format() ?? "", "trouble": status?.trouble ?? "",
                     "calendarGranted": Store.settings.bool(forKey: "mail.calendar." + account),
-                    "notify": MailNotify.shared.mode(account).rawValue,
-                    "readStatuses": MailCenter.shared.engines[account].map { MailReads.on($0.store) } ?? false]
+                    "notify": MailNotify.shared.mode(account).rawValue]
         }
         var out: [String: Any] = ["catalogVersion": NativeActions.version, "appVersion": Guide.version,
                                   "windowId": windowID(browser),
@@ -508,7 +504,7 @@ final class NativeControl {
         out["selectionCount"] = selection.count
         out["hasMoreSelectedTabs"] = selection.count > 50
         out["permissions"] = ["asking": browser.prefs.agentsAsking.rawValue, "nativeWrite": Self.writable(session),
-                              "userConfirmation": ["space.delete", "mail.disconnect", "mail.connect", "mail.reconnect", "mail.set_read_statuses"],
+                              "userConfirmation": ["space.delete", "mail.disconnect", "mail.connect", "mail.reconnect"],
                               "macAccessRequired": false, "policyChangesAllowed": false] as [String: Any]
         out["unresolvedOperations"] = changes.receipts.filter { $0.status == "unknown_outcome" }.suffix(10).map {
             ["action": $0.action, "target": $0.target, "status": $0.status, "message": "Read actual state before attempting this effect again"]
@@ -643,9 +639,9 @@ final class NativeControl {
                     result["putDown"] = closing.rested.count
                     result["message"] = (closing.closed.isEmpty ? "" : "Closed \(Self.tabCount(closing.closed.count)). ")
                         + (closing.rested.isEmpty ? "" : "Put \(Self.tabCount(closing.rested.count)) pinned or kept to sleep; they stay in the sidebar, as ⌘W leaves them. ")
-                        + "Answer in plain words, like “Closed 9 YouTube tabs.”, with no list of them and no mention of Undo: Yab's corner notice carries it."
+                        + "Answer in plain words, like “Closed 9 YouTube tabs.”, with no list of them and no mention of Undo: \(Brand.name)'s corner notice carries it."
                 }
-                if action == "mail.disconnect" { result["remoteRevocation"] = "requested_unverified"; result["message"] = "The account was removed from Yab. Google's access revocation was requested separately." }
+                if action == "mail.disconnect" { result["remoteRevocation"] = "requested_unverified"; result["message"] = "The account was removed from \(Brand.name). Google's access revocation was requested separately." }
                 try changes.update(receipt.id, status: "verified", result: result, after: after, version: undoable ? changes.version(resource, after) : nil)
                 if action == "tabs.close" {
                     // Pins and kept tabs put down, as ⌘W puts them, say
@@ -684,7 +680,7 @@ final class NativeControl {
                 finishFailure(receipt, failure)
                 return changes.receipt(receipt.id, session: session.id)?.result?.any as? [String: Any] ?? failure.reply
             }
-            let result: [String: Any] = ["status": "needs_user", "operationId": receipt.id, "message": "Confirm this action in Yab", "action": action, "target": target]
+            let result: [String: Any] = ["status": "needs_user", "operationId": receipt.id, "message": "Confirm this action in \(Brand.name)", "action": action, "target": target]
             try changes.update(receipt.id, status: "needs_user", result: result)
             pending[receipt.id] = execute
             let detail = confirmationDetail(action, target: target, arguments: arguments, browser: browser)
@@ -707,7 +703,6 @@ final class NativeControl {
     private func needsConfirmation(_ action: String, target: String, arguments: [String: NativeValue], browser: Browser, session: Agents.Session) throws -> Bool {
         try ensureIdle(action, target: target, arguments: arguments, browser: browser)
         if ["space.delete", "mail.disconnect", "mail.connect", "mail.reconnect"].contains(action) { return true }
-        if action == "mail.set_read_statuses" { return boolean(arguments["value"]) == true }
         if action == "tabs.move" {
             let destination = try space(target, browser: browser)
             if destination.id == browser.spaceID { return false }
@@ -772,16 +767,15 @@ final class NativeControl {
         case "live.add": return "Add live folder"
         case "live.follow_repo": return "Follow repository"
         case "live.stop": return "Stop updating folder"
-        case "mail.set_read_statuses": return "Turn on read statuses"
         default: return "Apply change"
         }
     }
 
     private func confirmationDetail(_ action: String, target: String, arguments: [String: NativeValue], browser: Browser) -> String {
-        if action == "mail.disconnect" { return "Disconnect \(target), request revocation of Yab's Google access and remove its local mail and draft files. Calendar may also require sign-in again. Mail at Gmail stays." }
+        if action == "mail.disconnect" { return "Disconnect \(target), request revocation of \(Brand.name)'s Google access and remove its local mail and draft files. Calendar may also require sign-in again. Mail at Gmail stays." }
         if action == "mail.connect" || action == "mail.reconnect" {
             return "Connect \(string(arguments["email"]) ?? (target == "app" ? "a Gmail account" : target)). Choose the account and grant access yourself in the sign-in window."
-                + (MailClient.underReview ? " Google may warn that Yab Mail has not been verified." : "")
+                + (MailClient.underReview ? " Google may warn that \(Brand.name) Mail has not been verified." : "")
         }
         if action == "space.delete", let space = try? space(target, browser: browser) { return "Delete \(space.name), its tabs and any separate sign-ins. This cannot be undone." }
         if action == "tabs.move", let destination = try? space(target, browser: browser) {
@@ -793,7 +787,6 @@ final class NativeControl {
         if action == "live.add", let source = string(arguments["source"]).flatMap(LiveSource.of) {
             return "Add a live folder of \(source.title) in “\(browser.space.name)”. It reads the site with this space's sign-ins."
         }
-        if action == "mail.set_read_statuses" { return "Put a tiny picture in mail sent from \(target), so Yab can tell when it was opened. Some mail apps send such mail to spam." }
         if action == "live.follow_repo" { return "Follow \(LiveFolders.repo(string(arguments["repository"]) ?? "") ?? "the repository")'s open pull requests in a live folder of its own." }
         if action == "live.stop", let nest = try? liveNest(target, browser: browser) {
             return "Stop updating “\(nest.name)”. Its tabs stay in \(browser.space.name), as a plain folder."
@@ -820,7 +813,7 @@ final class NativeControl {
             if action == "tabs.rename" { return "Rename “\(tab.label)” to “\(string(arguments["name"]) ?? "")”. An empty name restores the page's title." }
             if action == "site.set_zoom", case .number(let zoom) = arguments["value"] { return "Set the site in “\(tab.label)” to \(Int(zoom * 100))% zoom." }
         }
-        return "Apply this change in Yab."
+        return "Apply this change in \(Brand.name)."
     }
 
     private func mutate(_ action: String, target: String, arguments: [String: NativeValue], browser: Browser, operation: String) throws {
@@ -1034,10 +1027,6 @@ final class NativeControl {
             guard let raw = string(arguments["value"]), let mode = MailNotify.Mode(rawValue: raw) else { throw NativeFailure("invalid_arguments", "off, needs or inbox") }
             let account = try mailAccount(target)
             if MailNotify.shared.mode(account) != mode { MailNotify.shared.setMode(mode, for: account) }
-        case "mail.set_read_statuses":
-            guard let store = MailCenter.shared.engines[try mailAccount(target)]?.store else { throw NativeFailure("not_found", "This account's mail isn't open yet") }
-            let on = boolean(arguments["value"]) ?? false
-            if MailReads.on(store) != on { MailReads.set(on, in: store) }
         case "live.add":
             guard let id = string(arguments["source"]), NativeActions.liveSources.contains(id) else { throw NativeFailure("invalid_arguments", "Choose a listed source") }
             var host: String? = nil
@@ -1257,7 +1246,7 @@ final class NativeControl {
             arguments = ["site": .string(String(receipt.resource[receipt.resource.index(after: colon)...]))]
         } else { arguments = [:] }
         let current = try snapshot(action: receipt.action, target: receipt.target, arguments: arguments, browser: browser).1
-        guard changes.canUndo(receipt, current: current), current == after else { throw NativeFailure("conflict", "This object changed after the task, or Yab restarted. Your later changes are preserved") }
+        guard changes.canUndo(receipt, current: current), current == after else { throw NativeFailure("conflict", "This object changed after the task, or \(Brand.name) restarted. Your later changes are preserved") }
         if let setting = NativeSetting.all.first(where: { "settings.set." + $0.id == receipt.action && $0.scope == "application" }) { try setting.write(browser.prefs, receipt.before) }
         else {
             switch receipt.action {
@@ -1375,8 +1364,6 @@ final class NativeControl {
                 LinkRoutes.shared.restore(rules, defaultSpace: string(state["defaultSpace"]).flatMap(Self.routeID))
             case "mail.set_notify":
                 if let raw = string(receipt.before), let mode = MailNotify.Mode(rawValue: raw) { MailNotify.shared.setMode(mode, for: try mailAccount(receipt.target)) }
-            case "mail.set_read_statuses":
-                if let store = MailCenter.shared.engines[try mailAccount(receipt.target)]?.store { MailReads.set(boolean(receipt.before) ?? false, in: store) }
             case "live.set":
                 guard case .object(let state) = receipt.before else { throw NativeFailure("failed", "The previous folder is unavailable") }
                 let nest = try liveNest(receipt.target, browser: browser)

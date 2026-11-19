@@ -562,6 +562,25 @@ final class Browser: NSObject, ObservableObject, Relaying {
         }
     }
 
+    /// An upstream Yab install's bookmarks, read from a copy of its file.
+    /// Hands how many were added to `done`, or nil when the file couldn't be read.
+    func takeBookmarks(from source: YabBrowser.Source, quiet: Bool = false, on corner: Toaster? = nil,
+                       then done: @escaping (Int?) -> Void = { _ in }) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let found = YabBrowser.bookmarks(in: source)
+            let brought = Bookmarks.brought(from: source.name)
+            DispatchQueue.main.async {
+                guard let found else { return done(nil) }
+                let took = self.bookmarks.take(found, from: source.name, brought: brought)
+                if !quiet {
+                    self.announce(Browser.broughtLine(added: took.added, held: took.held, of: Bookmarks.count(found), from: source.name),
+                                  mark: "tray.and.arrow.down", feedback: took.added > 0 ? .success : nil, on: corner)
+                }
+                done(took.added)
+            }
+        }
+    }
+
     /// ⇧⌘S. The same tabs, down the left or across the top.
     ///
     /// Not the strip sliding off the top and the column sliding in from
@@ -1632,7 +1651,7 @@ final class Browser: NSObject, ObservableObject, Relaying {
             switch filled {
             case .filled:
                 Vault.touch(login)
-                self?.markFilled(tab, from: "Yab")
+                self?.markFilled(tab, from: "\(Brand.name)")
             case .gone: self?.toaster.pop("The sign-in fields are gone", mark: "exclamationmark.triangle")
             case .refused: break
             case .unasked: self?.cantAskToFill()
@@ -1709,6 +1728,24 @@ final class Browser: NSObject, ObservableObject, Relaying {
             let places = Firefox.places(in: source)
             let gathered = History.gather(places)
             DispatchQueue.main.async {
+                Hangs.measure("history.merge") { self.history.take(gathered) }
+                Diary.shared.absorb(self.history.everything())
+                Task {
+                    await self.history.flush()
+                    done(places.count)
+                }
+            }
+        }
+    }
+
+    /// An upstream Yab install's history, the same way. Hands how many places
+    /// it had to `done`, or nil when the file couldn't be read.
+    func takePlaces(from source: YabBrowser.Source, then done: @escaping (Int?) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let places = YabBrowser.places(in: source)
+            let gathered = places.map(History.gather)
+            DispatchQueue.main.async {
+                guard let places, let gathered else { return done(nil) }
                 Hangs.measure("history.merge") { self.history.take(gathered) }
                 Diary.shared.absorb(self.history.everything())
                 Task {
@@ -3537,7 +3574,7 @@ final class Browser: NSObject, ObservableObject, Relaying {
                 if on { Bench.shared.start(for: self) } else { Bench.shared.stop() }
                 // Getting started's rows, which ask for agents on, as they are now.
                 Hints.shared.refresh()
-                announceSetting(on ? "Agents can use Yab" : "Agents can’t use Yab", mark: "agent.face")
+                announceSetting(on ? "Agents can use \(Brand.name)" : "Agents can’t use \(Brand.name)", mark: "agent.face")
             }
             .store(in: &bag)
 
@@ -9667,7 +9704,7 @@ extension Browser: PageDownloadEvents {
             toaster.pop("Can't save in \(name)", mark: "exclamationmark.triangle")
             return
         }
-        toaster.pop("macOS keeps \(name) closed to Yab", mark: "exclamationmark.triangle",
+        toaster.pop("macOS keeps \(name) closed to \(Brand.name)", mark: "exclamationmark.triangle",
                     undo: { DownloadFolder.openSettings() }, act: "Open Settings")
     }
 

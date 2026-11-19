@@ -76,7 +76,7 @@ final class GeminiACP {
         // for Google. No terminal parsing or repeated URL polling.
         try Data().write(to: page)
         let descriptor = Darwin.open(page.path, O_EVTONLY | O_CLOEXEC)
-        guard descriptor >= 0 else { throw GeminiStream.Failure("Yab couldn't open Google's sign-in. Try again.") }
+        guard descriptor >= 0 else { throw GeminiStream.Failure("\(Brand.name) couldn't open Google's sign-in. Try again.") }
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: [.write, .extend], queue: .main)
         source.setEventHandler { [weak self] in
             Task { @MainActor [weak self] in self?.capturePage() }

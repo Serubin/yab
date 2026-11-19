@@ -18,7 +18,7 @@ struct YabApp: App {
     @NSApplicationDelegateAdaptor(Links.self) private var links
 
     var body: some Scene {
-        Window("Yab", id: "browser") {
+        Window("\(Brand.name)", id: "browser") {
             ContentView(browser: browser)
                 .windowFloor(browser)
         }
@@ -476,7 +476,7 @@ private struct SettingsItems: View {
         Button("Settings…") { selected.tuning = true }
             .shortcut(.settings)
         Divider()
-        Button("Make Yab Default Browser…") {
+        Button("Make \(Brand.name) Default Browser…") {
             Links.becomeDefault { worked in
                 if !worked { selected.announce("macOS kept your old browser", mark: "safari") }
             }
@@ -495,7 +495,7 @@ private struct HelpItems: View {
     @ObservedObject var windows: BrowserWindows
 
     var body: some View {
-        Button("Yab Manual") { Command.manual.run(in: selected) }
+        Button("\(Brand.name) Manual") { Command.manual.run(in: selected) }
         Button("Welcome…") {
             selected.welcoming = true
             LaunchArrival.shared.replay(selected)

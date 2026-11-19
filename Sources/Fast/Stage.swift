@@ -2581,7 +2581,7 @@ private struct UntrustedPage: View {
                     if !untrusted.names.isEmpty {
                         Text(untrusted.names)
                     }
-                    Text("Yab will trust this certificate on port \(untrusted.url.port ?? 443) until it changes.")
+                    Text("\(Brand.name) will trust this certificate on port \(untrusted.url.port ?? 443) until it changes.")
                     Button("Continue to \(untrusted.host)") { onward() }
                         .buttonStyle(.plain)
                         .foregroundStyle(Palette.ink)
@@ -2644,7 +2644,7 @@ private struct FlaggedPage: View {
             }
             if opened {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("The list is downloaded whole to this Mac and checked here; Yab sends no page or visit to check it. Going on keeps this site until Yab quits.")
+                    Text("The list is downloaded whole to this Mac and checked here; \(Brand.name) sends no page or visit to check it. Going on keeps this site until \(Brand.name) quits.")
                     Button("Continue to \(flagged.host)") { onward() }
                         .buttonStyle(.plain)
                         .foregroundStyle(Palette.ink)

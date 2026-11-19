@@ -334,7 +334,7 @@ struct SidebarSpaceContextMenuTests {
         _ = NSApplication.shared
         try #require(ColumnKit.on && !ActionMenu.isOpen && NSEvent.pressedMouseButtons == 0)
         Session.settle()
-        let domain = world == "test" ? "dev.serafim.fast.test" : "dev.serafim.fast.test.\(world)"
+        let domain = world == "test" ? "net.serubin.pane.test" : "net.serubin.pane.test.\(world)"
         let settings = Store.settings.persistentDomain(forName: domain)
         let files = try inputFiles()
         let densityBefore = Density.current

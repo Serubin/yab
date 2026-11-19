@@ -249,7 +249,7 @@ enum Blockers {
             let current = Shield.shared.chosen.flatMap { id in new.contains(id) ? nil : id }
             let choice = BlockerChoice(latest: latest, current: current)
             let question = Question(
-                title: "Which ad blocker should Yab use?",
+                title: "Which ad blocker should \(Brand.name) use?",
                 detail: "One blocks at a time.",
                 yes: "Use \(name(latest))", no: "Keep \(current.map(name) ?? "Built-in")", place: .plain,
                 accessory: AnyView(BlockerOptions(choice: choice)),
@@ -593,7 +593,7 @@ enum Blockers {
         } else {
             let file = Extensions.folder(for: id).appendingPathComponent(helperFile)
             if !FileManager.default.fileExists(atPath: file.path) {
-                try? Data("<!doctype html><meta charset=utf-8><title>Yab</title>".utf8).write(to: file)
+                try? Data("<!doctype html><meta charset=utf-8><title>\(Brand.name)</title>".utf8).write(to: file)
             }
             guard let url = URL(string: helperFile, relativeTo: context.baseURL)?.absoluteURL else { return nil }
             page = WKWebView(frame: NSRect(x: 0, y: 0, width: 10, height: 10), configuration: configuration)
@@ -673,7 +673,7 @@ struct BlockerOptions: View {
                     BlockerTile(icon: extensions.icon(for: current, side: 28), title: Blockers.name(current),
                                 line: Self.theirs(current), selected: !choice.newSelected) { choice.take(new: false) }
                 } else {
-                    BlockerTile(icon: nil, title: "Built-in", line: "Off on a site at once. Settings in Yab.",
+                    BlockerTile(icon: nil, title: "Built-in", line: "Off on a site at once. Settings in \(Brand.name).",
                                 selected: !choice.newSelected) { choice.take(new: false) }
                 }
                 BlockerTile(icon: extensions.icon(for: choice.latest, side: 28), title: Blockers.name(choice.latest),
@@ -691,9 +691,9 @@ struct BlockerOptions: View {
 
     private var footer: String {
         if let brought = Blockers.broughtWith[choice.latest], brought.sites + brought.hiding > 0 {
-            return "Its \(BlockerWords.brought(brought.sites, brought.hiding)) come over either way. YouTube's ads stay with Yab."
+            return "Its \(BlockerWords.brought(brought.sites, brought.hiding)) come over either way. YouTube's ads stay with \(Brand.name)."
         }
-        return "YouTube's ads stay with Yab either way."
+        return "YouTube's ads stay with \(Brand.name) either way."
     }
 
     /// "Off on a site in about 15 s. Its own settings."

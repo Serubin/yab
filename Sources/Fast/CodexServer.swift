@@ -8,7 +8,7 @@ import os
 /// answers stay in here; what Agents needs to act on comes back as `Heard`.
 @MainActor
 final class CodexServer {
-    private static let log = Logger(subsystem: "dev.serafim.fast", category: "Codex")
+    private static let log = Logger(subsystem: Store.productionBundleID, category: "Codex")
     enum Heard {
         /// The thread is there to talk to: new, carried on, or forked.
         case ready(thread: String)
@@ -368,7 +368,7 @@ final class CodexServer {
         case "mcpServer/elicitation/request":
             result = ["action": "decline", "content": NSNull(), "_meta": NSNull()]
         default:
-            line(["id": id, "error": ["code": -32601, "message": "Yab doesn't answer \(method)"]])
+            line(["id": id, "error": ["code": -32601, "message": "\(Brand.name) doesn't answer \(method)"]])
             return
         }
         line(["id": id, "result": result])

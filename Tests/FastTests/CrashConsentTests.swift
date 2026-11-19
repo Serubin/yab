@@ -50,7 +50,7 @@ final class CrashConsentTests: XCTestCase {
                 return
             }
             XCTAssertEqual(question.title, "Share saved crash reports?")
-            XCTAssertTrue(question.detail.contains("an earlier Yab session"))
+            XCTAssertTrue(question.detail.contains("an earlier Pane session"))
             XCTAssertEqual(question.yes, "Send")
             XCTAssertEqual(question.no, "Don’t Send")
             questions.answer(false)

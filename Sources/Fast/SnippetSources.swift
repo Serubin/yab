@@ -35,7 +35,7 @@ enum SnippetSource: String, CaseIterable, Identifiable {
         case .alfred: "Alfred’s Snippets"
         case .espanso: "espanso’s match files"
         case .textExpander: "TextExpander’s exported group"
-        case .superhuman: "Superhuman, read by Claude in Yab"
+        case .superhuman: "Superhuman, read by Claude in \(Brand.name)"
         }
     }
 

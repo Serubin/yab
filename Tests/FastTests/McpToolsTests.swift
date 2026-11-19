@@ -111,23 +111,23 @@ struct McpToolsTests {
     @Test func anOlderBrowserIsNamedWithBothBuilds() {
         let said = Wire.stranger("agent-eval", mcp: true, ours: "/Applications/yab.app", our: "202609281919",
                                  theirs: "/Users/ada/Desktop/yab.app", their: "202609251159")
-        #expect(said == "The Yab that's running (/Users/ada/Desktop/yab.app, build 202609251159) is older than this yab mcp (/Applications/yab.app, build 202609281919) and doesn't know eval yet: ask the user to quit that Yab and open /Applications/yab.app, then try again.")
+        #expect(said == "The Pane that's running (/Users/ada/Desktop/yab.app, build 202609251159) is older than this pane mcp (/Applications/yab.app, build 202609281919) and doesn't know eval yet: ask the user to quit that Pane and open /Applications/yab.app, then try again.")
         let same = Wire.stranger("agent-eval", mcp: true, ours: "/Applications/yab.app", our: "202609281919",
                                  theirs: "/Applications/yab.app", their: "202609251159")
         #expect(same.contains("older than its copy on disk now (build 202609281919)"))
-        #expect(same.contains("quit Yab and open it again"))
+        #expect(same.contains("quit Pane and open it again"))
     }
 
     @Test func aNewerBrowserAsksForANewerMcp() {
         let said = Wire.stranger("agent-old", mcp: true, ours: "/Applications/yab.app", our: "202609251159",
                                  theirs: "/Users/ada/Desktop/yab.app", their: "202609281919")
-        #expect(said.hasPrefix("This yab mcp (/Applications/yab.app, build 202609251159) is older than the Yab that's running"))
+        #expect(said.hasPrefix("This pane mcp (/Applications/yab.app, build 202609251159) is older than the Pane that's running"))
         #expect(said.contains("no longer takes old"))
     }
 
     @Test func aBrowserOfNoKnownBuildIsStillSaidSo() {
         let said = Wire.stranger("agent-eval", mcp: false, ours: nil, our: nil, theirs: nil, their: nil)
-        #expect(said == "The Yab that's running doesn't know eval: it's another build than this yab command, an older one most likely. Ask the user to quit Yab and open the Yab this one belongs to, then try again.")
+        #expect(said == "The Pane that's running doesn't know eval: it's another build than this pane command, an older one most likely. Ask the user to quit Pane and open the Pane this one belongs to, then try again.")
     }
 
     @Test func unknownFromTheSocketBecomesTheseWords() throws {

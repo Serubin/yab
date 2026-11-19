@@ -133,7 +133,7 @@ enum TabImport {
             case .folderUnreadable: return "its data folder is there but can't be opened"
             case .damaged: return "its tab file is damaged"
             case .newer(let version):
-                return "its tab file is in a format this Yab doesn't know yet" + (version.map { " (version \($0))" } ?? "")
+                return "its tab file is in a format this \(Brand.name) doesn't know yet" + (version.map { " (version \($0))" } ?? "")
             }
         }
 

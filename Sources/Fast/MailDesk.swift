@@ -40,9 +40,6 @@ final class MailDesk: ObservableObject {
         /// Mail of it came by a search of Gmail (MailServerSearch), older
         /// than the Mac keeps by itself: its row says Gmail, quietly.
         var gmail = false
-        /// Sent and Waiting: its newest mail of yours that went with a read
-        /// status, opened, in a word or two ("Opened 3×", MailReads.short).
-        var opened = ""
         /// Your mail in it comes back if nobody answers, not yet come due
         /// (MailFollowups): when, in words ("Remind in 2d"); in Promised,
         /// a meeting with them before the day it names ("Meeting Thu").
@@ -211,10 +208,8 @@ final class MailDesk: ObservableObject {
         /// Its files, a chip each under its words: not the pictures its
         /// words draw.
         var files: [MailFile] = []
-        /// Its Message-ID, and, a mail of yours that went with a read
-        /// status, when it was opened (MailReads): said under it.
+        /// Its Message-ID.
         var rfcID = ""
-        var reads: MailReads.Seen?
         /// Your sentences in it that are promises still open: lit in its words.
         var promised: [String] = []
 
@@ -1014,13 +1009,13 @@ final class MailDesk: ObservableObject {
                 // among them once asked (MailServerSearch.ask(view:)); the
                 // inbox's counts above all the same, for the column.
                 let got = view(split, in: look, now: now, limit: limit)
-                rows += meets(opened(got.threads.map { row($0, account: engine.account) }, in: look, if: split == "sent"), in: look, now: now)
+                rows += meets(got.threads.map { row($0, account: engine.account) }, in: look, now: now)
                 viewed += got.total
             } else {
                 let sensed = look.sensed(mine)
                 let declining = MailOffers.declinesListed
                 let did = MailList.shared.did
-                rows += meets(opened(look.threads(ids: mine).map { thread in
+                rows += meets(look.threads(ids: mine).map { thread in
                     var made = row(sensed[thread.id].map(thread.with) ?? thread, account: engine.account)
                     if let one = sensed[thread.id], one.kind == .promotion, !thread.bulk, !thread.lastIsMine,
                        let from = thread.people.first?.address, MailDrafts.stranger(from, in: look) {
@@ -1033,7 +1028,7 @@ final class MailDesk: ObservableObject {
                         made.agentReady = !look.ahead(thread.id, message: message).isEmpty || !message.isEmpty && !look.ahead(thread.id, message: "").isEmpty
                     }
                     return made
-                }, in: look, if: split == MailSplit.waiting.rawValue), in: look, now: now)
+                }, in: look, now: now)
             }
             // Later: what is snoozed, and what is set to go out.
             let later = self.later(engine, now: now)
@@ -1142,19 +1137,6 @@ final class MailDesk: ObservableObject {
                 snoozed: false, scheduled: nil, gmail: true)
         }
         return (Array(rows.sorted { $0.at > $1.at }.prefix(limit)), here.total + more.count + recalled.count)
-    }
-
-    /// Sent's and Waiting's rows (`wanted`) with what read statuses say of
-    /// your newest mail in each (MailReads.rows); any other list's as they are.
-    private static func opened(_ rows: [Row], in store: MailStore, if wanted: Bool) -> [Row] {
-        guard wanted, !rows.isEmpty else { return rows }
-        let said = MailReads.rows(rows.map(\.thread), in: store)
-        guard !said.isEmpty else { return rows }
-        return rows.map { row in
-            var row = row
-            row.opened = said[row.thread] ?? ""
-            return row
-        }
     }
 
     /// A search's newest `limit` threads and how many in all, over the
@@ -1548,12 +1530,6 @@ final class MailDesk: ObservableObject {
                     newer = (now.count - messages.count, last.from.said.components(separatedBy: " ").first ?? last.from.said)
                 }
             }
-            // The site said your mail in it was opened: said under it, the
-            // thread not moving otherwise.
-            let reads = MailReads.seen(messages.map(\.rfcID), in: engine.store.off)
-            for at in messages.indices where messages[at].reads != reads[messages[at].rfcID] {
-                messages[at].reads = reads[messages[at].rfcID]
-            }
         }
         let seen = Set(rows.map(\.id))
         let at = rows.indices.contains(sel) ? rows[sel] : nil
@@ -1745,7 +1721,6 @@ final class MailDesk: ObservableObject {
         // to land; one still to fetch is read when it comes.
         let shown = fresh != nil ? kept.map { (messages: $0.messages, crowd: $0.crowd) } : engine.flatMap { engine in
             whole ? MailDesk.letter(all, account: row.account, me: engine.store.me.lowercased(),
-                                    reads: MailReads.seen(all.map(\.rfcID), in: engine.store.off),
                                     promised: MailDesk.promised(all, in: engine.store.off)) : nil
         }
         // The letter J or K leaves stays made, unseen, for the way back;
@@ -1804,9 +1779,6 @@ final class MailDesk: ObservableObject {
         if row.unread { DispatchQueue.main.async { [weak self] in self?.act(.read, row) } }
         guard let engine else { return }
         if known == nil { findPerson(row, in: engine) }
-        // Mail of yours in it that went with a read status: the site asked
-        // at once (MailReads; nothing is asked for a thread without).
-        Task { await MailCenter.shared.askReads(row.account, thread: row.thread) }
         Task { @MainActor in
             try? await engine.sync.open(thread: row.thread)
             guard self.open?.id == row.id else { return }
@@ -1892,7 +1864,6 @@ final class MailDesk: ObservableObject {
         let all = engine.store.off.messages(thread: row.thread)
         guard !all.isEmpty, all.allSatisfy({ $0.text != nil || $0.html != nil }) else { return nil }
         let shown = MailDesk.letter(all, account: row.account, me: engine.store.me.lowercased(),
-                                    reads: MailReads.seen(all.map(\.rfcID), in: engine.store.off),
                                     promised: MailDesk.promised(all, in: engine.store.off))
         let ready = MailDesk.ready(row.thread, in: engine)
         let answering = MailDesk.readyPeople(row.thread, in: engine, messages: all)
@@ -1975,8 +1946,7 @@ final class MailDesk: ObservableObject {
     private func read(_ row: Row, in engine: MailCenter.Engine, messages kept: [MailMessage]? = nil) {
         let me = engine.store.me.lowercased()
         let all = kept ?? engine.store.off.messages(thread: row.thread)
-        // Mail of yours that went with a read status: when it was opened.
-        (messages, crowd) = MailDesk.letter(all, account: row.account, me: me, reads: MailReads.seen(all.map(\.rfcID), in: engine.store.off),
+        (messages, crowd) = MailDesk.letter(all, account: row.account, me: me,
                                             promised: MailDesk.promised(all, in: engine.store.off))
         // A reply begun before the mail it answers had its Reply-To here
         // (kept before Yab read it): to whom it says, while nobody changed it.
@@ -2019,8 +1989,7 @@ final class MailDesk: ObservableObject {
     }
 
     /// A thread's mail as a letter shows it, and everyone on it but you.
-    /// `reads`: what read statuses say of your mail in it, by its Message-ID (MailReads.seen).
-    private static func letter(_ all: [MailMessage], account: String, me: String, reads: [String: MailReads.Seen] = [:],
+    private static func letter(_ all: [MailMessage], account: String, me: String,
                                promised: [String: [String]] = [:]) -> (messages: [Message], crowd: [MailPerson]) {
         let messages = all.map { m in
             let split = Message.split(m.text ?? m.snippet)
@@ -2028,7 +1997,7 @@ final class MailDesk: ObservableObject {
             return Message(id: m.id, from: m.from.said, address: m.from.address, to: (m.to + m.cc).map(\.said).joined(separator: ", "),
                            at: m.date, text: split.own, html: m.html.map { MailHTML.cleaned($0, account: account, message: m.id) },
                            quote: split.quote, others: others && (m.to + m.cc).count > 1, fromMe: m.from.address.lowercased() == me,
-                           account: account, files: (m.files ?? []).filter { !$0.inline }, rfcID: m.rfcID, reads: reads[m.rfcID],
+                           account: account, files: (m.files ?? []).filter { !$0.inline }, rfcID: m.rfcID,
                            promised: promised[m.id] ?? [])
         }
         var seen = Set<String>(), people: [MailPerson] = []

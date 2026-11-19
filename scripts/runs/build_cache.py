@@ -79,9 +79,9 @@ def record_sources(root, manifest):
 
 def icon_key(root, step, minimum, toolchain):
     paths = [root / "build.sh"]
-    paths.extend((root / "Icon/yab.icon").rglob("*"))
+    paths.extend((root / "Icon/pane.icon").rglob("*"))
     if step == "app":
-        paths.extend((root / "Icon/yab Dev.icon").rglob("*"))
+        paths.extend((root / "Icon/pane Dev.icon").rglob("*"))
         # build.sh's YAB_BUNDLE_ICON puts another document on the bundle.
         bundle_icon = os.environ.get("YAB_BUNDLE_ICON")
         if bundle_icon:
@@ -104,7 +104,7 @@ def icon_files(folder):
 
 def record_icons(folder, key):
     files = icon_files(folder)
-    for name in ("Assets.car", "yab.icns", "AppIcons/yab-dark.icns"):
+    for name in ("Assets.car", "pane.icns", "AppIcons/pane-dark.icns"):
         if name not in files or not (folder / name).stat().st_size:
             raise RuntimeError("incomplete icon cache: " + name)
     save(folder / ".manifest.json", {"key": key, "files": files})
@@ -202,10 +202,10 @@ def app_entry(cache, key):
     entry = cache / key
     manifest = read(entry / "manifest.json")
     app = entry / "app"
-    if manifest.get("key") != key or not (app / "Contents/MacOS/yab").is_file():
+    if manifest.get("key") != key or not (app / "Contents/MacOS/pane").is_file():
         return None
     try:
-        if manifest.get("files") != app_files(app) or manifest.get("binary") != digest(app / "Contents/MacOS/yab"):
+        if manifest.get("files") != app_files(app) or manifest.get("binary") != digest(app / "Contents/MacOS/pane"):
             return None
     except OSError:
         return None
@@ -261,7 +261,7 @@ def app_store(cache, key, app, keep=None):
     try:
         shutil.copytree(app, temporary / "app", symlinks=True)
         save(temporary / "manifest.json", {"key": key, "files": app_files(temporary / "app"),
-                                           "binary": digest(temporary / "app/Contents/MacOS/yab"), "stored": time.time()})
+                                           "binary": digest(temporary / "app/Contents/MacOS/pane"), "stored": time.time()})
         touch(temporary)
         try:
             os.rename(temporary, cache / key)

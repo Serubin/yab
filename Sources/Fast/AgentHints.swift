@@ -336,7 +336,7 @@ final class Hints: ObservableObject {
         }
         if !command {
             let names = [shell.claude.map { _ in "Claude Code" }, shell.codex.map { _ in "Codex" }].compactMap { $0 }
-            setup.append(Hint(id: "setup.cli", icon: .picture("terminal", site: nil), title: "Use Yab from \(names.joined(separator: " and "))",
+            setup.append(Hint(id: "setup.cli", icon: .picture("terminal", site: nil), title: "Use \(Brand.name) from \(names.joined(separator: " and "))",
                               detail: "Connect it in Settings, then ask it for anything on the web", setup: true))
         }
         // A run under way shows even where the offer was put away: its ×
@@ -1357,26 +1357,26 @@ extension Agents {
         on it; `site`, its host. Write titles and details plainly, a comma or a colon where a dash would \
         go, in the language the thing itself is in, whatever language this brief is in. And these, whenever they apply:
         - `quote`: a short passage copied word for word from the page `url` opens, the sentence the user \
-        should see first (the question asked, the amount, the date), so Yab can open the page at it. \
+        should see first (the question asked, the amount, the date), so \(Brand.name) can open the page at it. \
         Copy it from that very page: a list and the thing's own page word the same thing differently.
         - `due`: whenever it has a date or a time, ISO 8601 with the zone: a meeting's start, the end \
-        of the day it is asked for ("by Friday" is that Friday at 17:00), a trial's end. Yab moves it up \
+        of the day it is asked for ("by Friday" is that Friday at 17:00), a trial's end. \(Brand.name) moves it up \
         and counts down to it, so leave it out only when nothing says when.
         - `join`: for a meeting with a video call, its link, from the event itself (open the event if \
-        the list doesn't show it); Yab offers it as Join as the meeting starts.
+        the list doesn't show it); \(Brand.name) offers it as Join as the meeting starts.
         - `draft`: for a message that wants a reply, when memory tells you enough to answer as the user, \
         the reply itself, in their language and tone, ready to send. Never put it on the site yourself.
         - `subscription`: "trial" for a free trial that will start charging, "renewal" for a paid plan \
         that renews, found in receipts and notices in their mail, with `due` the day it charges and the \
         amount in `detail`, `service` the service's own site (figma.com, not the mail it came in), and \
         `url` the page where it is managed or cancelled when the notice links \
-        to one (the notice itself otherwise). Hand back every one you find: Yab decides when to show it.
+        to one (the notice itself otherwise). Hand back every one you find: \(Brand.name) decides when to show it.
         If nothing needs them, call `suggest` with no items.
         One of the items may instead offer a routine, when the history shows the user checking the same \
         thing by hand on a schedule (the Stripe dashboard most weekday mornings, one inbox label every \
         evening): `when` (weekdays 9:00, daily 18:30, mon,thu 8:15, monthly 1 9:00, first monday 9:00, every 2 weeks fri 17:00), `task` (what the routine would do, \
         as a request: Check Stripe for failed charges and tell me), `title` (Every weekday 9:00: check \
-        Stripe), `detail` (why: you open it most mornings). Only on a clear pattern; Yab shows one a week \
+        Stripe), `detail` (why: you open it most mornings). Only on a clear pattern; \(Brand.name) shows one a week \
         at most.
         5. Before you close your tabs, go back over every message you opened: each one that was unread when \
         you found it must show unread again in its list; mark it unread now if it doesn't. Then close your tabs.

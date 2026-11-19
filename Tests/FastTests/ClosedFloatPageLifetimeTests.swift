@@ -289,7 +289,7 @@ struct ClosedFloatPageLifetimeTests {
                      && world.count < 80 && world.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") })
         let probe = "appkit-gate-" + world
         try #require(env["YAB_PROBE"] == probe && env["YAB_HISTORY"] == "own")
-        let expected = "dev.serafim.fast.test." + probe.lowercased()
+        let expected = "net.serubin.pane.test." + probe.lowercased()
         let suite = try #require(UserDefaults(suiteName: expected), "Never fall back to standard defaults")
         try #require(Store.testing && Store.world == probe.lowercased())
         try #require(Store.settings !== UserDefaults.standard, "Refuse the production fallback")

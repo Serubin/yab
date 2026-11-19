@@ -175,7 +175,7 @@ final class ModelDefaults: ObservableObject {
         /// (PlanText), and every plan with Yab's tools takes tasks.
         func refusal(_ cli: String) -> String? {
             guard let plan = AgentPlan.of(cli) else { return nil }
-            if self == .tasks, !plan.tools { return "\(plan.name) can't use Yab's tools in tasks yet." }
+            if self == .tasks, !plan.tools { return "\(plan.name) can't use \(Brand.name)'s tools in tasks yet." }
             return nil
         }
     }
@@ -325,14 +325,14 @@ final class ModelDefaults: ObservableObject {
         guard text == "gemini" else { return (preferred, nil) }
         if geminiTools { return ("gemini", nil) }
         guard toolsHere else { return ("gemini", geminiAloneLine) }
-        return (preferred, "Gemini can\u{2019}t use Yab\u{2019}s tools in tasks yet, so \(AgentSetupModel.name(preferred)) took this task.")
+        return (preferred, "Gemini can\u{2019}t use \(Brand.name)\u{2019}s tools in tasks yet, so \(AgentSetupModel.name(preferred)) took this task.")
     }
 
-    nonisolated static let geminiAloneLine = "Gemini can\u{2019}t use Yab\u{2019}s tools in tasks yet, so it answered without your tabs. "
+    nonisolated static let geminiAloneLine = "Gemini can\u{2019}t use \(Brand.name)\u{2019}s tools in tasks yet, so it answered without your tabs. "
         + "Connect Claude, ChatGPT or Cursor in Settings \u{203A} AI for tasks done in tabs."
     /// A task nobody watches (a routine, a boost, getting to know you) that
     /// only Gemini could take: it fails saying so rather than answering blind.
-    nonisolated static let geminiUnattended = "Gemini can\u{2019}t use Yab\u{2019}s tools yet, so it can\u{2019}t do this on its own. "
+    nonisolated static let geminiUnattended = "Gemini can\u{2019}t use \(Brand.name)\u{2019}s tools yet, so it can\u{2019}t do this on its own. "
         + "Connect Claude, ChatGPT or Cursor in Settings \u{203A} AI for it."
 
     /// A plan that can use Yab's tools is on this Mac: connected in Yab, or
@@ -368,8 +368,8 @@ final class ModelDefaults: ObservableObject {
         guard self[.tasks].cli == nil else { return nil }
         let route = tasksRoute
         guard route.line != nil else { return nil }
-        return route.cli == "gemini" ? "Gemini can\u{2019}t use Yab\u{2019}s tools yet, so it answers tasks without your tabs."
-            : "Gemini can\u{2019}t use Yab\u{2019}s tools yet, so tasks run on \(AgentSetupModel.name(route.cli))."
+        return route.cli == "gemini" ? "Gemini can\u{2019}t use \(Brand.name)\u{2019}s tools yet, so it answers tasks without your tabs."
+            : "Gemini can\u{2019}t use \(Brand.name)\u{2019}s tools yet, so tasks run on \(AgentSetupModel.name(route.cli))."
     }
 
     /// Where Gemini's tasks would go if it were chosen now, for Connect's
@@ -976,7 +976,7 @@ struct AppleModelRow: View {
                 .frame(width: PlanAccountRow.markSide, height: PlanAccountRow.markSide)
             VStack(alignment: .leading, spacing: 3) { // design: preserve the existing SettingsRow text gap
                 Text("Apple Intelligence")
-                Text(!model.enabled ? "Apple Intelligence is off in Yab."
+                Text(!model.enabled ? "Apple Intelligence is off in \(Brand.name)."
                      : FormModel.ready ? "Process short text on this Mac with Apple Intelligence."
                      : "Apple Intelligence is off. Short text uses your connected subscription.")
                     .font(.callout)
@@ -1061,7 +1061,7 @@ private struct GeminiPlanRow: View {
         case .signingIn:
             if !gemini.pageOpen { return "Opening Google's sign-in…" }
             if let choice = gemini.choice, let email = choice.email {
-                return "Allow Gemini in the " + (choice.place ?? "Yab") + " tab as " + email
+                return "Allow Gemini in the " + (choice.place ?? "\(Brand.name)") + " tab as " + email
             }
             return "Allow Gemini in the private Google sign-in tab."
         case nil: break
@@ -1269,7 +1269,7 @@ struct Renewal: Equatable {
         case .signingIn(let cli):
             let plan = AgentSetupModel.plan(cli)
             switch page {
-            case .yab: return Renewal(detail: "Sign in to \(plan) in the Yab tab", show: "Show", cancel: true)
+            case .yab: return Renewal(detail: "Sign in to \(plan) in the \(Brand.name) tab", show: "Show", cancel: true)
             case .browser(let name): return Renewal(detail: "Sign in to \(plan) in \(name ?? "your browser")", show: "Open Again", cancel: true)
             case .opening, nil: return Renewal(detail: "Opening the sign-in…", wheel: true, cancel: true)
             }
@@ -1336,7 +1336,7 @@ struct QuotaDetails: View {
                 }
             }
             if windows.isEmpty {
-                Text(account.cli == "cursor" ? "Cursor doesn't share how much is left." : "Yab hasn't run anything on this account yet, so its plan hasn't said how much is left.")
+                Text(account.cli == "cursor" ? "Cursor doesn't share how much is left." : "\(Brand.name) hasn't run anything on this account yet, so its plan hasn't said how much is left.")
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 if account.cli == "cursor" {

@@ -139,7 +139,7 @@ final class LaunchArrival: NSObject, AVAudioPlayerDelegate {
         let margin: CGFloat = 76
         let frame = window.frame.insetBy(dx: -margin, dy: -margin)
         let carrier = NSWindow(contentRect: frame, styleMask: .borderless, backing: .buffered, defer: false)
-        carrier.title = "Yab Launch Light"
+        carrier.title = "\(Brand.name) Launch Light"
         carrier.backgroundColor = .clear
         carrier.isOpaque = false
         carrier.hasShadow = false
@@ -173,7 +173,7 @@ final class LaunchArrival: NSObject, AVAudioPlayerDelegate {
 
         if let screen = window.screen {
             let dimmer = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: false)
-            dimmer.title = "Yab Launch Dimmer"
+            dimmer.title = "\(Brand.name) Launch Dimmer"
             dimmer.backgroundColor = .black
             dimmer.isOpaque = false
             dimmer.alphaValue = 0

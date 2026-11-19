@@ -129,7 +129,7 @@ enum Cli {
     static var usage: String {
         let c = AgentSetup.command
         return """
-        Use Yab from a terminal: delegate a task or drive browser tabs yourself.
+        Use \(Brand.name) from a terminal: delegate a task or drive browser tabs yourself.
 
         Start here:
           \(c) "Summarize my unread Slack messages" --access browser
@@ -156,15 +156,15 @@ enum Cli {
           \(c) mail file THREAD [N|NAME] [--path]  retrieve an attachment
           \(c) files search [WORDS]          find downloaded, attached or uploaded files
           \(c) files read ID_OR_PATH [--path]  print a file's path and extracted text
-          \(c) every "weekdays 9:00" "task"  schedule a task while Yab is open
+          \(c) every "weekdays 9:00" "task"  schedule a task while \(Brand.name) is open
           \(c) every list                    list routine ids and schedules
           \(c) every run ID                  run a routine now
           \(c) every pause ID                pause a routine; every resume ID enables it
           \(c) every remove ID               remove a routine
-          \(c) status [--json]               check whether Yab is running and what it is doing
-          \(c) serve [--no-person]           keep Yab running in the background
-          \(c) serve --stop                  stop Yab, including active tasks
-          \(c) quit [--force]                quit hidden Yab; --force stops active tasks
+          \(c) status [--json]               check whether \(Brand.name) is running and what it is doing
+          \(c) serve [--no-person]           keep \(Brand.name) running in the background
+          \(c) serve --stop                  stop \(Brand.name), including active tasks
+          \(c) quit [--force]                quit hidden \(Brand.name); --force stops active tasks
           \(c) import [BROWSER]              list browsers or import sign-ins (user approval required)
           \(c) https://example.com           open a page in the user's window
           \(c) setup [claude|codex|cursor|command]   install integrations or just the command
@@ -178,7 +178,7 @@ enum Cli {
           --access browser|full       browser tools, or files and terminal too (may need approval)
           --no-person                 refuse requests that need a person
           --wait-person MIN           wait for a sign-in/approval: 10 minutes in a terminal,
-                                      0.25 minutes when another agent calls Yab
+                                      0.25 minutes when another agent calls \(Brand.name)
         Task exit codes: 0 done; 1 failed; 2 invalid usage; 3 needs the user; 130 stopped.
         Not every command has --help. Use guide for reference; exec --help has exec-specific help.
         """
@@ -191,7 +191,7 @@ enum Cli {
         let socket = Wire.socket([])
         if args.contains("--stop") {
             let got = Wire.ask(socket, ["do": "app-quit", "force": true])
-            if let error = got["error"] as? String { fail(Wire.running ? error : "Yab isn't running.") }
+            if let error = got["error"] as? String { fail(Wire.running ? error : "\(Brand.name) isn't running.") }
             print("Stopped.")
             exit(0)
         }
@@ -199,14 +199,14 @@ enum Cli {
         let nobody = args.contains("--no-person")
         var got = Wire.ask(socket, ["do": "app-serve", "nobody": nobody])
         if got["error"] != nil, !Wire.running {
-            guard Wire.launch(socket, ["--headless", "--serve"] + (nobody ? ["--no-person"] : [])) else { fail("Yab didn't start.") }
+            guard Wire.launch(socket, ["--headless", "--serve"] + (nobody ? ["--no-person"] : [])) else { fail("\(Brand.name) didn't start.") }
             got = Wire.ask(socket, ["do": "app-status"])
         }
         if let error = got["error"] as? String { fail(error) }
         let pid = got["pid"] as? Int ?? 0
         print(got["hidden"] as? Bool == true
-              ? "Yab is serving agents, hidden (pid \(pid))\(nobody ? ", with nobody to sign in or say yes" : ""). It stays until `\(AgentSetup.command) serve --stop`."
-              : "Yab is open (pid \(pid)), and serves agents as long as it is.")
+              ? "\(Brand.name) is serving agents, hidden (pid \(pid))\(nobody ? ", with nobody to sign in or say yes" : ""). It stays until `\(AgentSetup.command) serve --stop`."
+              : "\(Brand.name) is open (pid \(pid)), and serves agents as long as it is.")
         exit(0)
     }
 
@@ -216,7 +216,7 @@ enum Cli {
     /// is told to ask them.
     private static func bring(_ args: [String]) -> Never {
         guard isatty(STDIN_FILENO) == 1, isatty(STDOUT_FILENO) == 1 else {
-            fail("Ask the user to run `\(AgentSetup.command) import` in a terminal: it brings another browser's sign-ins into Yab.", code: 2)
+            fail("Ask the user to run `\(AgentSetup.command) import` in a terminal: it brings another browser's sign-ins into \(Brand.name).", code: 2)
         }
         let socket = Wire.socket([])
         guard let name = args.first else {
@@ -252,9 +252,9 @@ enum Cli {
         if let error = got["error"] as? String { print(error.hasPrefix("Yab isn't running") ? "Yab isn't running." : error); exit(1) }
         let pid = got["pid"] as? Int ?? 0
         let working = got["working"] as? Int ?? 0, waiting = got["waiting"] as? Int ?? 0
-        var line = got["lingering"] as? Bool == true ? "Yab is finishing its tasks before it quits (pid \(pid))"
-            : got["serving"] as? Bool == true && got["hidden"] as? Bool == true ? "Yab is serving agents, hidden (pid \(pid))"
-            : got["hidden"] as? Bool == true ? "Yab is running hidden (pid \(pid))" : "Yab is open (pid \(pid))"
+        var line = got["lingering"] as? Bool == true ? "\(Brand.name) is finishing its tasks before it quits (pid \(pid))"
+            : got["serving"] as? Bool == true && got["hidden"] as? Bool == true ? "\(Brand.name) is serving agents, hidden (pid \(pid))"
+            : got["hidden"] as? Bool == true ? "\(Brand.name) is running hidden (pid \(pid))" : "\(Brand.name) is open (pid \(pid))"
         line += working == 0 ? ", nothing running" : ", \(working) task\(working == 1 ? "" : "s") running"
         if waiting > 0 { line += ", \(waiting) waiting for you" }
         if got["nobody"] as? Bool == true { line += ", nobody at this Mac" }
@@ -520,6 +520,6 @@ enum Cli {
             Self.setUp, object: Bundle.main.bundleIdentifier, userInfo: nil, deliverImmediately: true)
     }
 
-    static let allowed = Notification.Name("dev.serafim.fast.agents-allowed")
-    static let setUp = Notification.Name("dev.serafim.fast.agents-set-up")
+    static let allowed = Notification.Name("net.serubin.pane.agents-allowed")
+    static let setUp = Notification.Name("net.serubin.pane.agents-set-up")
 }

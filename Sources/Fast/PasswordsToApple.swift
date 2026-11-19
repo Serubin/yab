@@ -97,8 +97,8 @@ enum PasswordsToApple {
     /// The same card in the live offer and the isolated keyboard/visual checks.
     static func question(count: Int) -> Question {
         Question(
-            title: "Import your Yab passwords into Apple Passwords?",
-            detail: "\(count) password\(count == 1 ? "" : "s") saved in Yab, on this Mac and your iPhone too. Yab keeps its own.",
+            title: "Import your \(Brand.name) passwords into Apple Passwords?",
+            detail: "\(count) password\(count == 1 ? "" : "s") saved in \(Brand.name), on this Mac and your iPhone too. \(Brand.name) keeps its own.",
             icon: PasswordManagers.icon(PasswordManagers.apple),
             ownIcon: true,
             yes: "Import",
@@ -130,7 +130,7 @@ enum PasswordsToApple {
             }
         }
         if added == 0 {
-            say("Apple Passwords already has every Yab password", mark: "key", browser)
+            say("Apple Passwords already has every \(Brand.name) password", mark: "key", browser)
         } else {
             say("Imported \(added) password\(added == 1 ? "" : "s") into Apple Passwords", mark: "key", browser)
         }

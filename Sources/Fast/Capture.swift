@@ -245,7 +245,7 @@ enum CaptureArt {
         var png: [CFString: Any] = [:]
         if let url { png[kCGImagePropertyPNGDescription] = url.absoluteString }
         if !title.isEmpty { png[kCGImagePropertyPNGTitle] = title }
-        png[kCGImagePropertyPNGSoftware] = "yab"
+        png[kCGImagePropertyPNGSoftware] = Brand.name
         let properties: [CFString: Any] = [
             kCGImagePropertyDPIWidth: 72 * scale,
             kCGImagePropertyDPIHeight: 72 * scale,

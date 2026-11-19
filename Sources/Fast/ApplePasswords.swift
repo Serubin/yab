@@ -13,7 +13,7 @@ import os
 // docs/evidence/apple-passwords-helper-protocol-2026-10-27.md: SRP with the
 // code Passwords shows in its own window, once a helper process, then
 // AES-GCM. macOS lets the helper run only under Yab signed with Apple's
-// browser entitlement (dev.serafim.fast); a dev build is killed as it starts.
+// browser entitlement (net.serubin.pane); a dev build is killed as it starts.
 
 // MARK: - big numbers, as much as SRP's 3072-bit group needs
 
@@ -370,7 +370,7 @@ actor ApplePasswords {
     static let shared = ApplePasswords()
     /// Steps and statuses, never a code, a name or a password: `log stream
     /// --predicate 'category == "ApplePasswords"'`.
-    static let log = Logger(subsystem: "dev.serafim.fast", category: "ApplePasswords")
+    static let log = Logger(subsystem: Store.productionBundleID, category: "ApplePasswords")
 
     /// The host Apple installs for Chrome, and the origin it lets in.
     static let hostName = "com.apple.passwordmanager"
@@ -566,7 +566,7 @@ actor ApplePasswords {
         fillsCodes = (capabilities?["canFillOneTimeCodes"] as? Bool) ?? false
         Self.log.notice("hello: base64 \(self.base64) codes \(self.fillsCodes)")
         let srp = ApplePasswordsSRP(base64: base64)
-        let m0: [String: Any] = ["QID": "m0", "PAKE": srp.first, "HSTBRSR": "Yab"]
+        let m0: [String: Any] = ["QID": "m0", "PAKE": srp.first, "HSTBRSR": "\(Brand.name)"]
         let text = String(decoding: try JSONSerialization.data(withJSONObject: m0), as: UTF8.self)
         let reply = try await exchange(["cmd": 2, "msg": text], cmd: 2, wait: 15)
         guard generation == id, pairingID == pairing, pipe != nil else { throw Failure.notPaired }

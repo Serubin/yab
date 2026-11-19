@@ -148,7 +148,7 @@ extension Agents {
     func spawn(from parent: String, prompt: String, profile: String, name: String?, minutes: Double? = nil) -> (Session?, String?) {
         guard remoteTaskOrigin(parent) == nil else { return (nil, RemoteTaskBoundary.unavailable) }
         guard let up = session(parent), up.parent == nil, up.agent != .external, up.state.live else {
-            return (nil, "only a task Yab runs can start subagents")
+            return (nil, "only a task \(Brand.name) runs can start subagents")
         }
         // Out of sight, in its own shut folder: nobody to hand their tabs to.
         guard !up.sealed else { return (nil, "this task works alone: no subagents") }

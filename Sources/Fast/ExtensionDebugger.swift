@@ -156,7 +156,7 @@ final class ExtensionDebugger: ObservableObject {
             // where it is the one, for getTargets.
             return sessions.values.filter { $0.extensionID == id && $0.tab != nil }.map { ["tabId": $0.tabID, "targetId": $0.targetID] }
         default:
-            throw ExtensionShims.Unsupported(what: "\(api) isn't available in Yab")
+            throw ExtensionShims.Unsupported(what: "\(api) isn't available in \(Brand.name)")
         }
     }
 

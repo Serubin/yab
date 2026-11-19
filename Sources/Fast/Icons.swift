@@ -408,7 +408,7 @@ final class Favicons {
     }
 
     /// Where a kept icon came from, written on its file beside the picture.
-    nonisolated private static let sourceName = "dev.serafim.yab.icon-source"
+    nonisolated private static let sourceName = "net.serubin.pane.icon-source"
 
     nonisolated static func mark(_ file: URL, source: String) {
         let bytes = Array(source.utf8)

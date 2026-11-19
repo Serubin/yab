@@ -83,7 +83,7 @@ func draw(scale: Int) -> NSBitmapImageRep {
         text.draw(at: CGPoint(x: (size.width - box.width) / 2, y: size.height - y - box.height / 2))
     }
     line("Double-click. That's it.", size: 20, weight: .semibold, alpha: 0.94, y: 318)
-    line("Yab moves itself into Applications and opens.", size: 13, weight: .regular, alpha: 0.5, y: 345)
+    line("Pane moves itself into Applications and opens.", size: 13, weight: .regular, alpha: 0.5, y: 345)
     NSGraphicsContext.restoreGraphicsState()
     return rep
 }

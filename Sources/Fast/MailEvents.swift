@@ -426,8 +426,8 @@ struct MailEventPop: View {
     private var second: String? {
         if let trouble = card.trouble { return trouble }
         switch place {
-        case .ask: return "Yab asks for your calendar first"
-        case .denied: return "Allow Yab in Privacy & Security \u{203A} Calendars"
+        case .ask: return "\(Brand.name) asks for your calendar first"
+        case .denied: return "Allow \(Brand.name) in Privacy & Security \u{203A} Calendars"
         case .mac, .google: return event.with
         }
     }

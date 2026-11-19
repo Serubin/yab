@@ -36,7 +36,7 @@ import WebKit
 final class Passkeys: NSObject {
     static let shared = Passkeys()
 
-    private static let log = Logger(subsystem: "dev.serafim.fast", category: "Passkeys")
+    private static let log = Logger(subsystem: Store.productionBundleID, category: "Passkeys")
 
     // MARK: - the Mac's permission
 

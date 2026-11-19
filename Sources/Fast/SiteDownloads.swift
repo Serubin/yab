@@ -130,7 +130,7 @@ enum SiteDownloads {
     /// never come through here (Updater.swift).
     nonisolated static func quarantine(_ file: URL, from source: URL?, page: URL?) {
         var properties: [String: Any] = [
-            kLSQuarantineAgentNameKey as String: "Yab",
+            kLSQuarantineAgentNameKey as String: "\(Brand.name)",
             kLSQuarantineTypeKey as String: kLSQuarantineTypeWebDownload as String,
         ]
         if let source, ["http", "https"].contains(source.scheme?.lowercased() ?? "") {

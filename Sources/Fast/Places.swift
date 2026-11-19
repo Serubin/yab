@@ -925,7 +925,7 @@ extension Browser {
             return "Same password on \(others == 1 ? "one other site" : "\(others) other sites"). One leak opens all of them."
         }
         if query.stock.weak.contains(entry.id) {
-            return "Easy to guess. Short, common, or made of your name or the site’s. Change it on the site; Yab keeps the new one when you sign in."
+            return "Easy to guess. Short, common, or made of your name or the site’s. Change it on the site; \(Brand.name) keeps the new one when you sign in."
         }
         return nil
     }
@@ -948,7 +948,7 @@ extension Browser {
             guard yes else { return }
             self.proveOwner("export your passwords") {
                 let panel = NSSavePanel()
-                panel.nameFieldStringValue = "Yab Passwords.csv"
+                panel.nameFieldStringValue = "\(Brand.name) Passwords.csv"
                 panel.directoryURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
                 panel.allowedContentTypes = [.commaSeparatedText]
                 guard panel.runModal() == .OK, let url = panel.url else { return }
@@ -967,7 +967,7 @@ extension Browser {
     func exportHistory() {
         close()
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Yab History.csv"
+        panel.nameFieldStringValue = "\(Brand.name) History.csv"
         panel.directoryURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
         panel.allowedContentTypes = [.commaSeparatedText]
         guard panel.runModal() == .OK, let url = panel.url else { return }
@@ -1092,7 +1092,7 @@ extension Browser {
                 let found = elsewhereFound(words)
                 if let first = found.first {
                     let many = found.count
-                    return PlaceEmpty(place: place, searching: true, title: "Nothing for “\(words)” in Yab",
+                    return PlaceEmpty(place: place, searching: true, title: "Nothing for “\(words)” in \(Brand.name)",
                                       detail: many == 1 ? "\(first.from) has 1 you haven’t brought in: \(first.login.host), \(first.login.user)."
                                                         : "\(first.from) has \(many) you haven’t brought in.",
                                       actions: [FieldAction(id: "bring", title: many == 1 ? "Bring It In" : "Bring Them In", symbol: "tray.and.arrow.down") {
@@ -1103,13 +1103,13 @@ extension Browser {
                                       }])
                 }
                 return PlaceEmpty(place: place, searching: true, title: "Nothing for “\(words)”",
-                                  detail: query.stock.elsewhere == nil ? "Not in Yab. Looking in your other browsers…" : "Not in Yab, and not in your other browsers either.")
+                                  detail: query.stock.elsewhere == nil ? "Not in \(Brand.name). Looking in your other browsers…" : "Not in \(Brand.name), and not in your other browsers either.")
             }
             // The browsers, Safari, then a CSV file: one chosen, one button.
             let sources = placeSources(.passwords)
             let chosen = sources[min(query.spot, sources.count - 1)]
-            return PlaceEmpty(place: place, searching: false, title: "Your passwords, kept by Yab",
-                              detail: "Yab fills them in when you sign in and keeps new ones when you ask it to. They stay in this Mac’s keychain.",
+            return PlaceEmpty(place: place, searching: false, title: "Your passwords, kept by \(Brand.name)",
+                              detail: "\(Brand.name) fills them in when you sign in and keeps new ones when you ask it to. They stay in this Mac’s keychain.",
                               footnote: chosen.name == "Safari" ? "Safari’s own export is the one way to its passwords." : chosen.symbol == nil ? "macOS asks once for \(chosen.name)’s key. Nothing changes in \(chosen.name)." : "A CSV from Chrome, Dia or Google Password Manager.",
                               sources: sources, actions: [chosen.take])
         case .autofill:
@@ -1119,7 +1119,7 @@ extension Browser {
             // You always stand in the list, so this is a search that found
             // nothing, or a filter with nothing under it.
             return PlaceEmpty(place: place, searching: false, title: query.placeFilter == 2 ? "No cards yet" : "No addresses yet",
-                              detail: "Yab fills them in where you pay or ship. A card fills only after Touch ID.",
+                              detail: "\(Brand.name) fills them in where you pay or ship. A card fills only after Touch ID.",
                               actions: [FieldAction(id: "new", title: query.placeFilter == 2 ? "New Card" : "New Address", symbol: query.placeFilter == 2 ? "yab.card.plus" : "yab.home.plus") {
                                   self.beginEdit(self.query.placeFilter == 2 ? .card(nil) : .address(nil))
                               }, FieldAction(id: "more", title: "Bring In…", symbol: "tray.and.arrow.down") { self.bringMore() }])
@@ -1151,7 +1151,7 @@ extension Browser {
             let newTabKey = Keymap.shared.text(.newTab)
             let newTabPlace = newTabKey.isEmpty ? "New Tab" : "New Tab (\(newTabKey))"
             return PlaceEmpty(place: place, searching: false, title: "No routines yet",
-                              detail: "A task that comes back on its own, while Yab is open: what it finds waits in \(newTabPlace) and in its chat.",
+                              detail: "A task that comes back on its own, while \(Brand.name) is open: what it finds waits in \(newTabPlace) and in its chat.",
                               actions: [FieldAction(id: "new", title: "New Routine…", symbol: "plus") {
                                   self.close()
                                   SettingsWindow.shared.showRoutine(nil, for: self)

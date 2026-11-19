@@ -146,9 +146,9 @@ final class CrashSessionsTests: XCTestCase {
         let run = makeRun()
         for message in ["SignalReady: pid=123 asn=0x0-0x1", "SIGNAL: pid=123 asn=0x0-0x1",
                         "ProcessAssertion::acquireSync Successfully took RBS assertion 'Jetsam Boost' for process with PID=456"] {
-            XCTAssertNil(CrashExitLogs.evidence(at: run.observed, process: "yab", pid: 123, message: message, run: run))
+            XCTAssertNil(CrashExitLogs.evidence(at: run.observed, process: "pane", pid: 123, message: message, run: run))
         }
-        let helper = try XCTUnwrap(CrashExitLogs.evidence(at: run.observed, process: "yab", pid: 123,
+        let helper = try XCTUnwrap(CrashExitLogs.evidence(at: run.observed, process: "pane", pid: 123,
             message: "pid 456 terminated with signal 9", run: run))
         XCTAssertEqual(helper.correlatedPID, 456, "the referenced process, not the logger's PID")
         XCTAssertEqual(helper.signal, 9)

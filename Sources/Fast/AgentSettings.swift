@@ -66,7 +66,7 @@ struct AIPage: View {
                 .settingsAnchor("agents-skills")
             FeatureRow(.siteButtons, detail: siteButtonsDetail, model: model)
                 .settingsAnchor("ai-site-buttons")
-            FeatureRow(.assistants, detail: "Connect dots, Muse or Grok Bot to Yab.", model: model)
+            FeatureRow(.assistants, detail: "Connect dots, Muse or Grok Bot to \(Brand.name).", model: model)
                 .settingsAnchor("ai-assistants")
         }
         BoostAISettings()
@@ -100,7 +100,7 @@ struct AIPage: View {
 
     private var agentsDetail: String {
         prefs.bench ? "Manage task permissions in your tabs."
-            : "Paused. Agents can't use Yab."
+            : "Paused. Agents can't use \(Brand.name)."
     }
 
     /// How far Get to Know Me has got while it runs, else what is kept.
@@ -121,7 +121,7 @@ struct AIPage: View {
 
     private var routinesDetail: String {
         switch routines.all.count {
-        case 0: return "Scheduled tasks. Requires Yab to be open."
+        case 0: return "Scheduled tasks. Requires \(Brand.name) to be open."
         case 1: return routines.all[0].name
         default: return "\(routines.all.count) routines"
         }
@@ -138,8 +138,8 @@ struct AISwitchSettings: View {
 
     var body: some View {
         Section {
-            SettingsRow("AI in Yab", detail: AIUse.detail(prefs.aiUse)) {
-                GlassTrack(title: "AI in Yab", options: AIUse.Level.allCases.map { ($0.title, $0) }, selection: $prefs.aiUse)
+            SettingsRow("AI in \(Brand.name)", detail: AIUse.detail(prefs.aiUse)) {
+                GlassTrack(title: "AI in \(Brand.name)", options: AIUse.Level.allCases.map { ($0.title, $0) }, selection: $prefs.aiUse)
                     .frame(width: 270)
             }
             .settingsAnchor("ai-use")
@@ -217,7 +217,7 @@ struct AgentsPage: View {
             // An agent that needs you, or is done, says so behind other apps
             // only where macOS lets Yab already: asked only from here.
             if notify.permission != .allowed {
-                SettingsRow("Notifications are off for Yab", detail: notify.permission == .denied
+                SettingsRow("Notifications are off for \(Brand.name)", detail: notify.permission == .denied
                             ? "Allow notifications in System Settings for task completion and approval requests."
                             : "Allow notifications for task completion and approval requests.") {
                     Button("Allow…") { Task { await notify.allow() } }
@@ -533,7 +533,7 @@ final class AgentSetupModel: ObservableObject {
     static func refused(_ cli: String) -> String { "\(name(cli)) wasn't signed in." }
     /// macOS stopped the copy as it ran, or moved it to the Trash.
     static func blocked(_ cli: String) -> String { "macOS blocked \(tool(cli)). Reinstall it." }
-    static func untaken(_ clis: [String]) -> String { "Yab couldn't add its tools for \(names(clis))." }
+    static func untaken(_ clis: [String]) -> String { "\(Brand.name) couldn't add its tools for \(names(clis))." }
 
     /// When an install is slow enough to say so: two minutes, or less in a
     /// test world that says so.

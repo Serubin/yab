@@ -89,9 +89,9 @@ final class AssistantConnect: ObservableObject {
         trouble = nil
         stalled = nil
         tabOpen = false
-        let entrance = bot == .grok ? "Open Bots in the sidebar and select the person's existing bot. Use its /bot/ chat, not the ordinary Grok chat or the marketing site. If sign-in is needed, use Yab's handoff and wait for the person before continuing. " : ""
-        let prompt = "Open \(bot.url) in a tab of your own. \(entrance)Find the chat with \(bot.rawValue) in the person's signed-in Yab and send this message exactly: \(AssistantsPage.message(client: bot.client, nonce: nonce)) The person pressed Connect for this, which is their yes to sending exactly that message: send it without asking. Read its reply and return the eight-character Yab connection code in XXXX-XXXX form. If the site needs sign-in, call handoff and wait for the person. If this site has no web chat, say that plainly; do not guess a code."
-        guard let task = Agents.shared.task(prompt, context: [], on: nil, said: "Connect \(bot.rawValue) to Yab",
+        let entrance = bot == .grok ? "Open Bots in the sidebar and select the person's existing bot. Use its /bot/ chat, not the ordinary Grok chat or the marketing site. If sign-in is needed, use \(Brand.name)'s handoff and wait for the person before continuing. " : ""
+        let prompt = "Open \(bot.url) in a tab of your own. \(entrance)Find the chat with \(bot.rawValue) in the person's signed-in \(Brand.name) and send this message exactly: \(AssistantsPage.message(client: bot.client, nonce: nonce)) The person pressed Connect for this, which is their yes to sending exactly that message: send it without asking. Read its reply and return the eight-character \(Brand.name) connection code in XXXX-XXXX form. If the site needs sign-in, call handoff and wait for the person. If this site has no web chat, say that plainly; do not guess a code."
+        guard let task = Agents.shared.task(prompt, context: [], on: nil, said: "Connect \(bot.rawValue) to \(Brand.name)",
                                             name: "Connect \(bot.rawValue)") else {
             trouble = "Couldn\u{2019}t start the connection. Enter its code below."
             return
@@ -344,7 +344,7 @@ struct AssistantsIntro: View {
                         Button("Connect") { start(bot) }.settingsButton(.primary)
                     }
                 } else {
-                    SettingsRow("Let Yab Fetch It", detail: "Needs Claude or ChatGPT to open \(bot.rawValue) for you.") {
+                    SettingsRow("Let \(Brand.name) Fetch It", detail: "Needs Claude or ChatGPT to open \(bot.rawValue) for you.") {
                         Button("Set Up") { browser.openSettings(.models) }.settingsButton()
                     }
                 }
@@ -361,7 +361,7 @@ struct AssistantsIntro: View {
             Section {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 3) { // design: SettingsRow's gap under a title
-                        Text("Add Yab as a Connector")
+                        Text("Add \(Brand.name) as a Connector")
                         Text(address)
                             .font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
                             .lineLimit(1).truncationMode(.middle)
@@ -382,7 +382,7 @@ struct AssistantsIntro: View {
 
     private var addingCode: some View {
         Section {
-            SettingsRow("Enter Its Code", detail: connect.bot != nil ? "Already have it? Type it, and Yab stops."
+            SettingsRow("Enter Its Code", detail: connect.bot != nil ? "Already have it? Type it, and \(Brand.name) stops."
                         : pick.map { "The code \($0.rawValue) showed." } ?? "The code the app or agent showed.") {
                 CodeGroupsField(code: Binding(get: { connect.code }, set: { connect.editCode($0) }),
                                 autofocus: !hasAgent || connect.stopped != nil || pick == nil, onPaste: submit, onSubmit: submit)
@@ -430,7 +430,7 @@ struct AssistantsIntro: View {
     private func selection(compact: Bool) -> some View {
         VStack(spacing: compact ? 8 : 16) {
             VStack(spacing: 6) {
-                Text("Let your assistants use Yab")
+                Text("Let your assistants use \(Brand.name)")
                     .font(.system(size: 17, weight: .medium))
                 if pick != nil || !compact {
                     Text("They open tabs on this Mac, signed in as you. Sending, paying and deleting wait for your yes.")
@@ -528,7 +528,7 @@ struct AssistantsIntro: View {
                 Text(stalled ? "\(bot.rawValue) didn’t send a code" : needsYou ? "Sign in to \(bot == .dots ? "ChatGPT" : bot.rawValue)" : "Connecting \(bot.rawValue)")
                     .font(.system(size: 17, weight: .medium))
                 Text(stalled ? "Its tab is still open if you want to see why."
-                     : needsYou ? "\(bot.rawValue)’s tab needs you. Yab goes on once you’re in."
+                     : needsYou ? "\(bot.rawValue)’s tab needs you. \(Brand.name) goes on once you’re in."
                      : "Asking \(bot.rawValue) for a code in a tab of its own.")
                     .font(.callout).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -576,7 +576,7 @@ struct AssistantsIntro: View {
         VStack(spacing: compact ? 8 : 12) {
             HStack(spacing: 10) {
                 Rectangle().fill(Palette.ink.opacity(0.1)).frame(height: 0.5)
-                Text(connect.bot != nil ? "already have it? Type it, and Yab stops" : "or enter the code \(pick?.rawValue ?? "it") showed")
+                Text(connect.bot != nil ? "already have it? Type it, and \(Brand.name) stops" : "or enter the code \(pick?.rawValue ?? "it") showed")
                     .font(.system(size: 11.5)).foregroundStyle(.secondary).fixedSize()
                 Rectangle().fill(Palette.ink.opacity(0.1)).frame(height: 0.5)
             }
@@ -596,7 +596,7 @@ struct AssistantsIntro: View {
 
     private func connector(compact: Bool) -> some View {
         VStack(spacing: compact ? 6 : 12) {
-            Text("Add Yab as a connector").fontWeight(.medium)
+            Text("Add \(Brand.name) as a connector").fontWeight(.medium)
             Text("In ChatGPT, Claude.ai or any app with connectors. Its sign-in page brings the code here by itself.")
                 .font(.callout).foregroundStyle(.secondary)
             HStack(spacing: 8) {
@@ -620,7 +620,7 @@ struct AssistantsIntro: View {
 
     private func help(compact: Bool) -> some View {
         VStack(spacing: compact ? 6 : 10) {
-            helpRow("Let Yab fetch it", detail: "Needs Claude or ChatGPT to open \(named) for you.", button: "Set Up") { browser.openSettings(.models) }
+            helpRow("Let \(Brand.name) fetch it", detail: "Needs Claude or ChatGPT to open \(named) for you.", button: "Set Up") { browser.openSettings(.models) }
             helpRow("No code yet?", detail: "Paste this message into \(named)’s chat.", button: "Copy Message") { copyMessage(pick) }
         }
         .padding(10).background(Palette.ground, in: RoundedRectangle(cornerRadius: Radius.surface))

@@ -7,7 +7,7 @@ import os
 @MainActor
 enum UsageProbe {
     static var ownedTabs: Set<UUID> = []
-    private static let log = OSLog(subsystem: "dev.serafim.fast.usage", category: .pointsOfInterest)
+    private static let log = OSLog(subsystem: Store.productionBundleID + ".usage", category: .pointsOfInterest)
 
     struct Interval {
         let id: OSSignpostID

@@ -115,7 +115,7 @@ final class Clips: ObservableObject {
     /// The count the clipboard had after Fast itself put a clip back on it:
     /// that change is not a new copy.
     private var ours: Int?
-    private let disk = DispatchQueue(label: "dev.serafim.fast.clips", qos: .utility)
+    private let disk = DispatchQueue(label: "net.serubin.pane.clips", qos: .utility)
     private var saving = false
 
     /// An isolated history can supply retained bytes without disk or keychain
@@ -263,7 +263,7 @@ final class Clips: ObservableObject {
 
     // MARK: - taking a copy
 
-    private static let reading = DispatchQueue(label: "dev.serafim.fast.clips.read", qos: .userInitiated)
+    private static let reading = DispatchQueue(label: "net.serubin.pane.clips.read", qos: .userInitiated)
 
     /// The reading queue's own reference to the clipboard, only ever used
     /// on `reading`.
@@ -714,7 +714,7 @@ final class Clips: ObservableObject {
     }
 
     enum Filter: String, CaseIterable {
-        case all = "All Types", text = "Text", links = "Links", images = "Images", colors = "Colors", files = "Files", fast = "From Yab"
+        case all = "All Types", text = "Text", links = "Links", images = "Images", colors = "Colors", files = "Files", fast = "From Pane"
 
         func admits(_ clip: Clip) -> Bool {
             switch self {
@@ -818,7 +818,7 @@ final class Clips: ObservableObject {
 
     // MARK: - the key
 
-    nonisolated private static let service = Store.world.map { "Fast Clipboard (\($0))" } ?? "Fast Clipboard"
+    nonisolated static let service = "\(Store.name) Clipboard"
     nonisolated(unsafe) private static var cached: SymmetricKey?
     nonisolated private static let keyLock = NSLock()
 

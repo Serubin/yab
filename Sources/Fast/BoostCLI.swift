@@ -11,7 +11,7 @@ enum BoostCLI {
         let socket = Wire.socket(args)
         var words = args
         if let i = words.firstIndex(of: "--socket") { words.removeSubrange(i..<min(i + 2, words.count)) }
-        guard let plugin = words.first else { fail("usage: yab PLUGIN [TOOL] [JSON or --argument VALUE] [--json] [--socket PATH]", code: 2) }
+        guard let plugin = words.first else { fail("usage: \(AgentSetup.command) PLUGIN [TOOL] [JSON or --argument VALUE] [--json] [--socket PATH]", code: 2) }
         guard Wire.allowed else { fail(Wire.offline()) }
         let attached = Wire.ask(socket, ["do": "agent-attach", "name": "Plugin CLI"])
         guard let session = attached["session"] as? String else { fail(attached["error"] as? String ?? "Could not attach.") }
@@ -37,7 +37,7 @@ enum BoostCLI {
         repeat {
             let result = Wire.ask(socket, request)
             if result["asking"] as? Bool == true {
-                fputs("Waiting for approval in Yab.\n", stderr); Thread.sleep(forTimeInterval: 1); continue
+                fputs("Waiting for approval in \(Brand.name).\n", stderr); Thread.sleep(forTimeInterval: 1); continue
             }
             print(BoostScript.json(result)); detach(); exit(result["error"] == nil ? 0 : 1)
         } while Date() < deadline

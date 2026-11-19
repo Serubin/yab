@@ -11,7 +11,7 @@ enum WebKitIPCBoundary {
     static let scriptLimit = 256
     static let nodeLimit = 32_768
     static let error = NSError(domain: "Yab.WebKitIPC", code: 1,
-                               userInfo: [NSLocalizedDescriptionKey: "WebKit payload exceeds Yab's IPC safety limit"])
+                               userInfo: [NSLocalizedDescriptionKey: "WebKit payload exceeds \(Brand.name)'s IPC safety limit"])
     private static var installed = false
     typealias Done = @convention(block) (AnyObject?, NSError?) -> Void
 

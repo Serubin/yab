@@ -126,7 +126,7 @@ final class MailSetup: ObservableObject {
     private var taken: String?
     private var watch: Timer?
 
-    nonisolated static let hidden = "•••• (kept by Yab)"
+    nonisolated static let hidden = "•••• (kept by \(Brand.name))"
 
     /// Whether this way is open to an address: its provider has the way,
     /// an agent can run, and the page is signed in.
@@ -146,7 +146,7 @@ final class MailSetup: ObservableObject {
     func words(_ step: Step, _ provider: MailKnownProvider) -> String {
         switch step {
         case .open: return "Opening \(MailSetupWay.pageName(provider))"
-        case .make: return "Making an app password named \u{201C}Yab\u{201D}"
+        case .make: return "Making an app password named \u{201C}\(Brand.name)\u{201D}"
         case .keep: return "Keeping it in the keychain"
         case .imap: return "Turning on IMAP in \(provider.name)"
         case .test: return "Trying \(provider.name)\u{2019}s servers"
@@ -320,7 +320,7 @@ final class MailSetup: ObservableObject {
         run = after
         watch?.invalidate()
         watch = nil
-        return ["ok": true, "text": "\(after.address) is in Yab's mail. Close your tabs and say so in a line."]
+        return ["ok": true, "text": "\(after.address) is in \(Brand.name)'s mail. Close your tabs and say so in a line."]
     }
 
     // MARK: - what the agent reads
@@ -331,7 +331,7 @@ final class MailSetup: ObservableObject {
     func guarded(_ verb: String, session: String?, _ answer: @escaping ([String: Any]) -> Void) -> ([String: Any]) -> Void {
         guard let now = run, let session, now.session == session, let way = MailSetupWay.of(now.provider) else { return answer }
         if verb == "shot" {
-            return { _ in answer(["error": "Screenshots are off while Yab sets up mail. Read the page with snapshot."]) }
+            return { _ in answer(["error": "Screenshots are off while \(Brand.name) sets up mail. Read the page with snapshot."]) }
         }
         let taken = self.taken
         let loose = way.loose
@@ -395,19 +395,19 @@ final class MailSetup: ObservableObject {
     nonisolated static func words(_ address: String, provider: MailKnownProvider, asked: Bool = false) -> String {
         let page = MailSetupWay.pageName(provider)
         let imap = !provider.imapSettingPage.isEmpty
-        var words = "Set up the mail account \(address) in Yab (\(provider.name)). "
-        words += asked ? "The user asked for it in this chat: that is their yes to making an app password named Yab at \(page)"
-            : "I pressed Set It Up in Settings \u{203A} Mail: that is my yes to making an app password named Yab at \(page)"
+        var words = "Set up the mail account \(address) in \(Brand.name) (\(provider.name)). "
+        words += asked ? "The user asked for it in this chat: that is their yes to making an app password named \(Brand.name) at \(page)"
+            : "I pressed Set It Up in Settings \u{203A} Mail: that is my yes to making an app password named \(Brand.name) at \(page)"
         words += imap ? ", and to turning on IMAP access in \(provider.name)\u{2019}s settings. " : ". "
-        words += asked ? "If \(page) isn\u{2019}t signed in in Yab, its page asks for a sign-in: hand it over as step 2 says.\n\n" : "I\u{2019}m signed in to \(page) in Yab.\n\n"
+        words += asked ? "If \(page) isn\u{2019}t signed in in \(Brand.name), its page asks for a sign-in: hand it over as step 2 says.\n\n" : "I\u{2019}m signed in to \(page) in \(Brand.name).\n\n"
         words += "1. Open \(provider.appPasswordPage) in a tab of your own, then call mail_setup with do: step, step: open.\n"
-        words += "2. Make a new app password named Yab. Call mail_setup with do: step, step: make just before you press Create or Generate. "
+        words += "2. Make a new app password named \(Brand.name). Call mail_setup with do: step, step: make just before you press Create or Generate. "
         words += "If the site asks for my password again or wants a sign-in, call handoff on that tab with a short reason (Type your \(page) password): never type a password and never sign in yourself.\n"
-        words += "3. While the page shows the new password, call mail_setup with do: keep_password and that tab. Yab takes it off the page into the keychain; it reads as \(hidden) to you. Never copy, type or repeat it. Then close its dialog.\n"
+        words += "3. While the page shows the new password, call mail_setup with do: keep_password and that tab. \(Brand.name) takes it off the page into the keychain; it reads as \(hidden) to you. Never copy, type or repeat it. Then close its dialog.\n"
         if imap {
             words += "4. Call mail_setup with do: step, step: imap, open \(provider.imapSettingPage) and turn IMAP access on for the mailbox.\n"
         }
-        words += "\(imap ? 5 : 4). Call mail_setup with do: finish. Yab tries both servers with the kept password and adds the account. If it says what failed, mail_probe says more: fix what you can and finish again.\n\n"
+        words += "\(imap ? 5 : 4). Call mail_setup with do: finish. \(Brand.name) tries both servers with the kept password and adds the account. If it says what failed, mail_probe says more: fix what you can and finish again.\n\n"
         words += "If you can\u{2019}t go on, call mail_setup with do: stuck and why, in a line. Screenshots are off for this task: read pages with snapshot. Close your tabs when you\u{2019}re done and say what happened in a line."
         return words
     }

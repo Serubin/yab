@@ -36,9 +36,9 @@ extension AIUse {
     /// What the detail line under the switch says.
     static func detail(_ level: Level) -> String {
         switch level {
-        case .on: return "Everywhere in Yab."
+        case .on: return "Everywhere in \(Brand.name)."
         case .asked: return "Only ⌘J and selected text."
-        case .off: return "No AI anywhere in Yab."
+        case .off: return "No AI anywhere in \(Brand.name)."
         }
     }
 }

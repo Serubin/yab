@@ -405,7 +405,7 @@ final class MailRecall {
     /// question, as text marked as data.
     func answer(_ question: String, from: String?, after: Date?, before: Date?, limit: Int) async -> String {
         let memories = kept.map { ($0.key, $0.value.memory) }.sorted { $0.0 < $1.0 }
-        guard !memories.isEmpty else { return "Yab keeps no memory of the user's mail yet. Search the last 60 days with mail_search." }
+        guard !memories.isEmpty else { return "\(Brand.name) keeps no memory of the user's mail yet. Search the last 60 days with mail_search." }
         return await Task.detached(priority: .userInitiated) {
             MailRecall.recall(question, in: memories, embedder: AppleEmbedder.shared, from: from, after: after, before: before, limit: limit)
         }.value
@@ -429,10 +429,10 @@ final class MailRecall {
     /// The pieces found, a mail a paragraph, its id, date and people first.
     nonisolated static func said(_ hits: [(account: String, hit: MailMemoryHit)], progress: MailMemoryProgress, question: String) -> String {
         let reach = progress.built
-            ? "Searched Yab's memory of the user's mail: all \(progress.mails.formatted()) mails of the last 5 years."
+            ? "Searched \(Brand.name)'s memory of the user's mail: all \(progress.mails.formatted()) mails of the last 5 years."
             : progress.about > 0
-            ? "Searched Yab's memory of the user's mail: \(progress.mails.formatted()) of about \(progress.about.formatted()) mails of the last 5 years so far, still being read, so older mail may be missing."
-            : "Searched Yab's memory of the user's mail: \(progress.mails.formatted()) recent mails so far, older ones not read yet, so they may be missing."
+            ? "Searched \(Brand.name)'s memory of the user's mail: \(progress.mails.formatted()) of about \(progress.about.formatted()) mails of the last 5 years so far, still being read, so older mail may be missing."
+            : "Searched \(Brand.name)'s memory of the user's mail: \(progress.mails.formatted()) recent mails so far, older ones not read yet, so they may be missing."
         guard !hits.isEmpty else { return reach + "\nNothing in it answers \"\(question)\"." }
         var order: [String] = []
         var pieces: [String: [(account: String, hit: MailMemoryHit)]] = [:]
@@ -488,8 +488,8 @@ final class MailRecall {
                                 to: MailPerson.list(mail.recipients), subject: mail.subject, date: mail.at, text: mail.text)
                 }
                 return MailAgent.read(messages, thread: thread)
-                    + (provider.kind == .gmail ? "\n(From Yab's memory, as Gmail couldn't be reached: quoted mail and signatures are left out.)"
-                        : "\n(From Yab's memory: quoted mail and signatures are left out.)")
+                    + (provider.kind == .gmail ? "\n(From \(Brand.name)'s memory, as Gmail couldn't be reached: quoted mail and signatures are left out.)"
+                        : "\n(From \(Brand.name)'s memory: quoted mail and signatures are left out.)")
             }
             return nil
         }.value

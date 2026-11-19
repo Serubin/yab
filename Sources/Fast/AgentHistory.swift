@@ -57,7 +57,7 @@ enum AgentHistory {
             scanned += 1
         }
         let yab = diaryVisits(since: since)
-        if !yab.isEmpty { sources.append("Yab") }
+        if !yab.isEmpty { sources.append("\(Brand.name)") }
         for visit in yab { add(visit.url, at: visit.at, signIn: Diary.isSignIn(visit.url)) }
         for source in (AgentFixture.requested ? [] : OtherHistory.sources()) {
             let visits = chromiumVisits(source, since: since)
@@ -67,7 +67,7 @@ enum AgentHistory {
         }
         // Sync keeps a place's last visit only: one each, from its device.
         let away = elsewhere.filter { $0.at >= since }
-        for device in Set(away.map(\.device)).sorted() { sources.append("Yab on \(device)") }
+        for device in Set(away.map(\.device)).sorted() { sources.append("\(Brand.name) on \(device)") }
         for visit in away { add(visit.url, at: visit.at, signIn: Diary.isSignIn(visit.url)) }
         let ranked = all.values
             .filter { $0.visits >= 5 && !($0.days.count == 1 && $0.visits < 20) }

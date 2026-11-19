@@ -57,7 +57,7 @@ enum SkillFiles {
 
         # \(site ?? name.split(separator: "-").map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined(separator: " "))
 
-        How the site works for an agent with Yab's tools: where things are, what to press, what to leave alone.
+        How the site works for an agent with \(Brand.name)'s tools: where things are, what to press, what to leave alone.
         """
     }
 
@@ -524,7 +524,7 @@ private struct SkillPage: View {
                 }
                 .settingsAnchor("skill-duplicate")
             }
-            SettingsRow("Show in Finder", detail: skill.own ? skill.path.deletingLastPathComponent().lastPathComponent + "/SKILL.md" : "Inside Yab") {
+            SettingsRow("Show in Finder", detail: skill.own ? skill.path.deletingLastPathComponent().lastPathComponent + "/SKILL.md" : "Inside \(Brand.name)") {
                 Button("Show in Finder") { shelf.showInFinder(skill) }
                     .settingsButton()
             }

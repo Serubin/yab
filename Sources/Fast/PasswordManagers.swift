@@ -91,7 +91,7 @@ enum PasswordManagers {
         let after = "Agents stop and ask you when it's locked."
         switch canonical(id) {
         case onePassword:
-            return ("Unlock with the 1Password app", "Touch ID in the 1Password app unlocks its extension in Yab too. " + after)
+            return ("Unlock with the 1Password app", "Touch ID in the 1Password app unlocks its extension in \(Brand.name) too. " + after)
         case bitwarden:
             return ("Bitwarden's PIN or Touch ID", "Turn on in Bitwarden's settings, under unlock options. " + after)
         case protonPass:
@@ -163,7 +163,7 @@ enum PasswordManagers {
     /// five of them.
     @MainActor static func found(_ id: String) -> String? {
         guard let provider = provider(id), provider.id != apple else { return nil }
-        if installed(provider.id) != nil { return "Extension in Yab" }
+        if installed(provider.id) != nil { return "Extension in \(Brand.name)" }
         return Connections.shared.here[provider.id]
     }
 
@@ -235,11 +235,11 @@ enum PasswordManagers {
 
         var words: String {
             switch self {
-            case .yabUnlocks: return "Connected · Yab unlocks it"
+            case .yabUnlocks: return "Connected · \(Brand.name) unlocks it"
             case .youUnlock: return "Connected · You unlock it"
-            case .noExtension: return "Its extension isn't in Yab"
+            case .noExtension: return "Its extension isn't in \(Brand.name)"
             case .off: return "Its extension is off"
-            case .notAllowed: return "1Password hasn't allowed Yab yet. In 1Password: Settings › Browser › Add Browser."
+            case .notAllowed: return "1Password hasn't allowed \(Brand.name) yet. In 1Password: Settings › Browser › Add Browser."
             case .wrongPassword: return "The saved unlock password didn't work"
             case .passwordMissing: return "Its unlock password is missing on this Mac"
             }

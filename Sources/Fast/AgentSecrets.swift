@@ -91,7 +91,7 @@ enum AgentSecrets {
     ]
 
     static func message(_ reason: String) -> String {
-        "Yab keeps agents off this page because \(reasons[reason] ?? reason). The person must handle it; continue after they leave this page."
+        "\(Brand.name) keeps agents off this page because \(reasons[reason] ?? reason). The person must handle it; continue after they leave this page."
     }
 
     private static var found: [ObjectIdentifier: String] = [:]
@@ -124,7 +124,7 @@ enum AgentSecrets {
     /// release page data, including the question's own message.
     static func nativeQuestionReply(_ tabs: [Tab]) -> [String: Any]? {
         guard tabs.contains(where: { $0.engineKind == .chromium && $0.asks.contains(where: \.fromPage) }) else { return nil }
-        return ["error": "The page is waiting for the person to answer its question in Yab. Continue after they answer.",
+        return ["error": "The page is waiting for the person to answer its question in \(Brand.name). Continue after they answer.",
                 "needs_user": true, "code": "NATIVE_PAGE_QUESTION"]
     }
 

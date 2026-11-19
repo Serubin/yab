@@ -1896,7 +1896,7 @@ final class Extensions: NSObject, ObservableObject {
     /// Whether the extension's own runtime.reload() goes ahead (the shim).
     func mayReload(_ id: String) -> Bool {
         let allowed = fastReloads[id, default: FastReloads()].allow()
-        if !allowed { noteError("reloaded itself \(FastReloads.limit) times in a few seconds; Yab didn't reload it again", for: id) }
+        if !allowed { noteError("reloaded itself \(FastReloads.limit) times in a few seconds; \(Brand.name) didn't reload it again", for: id) }
         return allowed
     }
     /// Enabled at launch and not loaded yet: their buttons show already.
@@ -2319,7 +2319,7 @@ final class Extensions: NSObject, ObservableObject {
 
         var errorDescription: String? {
             switch self {
-            case .already(let name): return "\(name) is in Yab already."
+            case .already(let name): return "\(name) is in \(Brand.name) already."
             case .noManifest: return "That folder has no manifest.json."
             }
         }
@@ -3050,7 +3050,7 @@ final class Extensions: NSObject, ObservableObject {
         ("clipboardRead", "Read your clipboard"),
         ("userScripts", "Run scripts you give it on sites"), ("history", "Read and edit your history"),
         ("bookmarks", "Read and edit your bookmarks"), ("downloads", "Start and manage downloads"),
-        ("privacy", "Change Yab's privacy settings"), ("browsingData", "Delete your browsing data"),
+        ("privacy", "Change \(Brand.name)'s privacy settings"), ("browsingData", "Delete your browsing data"),
         ("management", "See which other extensions you have"), ("notifications", "Show notifications"),
         ("sessions", "See your recently closed tabs"), ("topSites", "See the sites you visit most"),
         ("readingList", "Read and edit your reading list"), ("pageCapture", "Save whole pages as files"),
@@ -3804,7 +3804,7 @@ extension Extensions: WKWebExtensionControllerDelegate {
                 if self.appUnreached(id, host: host) { return }
                 let said = ending.last.flatMap { try? JSONSerialization.data(withJSONObject: $0, options: [.fragmentsAllowed]) }
                     .map { String(decoding: $0.prefix(240), as: UTF8.self) } ?? "nothing"
-                self.noteError("\(host) wouldn't talk to Yab: \(said)", for: id)
+                self.noteError("\(host) wouldn't talk to \(Brand.name): \(said)", for: id)
             }
         } catch {
             appUnreached(id, host: host)
@@ -3868,8 +3868,8 @@ extension Extensions: WKWebExtensionControllerDelegate {
         onePasswordAsking = true
         Task {
             let open = await ask(Question(
-                title: "Connect 1Password to Yab",
-                detail: "In the 1Password app: Settings › Browser › Add Browser, then choose Yab.",
+                title: "Connect 1Password to \(Brand.name)",
+                detail: "In the 1Password app: Settings › Browser › Add Browser, then choose \(Brand.name).",
                 icon: ExtensionIconShape.rounded(contexts[id]?.webExtension.icon(for: CGSize(width: 64, height: 64))),
                 yes: "Open 1Password", no: "Not Now", place: .plain
             ))
@@ -3895,7 +3895,7 @@ extension Extensions: WKWebExtensionControllerDelegate {
         Task {
             let yes = await ask(Question(
                 title: "Connect \(provider.name)?",
-                detail: "Then agents can sign in with it too. Once, after \(provider.name) comes into Yab.",
+                detail: "Then agents can sign in with it too. Once, after \(provider.name) comes into \(Brand.name).",
                 icon: ExtensionIconShape.rounded(contexts[id]?.webExtension.icon(for: CGSize(width: 64, height: 64))),
                 yes: "Connect", no: "Not Now", place: .plain
             ))
@@ -4230,7 +4230,7 @@ struct ExtensionActions: View {
         Divider()
         // Not the name: a long one ("NordPass® Password Manager & Digital
         // Vault") made the menu as wide; the card that asks says it.
-        SwiftUI.Button("Remove from Yab…", mark: "trash") { ExtensionActions.confirmRemove(id, name: name, extensions) }
+        SwiftUI.Button("Remove from \(Brand.name)…", mark: "trash") { ExtensionActions.confirmRemove(id, name: name, extensions) }
     }
 
     /// The puzzle's list put away first, so the card isn't under it. What it kept can't come back, so
@@ -4249,7 +4249,7 @@ extension Extensions {
     /// Removing one, from the puzzle's list or its page in Settings.
     static func removal(_ id: String, name: String, place: Question.Place) -> Question {
         Question(
-            title: "Remove “\(name)”?", detail: "What it kept in Yab goes with it.",
+            title: "Remove “\(name)”?", detail: "What it kept in \(Brand.name) goes with it.",
             icon: ExtensionIconShape.rounded(Extensions.all.lazy.compactMap({ $0.contexts[id] }).first?.webExtension.icon(for: CGSize(width: 64, height: 64))),
             yes: "Remove", danger: true, place: place
         )
@@ -4640,7 +4640,7 @@ struct ExtensionMenu: View {
                     Text("Add your extensions")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Palette.ink)
-                    Text("Chrome extensions run in Yab. Bring the ones you use, or find new ones.")
+                    Text("Chrome extensions run in \(Brand.name). Bring the ones you use, or find new ones.")
                         .font(.system(size: 11.5))
                         .foregroundStyle(Palette.muted)
                         .fixedSize(horizontal: false, vertical: true)

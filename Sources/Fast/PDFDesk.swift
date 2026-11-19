@@ -464,7 +464,7 @@ final class PDFDesk: ObservableObject {
     func adopt(_ png: Data, initials: Bool = false) {
         guard let kept = shelf.keep(png, initials: initials) else {
             // The keychain said no: used for this file all the same.
-            signature = Signature(id: initials ? "Yab Initials" : "Yab Signature", png: png, initials: initials)
+            signature = Signature(id: initials ? "\(Brand.name) Initials" : "\(Brand.name) Signature", png: png, initials: initials)
             sheet = false
             changedNow()
             return

@@ -22,7 +22,7 @@ final class ChromiumDragState {
 extension ChromiumPage {
     // Board drags may contain only custom MIME data, or no data at all.
     // AppKit requires a nonempty pasteboard writer even for those drags.
-    static let pageDragType = NSPasteboard.PasteboardType("dev.serafim.fast.chromium-page-drag")
+    static let pageDragType = NSPasteboard.PasteboardType("net.serubin.pane.chromium-page-drag")
     static let draggedTypes: [NSPasteboard.PasteboardType] = [.fileURL, .URL, .string, .html, .rtf, pageDragType]
 
     private func dragPoint(_ sender: NSDraggingInfo) -> NSPoint {

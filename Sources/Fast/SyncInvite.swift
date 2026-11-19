@@ -89,7 +89,7 @@ final class SyncInvite: ObservableObject {
         case .lettingIn: "Letting it in…"
         case .letIn: "Let in. It has everything in a moment."
         case .expired: "That code ran out. Choose Add a Device for a new one."
-        case .failed: "That device couldn’t be let in. Check it has the latest Yab, then choose Add a Device again."
+        case .failed: "That device couldn’t be let in. Check it has the latest \(Brand.name), then choose Add a Device again."
         }
     }
 }

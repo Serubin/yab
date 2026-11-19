@@ -29,17 +29,17 @@ enum GeminiSupport {
     /// the session's agent across fresh turns and cold conversation resumes.
     nonisolated static let browserToolGuide = """
 
-    Yab browser tool contract:
+    \(Brand.name) browser tool contract:
     Call only this workspace's yab-browser MCP tools through call_mcp_tool. Read each tool's exact schema before calling it; native browser tool names and arguments are different.
     Use open with url, then text with tab to read a page. The text result is already the page's contents. Once it contains the information the user requested, answer from it and stop; do not call snapshot or eval to read the same text again.
     open uses an agent tab even when the same URL or domain is already open. Inspect or work in an existing user tab only when the user explicitly refers to it or gives it as the task's target; do not search their tabs by domain to choose where to work. Read an explicitly given user tab with text or snapshot. Never call eval in that tab; eval is only for tabs this session opened and owns. For eval the required arguments are tab and js, never expr or code. Never close a user's tab.
     For a button, use snapshot, then click with both tab and ref, then read the changed page with text. If snapshot says e1 button, the click tool's arguments are {"tab":"the returned tab id","ref":"e1"}. Put these arguments inside call_mcp_tool's Arguments field; never call click with empty Arguments {}, an element index, element_id or a native browser tool's parameter names. open requires url; snapshot and text require tab. Native browser tools, shell, files, other MCP servers and subagents remain unavailable. A denied call is not permission to bypass these rules.
     """
-    nonisolated static let noTools = "Gemini can answer and chat in Yab, but it can't use Yab's tools yet."
+    nonisolated static let noTools = "Gemini can answer and chat in \(Brand.name), but it can't use \(Brand.name)'s tools yet."
     nonisolated static let fromPhone = "Gemini isn't available for chats and tasks from iPhone yet."
     nonisolated static let notSetUp = "Gemini isn't set up on this Mac. Set it up in Settings › AI › Models."
     /// Asked for this Mac's files and terminal: Gemini keeps to the browser.
-    nonisolated static let noMac = "Gemini works in Yab through its browser tools, not this Mac's files and terminal. "
+    nonisolated static let noMac = "Gemini works in \(Brand.name) through its browser tools, not this Mac's files and terminal. "
         + "For a task that needs them, ask Claude, ChatGPT or Cursor."
 
     /// Why a session can't start on `cli`, or nil. An explicit provider
@@ -52,7 +52,7 @@ enum GeminiSupport {
         case "gemini":
             if !textOnly && !tools { return remote ? fromPhone : noTools }
             return nil
-        default: return "Yab cannot start the requested agent: \(cli)."
+        default: return "\(Brand.name) cannot start the requested agent: \(cli)."
         }
     }
 
@@ -67,7 +67,7 @@ enum GeminiSupport {
                      "mcp_\(under)_", "mcp__\(under)__", "\(under)__", "\(under)_"].map { "'\($0)'?*" }.joined(separator: "|")
         return """
         #!/bin/sh
-        # Yab's gate for Gemini: only Yab's own MCP server's tools run.
+        # \(Brand.name)'s gate for Gemini: only \(Brand.name)'s own MCP server's tools run.
         input=$(cat)
         field() { printf '%s' "$input" | /usr/bin/plutil -extract "$1" raw -o - - 2>/dev/null; }
         allow() { printf '%s\\n' '{"decision":"allow"}'; exit 0; }
@@ -79,7 +79,7 @@ enum GeminiSupport {
             done ;;
           \(named)) allow ;;
         esac
-        printf '%s\\n' '{"decision":"deny","reason":"Yab gives Gemini only its own browser tools."}'
+        printf '%s\\n' '{"decision":"deny","reason":"\(Brand.name) gives Gemini only its own browser tools."}'
 
         """
     }
@@ -116,7 +116,7 @@ enum GeminiSupport {
             return URL(fileURLWithPath: given, isDirectory: true)
         }
         return FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support/Yab Gemini", isDirectory: true)
+            .appendingPathComponent("Library/Application Support/\(Store.name) Gemini", isDirectory: true)
     }
 
     /// The CLI's environment in that profile: nothing inherited that could
@@ -142,23 +142,23 @@ enum GeminiSupport {
         let canonical = profile.deletingLastPathComponent().resolvingSymlinksInPath().appendingPathComponent(profile.lastPathComponent)
         let library = canonical.appendingPathComponent("home/Library")
         guard library.resolvingSymlinksInPath().path == library.path else {
-            throw GeminiStream.Failure("Gemini's private home changed. Yab left it untouched and didn't start Gemini.")
+            throw GeminiStream.Failure("Gemini's private home changed. \(Brand.name) left it untouched and didn't start Gemini.")
         }
         let link = library.appendingPathComponent("Keychains")
         let target = URL(fileURLWithPath: loginHome).appendingPathComponent("Library/Keychains").resolvingSymlinksInPath()
         guard fm.fileExists(atPath: target.path) else {
-            throw GeminiStream.Failure("Yab couldn't find this Mac's login keychain folder. Gemini didn't start.")
+            throw GeminiStream.Failure("\(Brand.name) couldn't find this Mac's login keychain folder. Gemini didn't start.")
         }
         try fm.createDirectory(at: library, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
         if let kept = try? fm.destinationOfSymbolicLink(atPath: link.path) {
-            guard kept == target.path else { throw GeminiStream.Failure("Gemini's keychain link changed. Yab left it untouched and didn't start Gemini.") }
+            guard kept == target.path else { throw GeminiStream.Failure("Gemini's keychain link changed. \(Brand.name) left it untouched and didn't start Gemini.") }
         } else if fm.fileExists(atPath: link.path) {
-            throw GeminiStream.Failure("Gemini's private profile contains a separate keychain folder. Yab left it untouched. Contact support before signing in.")
+            throw GeminiStream.Failure("Gemini's private profile contains a separate keychain folder. \(Brand.name) left it untouched. Contact support before signing in.")
         } else {
             try fm.createSymbolicLink(atPath: link.path, withDestinationPath: target.path)
         }
         guard link.resolvingSymlinksInPath().path == target.path else {
-            throw GeminiStream.Failure("Yab couldn't use this Mac's login keychain folder. Gemini didn't start.")
+            throw GeminiStream.Failure("\(Brand.name) couldn't use this Mac's login keychain folder. Gemini didn't start.")
         }
     }
 
@@ -200,7 +200,7 @@ enum GeminiSupport {
         return """
         ---
         name: \(name)
-        description: Yab's agent. Answers in Yab with only the tools Yab gives it.
+        description: \(Brand.name)'s agent. Answers in \(Brand.name) with only the tools \(Brand.name) gives it.
         \(list)
         inheritMcp: \(inheritMcp)
         mainAgent: true
@@ -395,7 +395,7 @@ struct GeminiStream {
         let denials = text.split(separator: "\n").map(String.init).filter(Self.denial)
         let names = deniedNativeSteps.compactMap { steps[$0]?.name }
         return !denials.isEmpty && !names.isEmpty && denials.allSatisfy { line in
-            line.contains("Yab gives Gemini only its own browser tools") || names.contains { line.contains($0) }
+            line.contains("\(Brand.name) gives Gemini only its own browser tools") || names.contains { line.contains($0) }
         }
     }
 
@@ -456,17 +456,17 @@ struct GeminiStream {
                         let error = tool["error"] as? [String: Any] ?? [:]
                         let detail = [error["type"] as? String, error["message"] as? String, tool["output"] as? String]
                             .compactMap { $0 }.joined(separator: " ")
-                        let denied = Self.denial(detail) || detail.contains("Yab gives Gemini only its own browser tools")
+                        let denied = Self.denial(detail) || detail.contains("\(Brand.name) gives Gemini only its own browser tools")
                         if state == "ACTIVE" || denied {
                             item.name = called
-                            item.text = "Yab blocked this built-in tool. Use Yab's browser tools instead."
+                            item.text = "\(Brand.name) blocked this built-in tool. Use \(Brand.name)'s browser tools instead."
                             item.state = state == "ACTIVE" ? .running : .failed
                             steps[index] = item
                             if denied { deniedNativeSteps.insert(index) }
                             return [.step(item)]
                         }
                     }
-                    return fail("Gemini tried a tool Yab didn't give it (\(GeminiSupport.shownName(called, arguments: known))), so Yab stopped it.")
+                    return fail("Gemini tried a tool \(Brand.name) didn't give it (\(GeminiSupport.shownName(called, arguments: known))), so \(Brand.name) stopped it.")
                 }
                 if called == GeminiSupport.dispatcher, let parameters { dispatched[index] = parameters }
                 item.name = GeminiSupport.shownName(called, arguments: known)
@@ -653,7 +653,7 @@ final class GeminiRunner {
             if let mcpArgs {
                 guard GeminiSupport.toolsProven else { throw GeminiStream.Failure(GeminiSupport.noTools) }
                 guard mcpArgs.contains("--session"), mcpArgs.contains("--socket") else {
-                    throw GeminiStream.Failure("Gemini's Yab tools must belong to its session.")
+                    throw GeminiStream.Failure("Gemini's \(Brand.name) tools must belong to its session.")
                 }
             }
             let fm = FileManager.default
@@ -672,7 +672,7 @@ final class GeminiRunner {
             try GeminiSupport.prepareKeychain(profile: profile,
                 loginHome: environment["HOME"] ?? ProcessInfo.processInfo.environment["HOME"] ?? NSHomeDirectory())
             guard cwd.resolvingSymlinksInPath().path == cwd.path else {
-                throw GeminiStream.Failure("Gemini's workspace isn't Yab's, so it didn't start.")
+                throw GeminiStream.Failure("Gemini's workspace isn't \(Brand.name)'s, so it didn't start.")
             }
             // The workspace holds only what Yab put there: nothing for a run
             // with no tools, this session's server and agent for a task. A
@@ -683,7 +683,7 @@ final class GeminiRunner {
                 let allowed = Set(ours.map(\.path) + (ours.isEmpty ? [] : [".agents/agents"]))
                 let found = (fm.enumerator(atPath: agents.path)?.allObjects as? [String] ?? []).map { ".agents/" + $0 }
                 if found.contains(where: { !allowed.contains($0) }) {
-                    throw GeminiStream.Failure("Gemini's workspace changed, so Yab didn't carry on this chat.")
+                    throw GeminiStream.Failure("Gemini's workspace changed, so \(Brand.name) didn't carry on this chat.")
                 }
             }
             if !ours.isEmpty {
@@ -691,13 +691,13 @@ final class GeminiRunner {
             }
             let settingsFile = home.appendingPathComponent(Self.settingsPath)
             guard settingsFile.resolvingSymlinksInPath().path == settingsFile.path else {
-                throw GeminiStream.Failure("Gemini's settings in Yab's profile aren't Yab's, so it didn't start.")
+                throw GeminiStream.Failure("Gemini's settings in \(Brand.name)'s profile aren't \(Brand.name)'s, so it didn't start.")
             }
             let settings = fm.fileExists(atPath: settingsFile.path) ? try Data(contentsOf: settingsFile) : nil
             if let settings, Self.settingsObject(settings) == nil {
                 let backup = settingsFile.appendingPathExtension("bak")
                 guard backup.resolvingSymlinksInPath().path == backup.path else {
-                    throw GeminiStream.Failure("Gemini's settings in Yab's profile aren't Yab's, so it didn't start.")
+                    throw GeminiStream.Failure("Gemini's settings in \(Brand.name)'s profile aren't \(Brand.name)'s, so it didn't start.")
                 }
                 try settings.write(to: backup, options: .atomic)
             }
@@ -708,7 +708,7 @@ final class GeminiRunner {
                         try data.write(to: file, options: .atomic)
                     }
                     guard file.resolvingSymlinksInPath().path == file.path, try Data(contentsOf: file) == data else {
-                        throw GeminiStream.Failure("Gemini's settings in Yab's profile aren't Yab's, so it didn't start.")
+                        throw GeminiStream.Failure("Gemini's settings in \(Brand.name)'s profile aren't \(Brand.name)'s, so it didn't start.")
                     }
                 }
             }

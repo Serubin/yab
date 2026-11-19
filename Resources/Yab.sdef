@@ -5,7 +5,7 @@
      space focused. Names and codes are Arc's and Chrome's where they have
      them, so a script or a launcher written for either works here with the
      application's name changed. -->
-<dictionary title="Yab Terminology">
+<dictionary title="Pane Terminology">
 
   <suite name="Standard Suite" code="core" description="Common classes and commands for all applications.">
 
@@ -43,11 +43,11 @@
       <direct-parameter description="The tab or window to close." type="specifier"/>
     </command>
 
-    <command name="quit" code="aevtquit" description="Quit Yab.">
+    <command name="quit" code="aevtquit" description="Quit Pane.">
       <cocoa class="NSQuitCommand"/>
     </command>
 
-    <class name="application" code="capp" description="Yab.">
+    <class name="application" code="capp" description="Pane.">
       <cocoa class="NSApplication"/>
       <element description="The browser windows, front to back." type="window" access="r">
         <cocoa key="scriptWindows"/>
@@ -110,7 +110,7 @@
 
   </suite>
 
-  <suite name="Yab Suite" code="YabS" description="Tabs, spaces and the rest of Yab.">
+  <suite name="Pane Suite" code="YabS" description="Tabs, spaces and the rest of Pane.">
 
     <command name="select" code="CrSelect" description="Bring a tab to the front of its window, going to its space if it is in another.">
       <direct-parameter description="The tab." type="specifier"/>
@@ -149,7 +149,7 @@
       </parameter>
     </command>
 
-    <command name="show mail" code="YabSMail" description="Show a thread in Mail, by the 'account|thread id' yab mcp's mail tools give.">
+    <command name="show mail" code="YabSMail" description="Show a thread in Mail, by the 'account|thread id' pane mcp's mail tools give.">
       <cocoa class="YabShowMailCommand"/>
       <direct-parameter description="The thread: 'sam@mail.example|1a16d91e433c8fe4'." type="text"/>
     </command>

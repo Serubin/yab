@@ -48,7 +48,7 @@ static void ReadHelperNotice(mach_port_t port) {
   SendNotice(change);
 }
 static void ListenForHelperNotices() {
-  NSString* base = NSBundle.mainBundle.bundleIdentifier ?: @"dev.serafim.fast";
+  NSString* base = NSBundle.mainBundle.bundleIdentifier ?: @"net.serubin.pane";
   NSString* name = [NSString stringWithFormat:@"%@.YabNotices.%d", base, getpid()];
   mach_port_t port = MACH_PORT_NULL;
   if (name.length >= sizeof(name_t) ||

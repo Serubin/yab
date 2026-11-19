@@ -50,16 +50,15 @@ public enum Store {
     private static let prerelease = Bundle.main.bundleIdentifier?.hasSuffix(".prerelease.dev") == true
 
     /// What the app keeps its things under, its folder, its keychain
-    /// items, its socket: "Yab", "Yab Dev", or a test world's "Yab (…)".
+    /// items, its socket: "Pane", "Pane Dev", or a test world's "Pane (…)".
     /// A copy delivered for one task (Code.app) names its own folder in its
     /// Info.plist (YabDataName), so it runs beside the other dev copies.
-    public static let name: String = world.map { "Yab (\($0))" } ?? delivered ?? (prerelease ? "Yab Prerelease" : development ? "Yab Dev" : "Yab")
+    public static let name: String = world.map { "Pane (\($0))" } ?? delivered ?? (prerelease ? "Pane Prerelease" : development ? "Pane Dev" : "Pane")
     private static let delivered: String? = (Bundle.main.object(forInfoDictionaryKey: "YabDataName") as? String)
-        .flatMap { name in development && name.hasPrefix("Yab ") ? name : nil }
+        .flatMap { name in development && name.hasPrefix("Pane ") ? name : nil }
 
-    /// What it kept them under until October 2026, when it was still called
-    /// Fast inside: looked for once, and moved (`folder`, Vault, Wallet).
-    public static let oldName: String = world.map { "Fast (\($0))" } ?? delivered.map { "Fast" + $0.dropFirst(3) } ?? (prerelease ? "Fast Prerelease" : development ? "Fast Dev" : "Fast")
+    /// Always `name`: Pane never adopts upstream Yab's "Fast" or "Yab" folder or keychain items.
+    public static let oldName: String = name
 
     /// Set by the browser before it touches anything: only the browser moves
     /// the old folder to the new name. The yab command uses whichever is there.
@@ -85,7 +84,15 @@ public enum Store {
     /// differ from stores made by identifier in how long extension workers
     /// are let live.
     public static var ownContainer: Bool {
-        (Bundle.main.bundleIdentifier ?? "") != "dev.serafim.fast"
+        (Bundle.main.bundleIdentifier ?? "") != productionBundleID
+    }
+
+    /// The shipping app's bundle id, for identifiers that must not depend on the running bundle.
+    public static let productionBundleID = "net.serubin.pane"
+
+    /// Whether a bundle id is this app or one of its variants or helpers, never upstream Yab.
+    public static func bundleFamily(_ id: String) -> Bool {
+        id == productionBundleID || id.hasPrefix(productionBundleID + ".")
     }
 
     /// The fixed identifiers of a test world's WebKit stores: 1 for websites,
@@ -190,7 +197,7 @@ public enum Store {
     /// where the tabs go must not change yours.
     public static let settings: UserDefaults = {
         guard testing else { return .standard }
-        let suite = world == "test" ? "dev.serafim.fast.test" : "dev.serafim.fast.test.\(world ?? "")"
+        let suite = world == "test" ? "net.serubin.pane.test" : "net.serubin.pane.test.\(world ?? "")"
         guard let settings = UserDefaults(suiteName: suite) else {
             preconditionFailure("Cannot open isolated test settings: \(suite)")
         }

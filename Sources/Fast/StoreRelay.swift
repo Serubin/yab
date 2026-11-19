@@ -108,7 +108,7 @@ final class StoreRelay: NSObject, PageScriptReceiving {
         var id = pageID();
         var installed = !!id && state.installed.indexOf(id) >= 0;
         var busy = !!id && state.busy === id;
-        label(ours, installed ? 'Added to Yab' : (busy ? 'Adding…' : 'Add to Yab'));
+        label(ours, installed ? 'Added to \(Brand.name)' : (busy ? 'Adding…' : 'Add to \(Brand.name)'));
         if (ours.disabled !== (installed || busy)) ours.disabled = installed || busy;
       }
 

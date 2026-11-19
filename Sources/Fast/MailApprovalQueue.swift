@@ -79,7 +79,7 @@ extension Agents {
         // An identical operation joined above; changed mail needs a fresh yes.
         let claimed = mailRequests + mailReceipts.values.filter { mailClaimActive($0) }
         guard !claimed.contains(where: { !sources.isDisjoint(with: $0.outs.map(mailSource)) }) else {
-            return ["error": "a send for this draft is already waiting in Yab; answer or dismiss that card before asking for changed mail"]
+            return ["error": "a send for this draft is already waiting in \(Brand.name); answer or dismiss that card before asking for changed mail"]
         }
         let request = MailSendAsk(outs, permit: permit, hold: hold)
         if let call { request.calls[session, default: []].insert(call) }

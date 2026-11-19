@@ -88,7 +88,7 @@ public enum MailProbe {
             if let smtp { out["smtp"] = smtp.json }
             if !appPasswordPage.isEmpty { out["app_password_page"] = appPasswordPage }
             if !imapSettingPage.isEmpty { out["imap_setting_page"] = imapSettingPage }
-            if route != "imap" { out["note"] = route == "gmail" ? "Gmail connects with Google's sign-in, not a password." : "Outlook and Microsoft 365 wait for Yab's Microsoft sign-in." }
+            if route != "imap" { out["note"] = route == "gmail" ? "Gmail connects with Google's sign-in, not a password." : "Outlook and Microsoft 365 wait for \(Brand.name)'s Microsoft sign-in." }
             return out
         }
 

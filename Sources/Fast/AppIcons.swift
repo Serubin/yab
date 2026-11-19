@@ -6,7 +6,7 @@ import SyncKit
 /// The icon shown in the Dock. The app bundle keeps its signed, built-in icon.
 enum AppIconStyle: String, CaseIterable, Identifiable {
     case original
-    case standard = "yab-standard"
+    case standard = "pane-standard"
     // Halloween 2026 (Halloween.swift): here until November 2, then only
     // the ones worn by then.
     case pumpkin = "16-halloween-pumpkin"
@@ -71,7 +71,7 @@ enum AppIconStyle: String, CaseIterable, Identifiable {
         if Bundle.main.bundleIdentifier != nil { return Bundle.main.resourceURL }
         let repo = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        return repo.appendingPathComponent("build/yab Dev.app/Contents/Resources")
+        return repo.appendingPathComponent("build/pane Dev.app/Contents/Resources")
     }
 
     /// Whether this one can be worn: friends' icons only once unlocked.
@@ -104,9 +104,9 @@ enum AppIconStyle: String, CaseIterable, Identifiable {
     /// What a locked one takes, in words under its name.
     @MainActor var takes: String? {
         guard !unlocked else { return nil }
-        if self == .charm { return "Comes with a best friend. Joined while you're both in Yab." }
-        if self == .arcade { return "For finishing Yab Wrapped." }
-        if self == .firstEdition { return "A thank-you for helping shape Yab." }
+        if self == .charm { return "Comes with a best friend. Joined while you're both in \(Brand.name)." }
+        if self == .arcade { return "For finishing \(Brand.name) Wrapped." }
+        if self == .firstEdition { return "A thank-you for helping shape \(Brand.name)." }
         if self == .surprise || PostReward.icons.contains(self) { return PostReward.shared.takes }
         guard let need = Invites.ladder.first(where: { $0.style == self })?.friends else { return nil }
         let have = Invites.shared.joined
@@ -133,9 +133,9 @@ enum AppIconStyle: String, CaseIterable, Identifiable {
         }
         let relativePath: String
         if self == .original, !dark {
-            relativePath = "yab.icns"
+            relativePath = "pane.icns"
         } else {
-            let name = self == .original ? "yab-dark" : rawValue + (dark ? "-dark" : "")
+            let name = self == .original ? "pane-dark" : rawValue + (dark ? "-dark" : "")
             relativePath = "AppIcons/\(name).icns"
         }
 
@@ -151,7 +151,7 @@ enum AppIconStyle: String, CaseIterable, Identifiable {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-        let resources = repo.appendingPathComponent("build/yab Dev.app/Contents/Resources")
+        let resources = repo.appendingPathComponent("build/pane Dev.app/Contents/Resources")
         return NSImage(contentsOf: resources.appendingPathComponent(relativePath))
     }
 
@@ -294,7 +294,7 @@ struct AppIconPage: View {
                     if middle == .arcade {
                         // Played only when a moment is due, as ⌘T offers it.
                         if Wrapped.shared.due != nil {
-                            Button("Play Yab Wrapped…") { Wrapped.shared.show(in: Links.browser) }
+                            Button("Play \(Brand.name) Wrapped…") { Wrapped.shared.show(in: Links.browser) }
                                 .buttonStyle(.yab(.secondary, .regular))
                                 .padding(.top, 16)
                         }
@@ -374,9 +374,9 @@ struct AppIconPage: View {
         if middle.halloween { return middle.unlocked ? Halloween.note() : "Halloween is over. It leaves with it." }
         if let takes = middle.takes { return takes }
         if middle == .original { return "The only one macOS makes clear or tinted" }
-        if middle == .charm, let best = invites.best { return invites.bestHere ? "With \(best.name). You're both in Yab." : "With \(best.name). It changes by itself." }
-        if middle == .arcade { return "From Yab Wrapped." }
-        if middle == .firstEdition { return "For helping shape Yab. Yours to keep." }
+        if middle == .charm, let best = invites.best { return invites.bestHere ? "With \(best.name). You're both in \(Brand.name)." : "With \(best.name). It changes by itself." }
+        if middle == .arcade { return "From \(Brand.name) Wrapped." }
+        if middle == .firstEdition { return "For helping shape \(Brand.name). Yours to keep." }
         if PostReward.icons.contains(middle) { return "From your post on X." }
         if Invites.ladder.contains(where: { $0.style == middle }) || middle == .charm { return "From your friends." }
         return " "
@@ -408,7 +408,7 @@ struct AppIconPage: View {
                                 .background(Color.white.opacity(0.94), in: Capsule())
                                 .padding(.bottom, 32)
                         } else if !style.unlocked, i == index {
-                            Label(style == .charm ? "Best friend" : style == .arcade ? "Yab Wrapped" : style == .surprise ? "Surprise" : "Locked", systemImage: "lock.fill")
+                            Label(style == .charm ? "Best friend" : style == .arcade ? "\(Brand.name) Wrapped" : style == .surprise ? "Surprise" : "Locked", systemImage: "lock.fill")
                                 .font(.system(size: 12.5, weight: .semibold))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)

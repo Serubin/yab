@@ -32,7 +32,7 @@ enum DefaultBrowserImport {
     static func sidebar(for bundle: String?) -> Bool? {
         guard let bundle, !bundle.isEmpty, bundle != "unknown",
               bundle != Bundle.main.bundleIdentifier,
-              bundle != "dev.serafim.fast", !bundle.hasPrefix("dev.serafim.fast.") else { return nil }
+              !Store.bundleFamily(bundle) else { return nil }
         return bundle == TabImport.arc || bundle == TabImport.dia
     }
 }

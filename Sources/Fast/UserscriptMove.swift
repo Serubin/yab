@@ -58,7 +58,7 @@ enum UserscriptMove {
               let configuration = context.webViewConfiguration else { return nil }
         let folder = Extensions.folder(for: installed.id).appendingPathComponent("_yab", isDirectory: true)
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        try? "<!doctype html><title>Yab</title>".write(to: folder.appendingPathComponent("read.html"), atomically: true, encoding: .utf8)
+        try? "<!doctype html><title>\(Brand.name)</title>".write(to: folder.appendingPathComponent("read.html"), atomically: true, encoding: .utf8)
         let page = WKWebView(frame: NSRect(x: 0, y: 0, width: 400, height: 300), configuration: configuration)
         defer { page.stopLoading() }
         for path in ["_yab/read.html", "options.html"] {
@@ -284,7 +284,7 @@ enum UserscriptMove {
         for file in (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
         where file.lastPathComponent.hasPrefix("us-") {
             guard let text = try? String(contentsOf: file, encoding: .utf8), movedOut(text) else { continue }
-            try? "/* yab: moved to Yab's own userscripts */\n".write(to: file, atomically: true, encoding: .utf8)
+            try? "/* yab: moved to \(Brand.name)'s own userscripts */\n".write(to: file, atomically: true, encoding: .utf8)
             emptied = true
         }
         return emptied

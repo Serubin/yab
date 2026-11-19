@@ -59,7 +59,7 @@ enum AgentDevices {
     /// each but this Mac, in Markdown. Off the main thread, as `visits`.
     nonisolated static func describe(_ source: (journal: Journal, me: String, names: [String: String])?, seen: [String: Date]) -> String {
         guard let source else {
-            return "Sync is off: Yab knows no other devices. The user turns it on in Settings › Sync, and adds an iPhone or a Mac there with Add a Device."
+            return "Sync is off: \(Brand.name) knows no other devices. The user turns it on in Settings › Sync, and adds an iPhone or a Mac there with Add a Device."
         }
         let journal = source.journal, me = source.me, names = source.names
         let spaces = Dictionary(journal.living(SyncShapes.space).compactMap(SyncSpace.init).map { ($0.id, $0.name) }, uniquingKeysWith: { a, _ in a })

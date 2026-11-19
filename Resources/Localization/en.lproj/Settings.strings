@@ -6,7 +6,7 @@
 ", its tabs and sign-ins" = ", its tabs and sign-ins";
 ". It all stays on this Mac." = ". It all stays on this Mac.";
 "1 card" = "1 card";
-"A fix: Yab restarts for it once you are away" = "A fix: Yab restarts for it once you are away";
+"A fix: Pane restarts for it once you are away" = "A fix: Pane restarts for it once you are away";
 "AI" = "AI";
 "API Keys" = "API Keys";
 "About" = "About";
@@ -71,7 +71,7 @@
 "ChatGPT" = "ChatGPT";
 "Check Now" = "Check Now";
 "Check for updates" = "Check for updates";
-"Checked %@. Yab looks every hour" = "Checked %@. Yab looks every hour";
+"Checked %@. Pane looks every hour" = "Checked %@. Pane looks every hour";
 "Checking…" = "Checking…";
 "Choose files to upload in Finder" = "Choose files to upload in Finder";
 "Choose…" = "Choose…";
@@ -118,7 +118,7 @@
 "Disconnect" = "Disconnect";
 "Done" = "Done";
 "Download" = "Download";
-"Downloading Yab %@…" = "Downloading Yab %@…";
+"Downloading Pane %@…" = "Downloading Pane %@…";
 "Download Stable %@" = "Download Stable %@";
 "Draft answers to questions with AI" = "Draft answers to questions with AI";
 "Edit" = "Edit";
@@ -160,14 +160,14 @@
 "Install it from the disk image, like the first time" = "Install it from the disk image, like the first time";
 "Instant links" = "Instant links";
 "Invite Friends" = "Invite Friends";
-"It takes over the next time Yab opens" = "It takes over the next time Yab opens";
+"It takes over the next time Pane opens" = "It takes over the next time Pane opens";
 "Its tabs, passwords, bookmarks and sign-ins" = "Its tabs, passwords, bookmarks and sign-ins";
 "Keep Mac Awake" = "Keep Mac Awake";
 "Keywords" = "Keywords";
 "Left" = "Left";
 "Let agents search all your mail" = "Let agents search all your mail";
-"Let agents use Yab" = "Let agents use Yab";
-"Let them see when I'm in Yab" = "Let them see when I'm in Yab";
+"Let agents use Pane" = "Let agents use Pane";
+"Let them see when I'm in Pane" = "Let them see when I'm in Pane";
 "Light" = "Light";
 "Link previews" = "Link previews";
 "Links from Mail, Slack and other apps open here, not in %@." = "Links from Mail, Slack and other apps open here, not in %@.";
@@ -182,7 +182,7 @@
 "Mail tools in other apps" = "Mail tools in other apps";
 "Mail you hand to your AI" = "Mail you hand to your AI";
 "Make Default" = "Make Default";
-"Make Yab Default" = "Make Yab Default";
+"Make Pane Default" = "Make Pane Default";
 "Manage" = "Manage";
 "Match Arc or Chrome" = "Match Arc or Chrome";
 "Measure in" = "Measure in";
@@ -217,9 +217,9 @@
 "One-time codes from Messages" = "One-time codes from Messages";
 "One-time codes from your mail" = "One-time codes from your mail";
 "Open" = "Open";
-"Open PDFs from Mail in Yab" = "Open PDFs from Mail in Yab";
+"Open PDFs from Mail in Pane" = "Open PDFs from Mail in Pane";
 "Open a small window from any app" = "Open a small window from any app";
-"Open links in Yab" = "Open links in Yab";
+"Open links in Pane" = "Open links in Pane";
 "Opens %@" = "Opens %@";
 "Order of spaces" = "Order of spaces";
 "Other Browsers…" = "Other Browsers…";
@@ -238,7 +238,6 @@
 "Pins" = "Pins";
 "Pixels" = "Pixels";
 "Privacy" = "Privacy";
-"Read statuses" = "Read statuses";
 "Reading" = "Reading";
 "Reading Mode" = "Reading Mode";
 "Reading font" = "Reading font";
@@ -262,7 +261,7 @@
 "Routines" = "Routines";
 "Save" = "Save";
 "Save downloads to" = "Save downloads to";
-"Saved in Yab" = "Saved in Yab";
+"Saved in Pane" = "Saved in Pane";
 "Search" = "Search";
 "Search Settings" = "Search Settings";
 "Search engine" = "Search engine";
@@ -270,7 +269,7 @@
 "Search, Arc and Raycast" = "Search, Arc and Raycast";
 "Send Feedback" = "Send Feedback";
 "Send feedback" = "Send feedback";
-"Sent to Yab" = "Sent to Yab";
+"Sent to Pane" = "Sent to Pane";
 "Servers" = "Servers";
 "Settings" = "Settings";
 "Settings pages" = "Settings pages";
@@ -326,7 +325,7 @@
 "Undo send" = "Undo send";
 "Up to date. " = "Up to date. ";
 "Use This Folder" = "Use This Folder";
-"Use Yab's passwords" = "Use Yab's passwords";
+"Use Pane's passwords" = "Use Pane's passwords";
 "Warn Before Quitting" = "Warn Before Quitting";
 "Websites" = "Websites";
 "Welcome" = "Welcome";
@@ -337,10 +336,10 @@
 "Working hours for free slots" = "Working hours for free slots";
 "Write replies ahead" = "Write replies ahead";
 "Writing" = "Writing";
-"Yab %@ is available" = "Yab %@ is available";
-"Yab %@ is downloaded" = "Yab %@ is downloaded";
-"Yab is up to date" = "Yab is up to date";
-"Yab looks for a new version every hour" = "Yab looks for a new version every hour";
+"Pane %@ is available" = "Pane %@ is available";
+"Pane %@ is downloaded" = "Pane %@ is downloaded";
+"Pane is up to date" = "Pane is up to date";
+"Pane looks for a new version every hour" = "Pane looks for a new version every hour";
 "Clearing cookies signs you out of all sites." = "Clearing cookies signs you out of all sites.";
 "You, your cards and addresses" = "You, your cards and addresses";
 "You're on %@. Stable is %@, or stay here until Stable catches up." = "You're on %@. Stable is %@, or stay here until Stable catches up.";

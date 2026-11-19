@@ -249,7 +249,7 @@ enum PDFFill {
     static func flattened(_ document: PDFDocument) -> Data? {
         let data = NSMutableData()
         guard let consumer = CGDataConsumer(data: data as CFMutableData) else { return nil }
-        var info: [CFString: Any] = [kCGPDFContextCreator: "Yab"]
+        var info: [CFString: Any] = [kCGPDFContextCreator: "\(Brand.name)"]
         if let attributes = document.documentAttributes {
             if let author = attributes[PDFDocumentAttribute.authorAttribute] as? String { info[kCGPDFContextAuthor] = author }
             if let subject = attributes[PDFDocumentAttribute.subjectAttribute] as? String { info[kCGPDFContextSubject] = subject }

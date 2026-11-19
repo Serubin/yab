@@ -517,11 +517,11 @@ final class GeminiAccount: ObservableObject {
             .compactMap { key in env[key].map { "export \(key)=\(quoted($0))" } }
         return """
         #!/bin/zsh
-        # Yab: sign in to Gemini with your Google account, in Yab's own profile.
+        # \(Brand.name): sign in to Gemini with your Google account, in \(Brand.name)'s own profile.
         unset GEMINI_API_KEY GOOGLE_API_KEY AGY_ADC_AUTH GOOGLE_GEMINI_BASE_URL GOOGLE_CLOUD_PROJECT
         \(exports.joined(separator: "\n"))
         if [[ ! -L "$HOME/Library/Keychains" ]] || [[ "$(readlink "$HOME/Library/Keychains")" != \(quoted(keychains)) ]]; then
-          echo "Yab couldn't use this Mac's login keychain folder. Open Sign In again in Yab."
+          echo "\(Brand.name) couldn't use this Mac's login keychain folder. Open Sign In again in \(Brand.name)."
           exit 1
         fi
         mkdir -p "$ANTIGRAVITY_GEMINI_DIR" && cd "$ANTIGRAVITY_GEMINI_DIR"

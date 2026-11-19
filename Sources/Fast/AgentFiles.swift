@@ -103,26 +103,36 @@ final class AgentFiles {
             }
         }
         // Nothing hidden in home, no keys, no keychains, no browser's own
-        // folders, yab's included.
+        // folders, Pane's and upstream Yab's included.
         if path.hasPrefix(home + "/") {
             let inside = path.dropFirst(home.count + 1).split(separator: "/")
-            if inside.contains(where: { $0.hasPrefix(".") }) { return "\(url.lastPathComponent) is in a hidden folder, which Yab never uploads" }
+            if inside.contains(where: { $0.hasPrefix(".") }) { return "\(url.lastPathComponent) is in a hidden folder, which \(Brand.name) never uploads" }
         }
-        let barred = ["/Library/Keychains", "/Library/Application Support/Google", "/Library/Application Support/Arc",
-                      "/Library/Application Support/Firefox", "/Library/Safari", "/Library/Cookies", "/Library/Messages",
-                      "/Library/Mail", "/Library/Application Support/\(Store.name)", "/Library/Application Support/\(Store.oldName)",
-                      "/Library/Application Support/BraveSoftware", "/Library/Application Support/Microsoft Edge",
-                      "/Library/Application Support/Dia", "/Library/Application Support/Chromium"]
         // A file mail brought, kept where Files lists it, may go up like
         // any other the person has: the card still asks first.
         let mails = Store.folder.appendingPathComponent("mail").resolvingSymlinksInPath().path + "/"
         let mailFile = path.hasPrefix(mails) && path.contains(".noindex/files/")
-        if !mailFile, barred.contains(where: { path.hasPrefix(home + $0) }) || path.hasPrefix("/private/etc") || path.hasPrefix("/etc/") {
-            return "\(url.lastPathComponent) is somewhere Yab never uploads from"
+        if !mailFile, Self.barred(path, home: home) || path.hasPrefix("/private/etc") || path.hasPrefix("/etc/") {
+            return "\(url.lastPathComponent) is somewhere \(Brand.name) never uploads from"
         }
         let size = (try? FileManager.default.attributesOfItem(atPath: path)[.size] as? Int) ?? 0
         guard size <= 100 << 20 else { return "\(url.lastPathComponent) is over 100 MB" }
         return nil
+    }
+
+    /// Whether a resolved path is in a browser's own folder under `home`, Pane's or upstream Yab's included.
+    static func barred(_ path: String, home: String) -> Bool {
+        let anywhere = ["/Library/Keychains", "/Library/Application Support/Google", "/Library/Application Support/Arc",
+                        "/Library/Application Support/Firefox", "/Library/Safari", "/Library/Cookies", "/Library/Messages",
+                        "/Library/Mail", "/Library/Application Support/\(Store.name)", "/Library/WebKit",
+                        "/Library/Application Support/BraveSoftware", "/Library/Application Support/Microsoft Edge",
+                        "/Library/Application Support/Dia", "/Library/Application Support/Chromium"]
+        if anywhere.contains(where: { path.hasPrefix(home + $0) }) { return true }
+        // Upstream's folders: "Yab", "Yab Dev", "Yab Gemini", "Fast (test)", but not "Fastmail".
+        return ["/Library/Application Support/Yab", "/Library/Application Support/Fast"].contains { root in
+            let root = home + root
+            return path == root || path.hasPrefix(root + "/") || path.hasPrefix(root + " ")
+        }
     }
 
     /// Whether these words name the file by its path, as given, as the
@@ -281,7 +291,7 @@ final class AgentFiles {
 
     enum Trouble: Error {
         case access
-        var said: String { "Yab can't read Messages: it needs Full Disk Access (System Settings › Privacy & Security › Full Disk Access). Granting it has macOS quit and reopen Yab: the page the person is on comes back as one of their tabs, so find it again with tabs before carrying on" }
+        var said: String { "\(Brand.name) can't read Messages: it needs Full Disk Access (System Settings › Privacy & Security › Full Disk Access). Granting it has macOS quit and reopen \(Brand.name): the page the person is on comes back as one of their tabs, so find it again with tabs before carrying on" }
     }
 
     /// Codes in messages that came in the last few minutes, newest first:

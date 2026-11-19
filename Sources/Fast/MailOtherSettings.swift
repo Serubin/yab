@@ -225,19 +225,19 @@ struct MailOtherAccountSheet: View {
     }
 
     private var lead: String? {
-        if gmail { return "Gmail needs an app password for Yab." }
+        if gmail { return "Gmail needs an app password for \(Brand.name)." }
         switch found {
         case .gmail?: return "Gmail connects with Google\u{2019}s sign-in, in a tab."
-        case .microsoft?: return "Outlook mail isn\u{2019}t in Yab yet. Its calendar is."
+        case .microsoft?: return "Outlook mail isn\u{2019}t in \(Brand.name) yet. Its calendar is."
         default: break
         }
         guard let setup else { return nil }
         let provider = known
         if run != nil { return run?.done == true ? nil : "Your agent is doing it in a tab of its own." }
         if busy { return "Trying the password with \(provider?.name ?? setup.imapHost)." }
-        if agentWay, let provider { return "You\u{2019}re signed in to \(MailSetupWay.pageName(provider)) in Yab." }
+        if agentWay, let provider { return "You\u{2019}re signed in to \(MailSetupWay.pageName(provider)) in \(Brand.name)." }
         if setup.foundBy == "guess" { return "Servers guessed from the address." }
-        if let provider, provider.appPassword { return "\(provider.name) wants an app password for Yab." }
+        if let provider, provider.appPassword { return "\(provider.name) wants an app password for \(Brand.name)." }
         return nil
     }
 
@@ -247,7 +247,7 @@ struct MailOtherAccountSheet: View {
         if run != nil { return run?.done == true ? nil : "The new password goes from the page straight to the keychain." }
         switch found {
         case .imap?: return nil
-        case .microsoft?: return "Meetings from Outlook show on your tabs. Mail comes with Yab\u{2019}s Microsoft sign-in."
+        case .microsoft?: return "Meetings from Outlook show on your tabs. Mail comes with \(Brand.name)\u{2019}s Microsoft sign-in."
         default: return "Your mail stays on this Mac, and Disconnect deletes it."
         }
     }
@@ -269,7 +269,7 @@ struct MailOtherAccountSheet: View {
                 surface {
                     row(mark: { MailFace(email: account.email, photo: account.photo, side: 28) }) {
                         Text(account.email).lineLimit(1).truncationMode(.middle)
-                        Text("Signed in in Yab: it\u{2019}s one Allow").font(.callout).foregroundStyle(.secondary)
+                        Text("Signed in in \(Brand.name): it\u{2019}s one Allow").font(.callout).foregroundStyle(.secondary)
                     }
                 }
             }
@@ -282,7 +282,7 @@ struct MailOtherAccountSheet: View {
                 surface {
                     row(mark: { pageMark(known) }) {
                         Text(MailSetupWay.pageName(known))
-                        Text("Signed in in Yab as \(address.lowercased())").font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                        Text("Signed in in \(Brand.name) as \(address.lowercased())").font(.callout).foregroundStyle(.secondary).lineLimit(1)
                     }
                 }
             } else if let setup {
@@ -335,7 +335,7 @@ struct MailOtherAccountSheet: View {
         if let known, known.appPassword, let page = URL(string: known.appPasswordPage), !known.appPasswordPage.isEmpty {
             row(divided: hint == "imapDisabled", mark: { pageMark(known) }) {
                 Text("Make one at \(MailSetupWay.pageName(known))")
-                Text(gmail ? "Requires 2-Step Verification" : opened ? "Opened in a tab" : way?.path ?? "Name it Yab")
+                Text(gmail ? "Requires 2-Step Verification" : opened ? "Opened in a tab" : way?.path ?? "Name it \(Brand.name)")
                     .font(.callout).foregroundStyle(.secondary).lineLimit(2)
             } trailing: {
                 Button(SettingsWords.text("Open")) { open(page); opened = true; focus = .password }.buttonStyle(.yab(.raised, .small))
@@ -711,7 +711,7 @@ struct MailOtherAccountSheet: View {
 
     /// A probe's failure for a person, in a line.
     static func words(_ server: MailProbe.Server?, provider: String?) -> String {
-        guard let server else { return "Yab couldn\u{2019}t reach the servers." }
+        guard let server else { return "\(Brand.name) couldn\u{2019}t reach the servers." }
         let who = provider ?? server.host
         switch server.hint {
         case "appPasswordRequired" where provider == "Gmail": return "Gmail didn’t accept that app password. Make a new 16-character app password at Google Account."
@@ -720,7 +720,7 @@ struct MailOtherAccountSheet: View {
         case "imapDisabled": return "IMAP is off in \(who)."
         case "dnsNotFound": return "There\u{2019}s no server called \(server.host)."
         case "tcpRefused", "timedOut": return "\(server.host) didn\u{2019}t answer on port \(server.port)."
-        case "tlsFailed": return "\(server.host)\u{2019}s certificate isn\u{2019}t one Yab can trust."
+        case "tlsFailed": return "\(server.host)\u{2019}s certificate isn\u{2019}t one \(Brand.name) can trust."
         // The line gone before it said anything: said as that, never a bare
         // "refused", which read as the password refused (#441).
         case "closed": return "\(who) closed the connection before it took the password. Try again in a moment."
@@ -755,10 +755,10 @@ struct MailOtherAccountSheet: View {
     }
 
     static func helpWords(_ account: String, provider: MailKnownProvider?, said: String) -> String {
-        var words = "Help me set up the mail account \(account) in Yab. Connecting it said: \(said)\n\n"
-        words += "Run mail_probe on \(account) to see which step fails; it tries the password I typed into Yab\u{2019}s own field. Never ask me for a password in the chat and never type one anywhere."
+        var words = "Help me set up the mail account \(account) in \(Brand.name). Connecting it said: \(said)\n\n"
+        words += "Run mail_probe on \(account) to see which step fails; it tries the password I typed into \(Brand.name)\u{2019}s own field. Never ask me for a password in the chat and never type one anywhere."
         if let provider, !provider.appPasswordPage.isEmpty {
-            words += " If it wants an app password, open \(provider.appPasswordPage) in a tab of your own, wait for me to sign in, and show me where to make one for Yab; I paste it into Settings \u{203A} Mail \u{203A} Add Account myself."
+            words += " If it wants an app password, open \(provider.appPasswordPage) in a tab of your own, wait for me to sign in, and show me where to make one for \(Brand.name); I paste it into Settings \u{203A} Mail \u{203A} Add Account myself."
         }
         if let provider, !provider.imapSettingPage.isEmpty {
             words += " If IMAP is off for the mailbox, find the switch at \(provider.imapSettingPage) and ask me before turning it on."

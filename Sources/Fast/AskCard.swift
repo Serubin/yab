@@ -129,7 +129,7 @@ struct AskContent: Equatable {
         case .upload(let files, _):
             return AskContent(mark: .site(host), name: site, sub: who, question: permit.question, body: .files(files))
         case .signIn(let host, let users):
-            return AskContent(mark: .site(host), name: host, sub: ["Saved in Yab", who].filter { !$0.isEmpty }.joined(separator: " \u{00B7} "),
+            return AskContent(mark: .site(host), name: host, sub: ["Saved in \(Brand.name)", who].filter { !$0.isEmpty }.joined(separator: " \u{00B7} "),
                               question: permit.question, body: .accounts(Array(users.prefix(3))))
         case .unlockManager(let provider):
             return AskContent(mark: .key, name: PasswordManagers.name(provider), sub: who, question: permit.question, body: lines())
@@ -142,7 +142,7 @@ struct AskContent: Equatable {
         case .folder(let ask):
             return AskContent(mark: .folder(file: ask.file), name: ask.question, sub: who, question: nil, body: .folder)
         case .native:
-            return AskContent(mark: .tabs, name: "Yab", sub: who, question: permit.question, body: lines(permit.draft.isEmpty ? permit.detail : permit.draft))
+            return AskContent(mark: .tabs, name: "\(Brand.name)", sub: who, question: permit.question, body: lines(permit.draft.isEmpty ? permit.detail : permit.draft))
         case .saveSkill(let name, _):
             return AskContent(mark: .skill, name: name, sub: who, question: permit.question, body: lines(String(permit.draft.prefix(400))))
         }

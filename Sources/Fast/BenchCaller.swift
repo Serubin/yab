@@ -64,5 +64,5 @@ enum BenchCaller {
     }
 
     /// What a caller that isn't Yab is told.
-    static let refusal = "Only Yab's own yab command and yab mcp can use Yab's socket."
+    static let refusal = "Only \(Brand.name)'s own \(AgentSetup.command) command and \(AgentSetup.command) mcp can use \(Brand.name)'s socket."
 }

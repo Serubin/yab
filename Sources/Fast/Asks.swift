@@ -1743,10 +1743,10 @@ struct AskCard: View {
         case (.share, _): return "Choose what to share with \(host)"
         case (.barred(let what), _):
             switch what {
-            case .camera: return "macOS didn’t let Yab use the camera"
-            case .microphone: return "macOS didn’t let Yab use the microphone"
-            case .location: return "macOS didn’t let Yab know where you are"
-            case .notifications: return "macOS doesn’t let Yab show notifications"
+            case .camera: return "macOS didn’t let \(Brand.name) use the camera"
+            case .microphone: return "macOS didn’t let \(Brand.name) use the microphone"
+            case .location: return "macOS didn’t let \(Brand.name) know where you are"
+            case .notifications: return "macOS doesn’t let \(Brand.name) show notifications"
             }
         }
     }
@@ -1754,20 +1754,20 @@ struct AskCard: View {
     private var detail: String {
         let host = IDN.shown(question.host)
         switch (question.kind, question.stage) {
-        case (.capture, .waiting), (.location, .waiting), (.notifications, .waiting): return "Then Yab hands it to \(host)."
+        case (.capture, .waiting), (.location, .waiting), (.notifications, .waiting): return "Then \(Brand.name) hands it to \(host)."
         case (.notifications, _):
-            return MailNotify.shared.permission == .unasked ? "macOS will ask about Yab once, next." : ""
+            return MailNotify.shared.permission == .unasked ? "macOS will ask about \(Brand.name) once, next." : ""
         case (.capture(let type), _):
-            return Self.macOSAsks(type) ? "macOS will ask about Yab once, next." : ""
+            return Self.macOSAsks(type) ? "macOS will ask about \(Brand.name) once, next." : ""
         case (.location, _):
             // Only a Whereabouts a site's question made: drawing a card starts no CoreLocation.
-            return !Whereabouts.made || Whereabouts.shared.status == .notDetermined ? "macOS will ask about Yab once, next." : ""
+            return !Whereabouts.made || Whereabouts.shared.status == .notDetermined ? "macOS will ask about \(Brand.name) once, next." : ""
         case (.barred(let what), _):
             switch what {
             case .camera: return "It’s in System Settings › Privacy › Camera."
             case .microphone: return "It’s in System Settings › Privacy › Microphone."
             case .location: return "It’s in System Settings › Privacy › Location Services."
-            case .notifications: return "It’s in System Settings › Notifications › Yab."
+            case .notifications: return "It’s in System Settings › Notifications › \(Brand.name)."
             }
         case (.devMode, _): return "Its whole address, what it logs and its requests, over the page."
         case (.download, _), (.downloads, _): return question.message

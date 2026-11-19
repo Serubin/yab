@@ -819,7 +819,7 @@ final class PlanAccounts: ObservableObject {
         let revision: Int
     }
     private static var keychainReads: [KeychainItem: Task<Bool, Never>] = [:]
-    nonisolated private static let keychainQueue = DispatchQueue(label: "dev.serafim.fast.plan-keychain", qos: .utility)
+    nonisolated private static let keychainQueue = DispatchQueue(label: "net.serubin.pane.plan-keychain", qos: .utility)
 
     /// Security can stall even with interaction disabled. Only one blocking
     /// call runs at a time, and repeated reads of its item share the call.

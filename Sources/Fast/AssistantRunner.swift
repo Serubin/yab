@@ -51,16 +51,16 @@ final class AssistantRunner {
     func call(_ assistant: String, _ body: [String: Any], _ done: @escaping ([String: Any]?) -> Void) {
         let original = body["id"]
         guard let grant = Assistants.shared.grant(assistant) else {
-            done(original.map { ["jsonrpc": "2.0", "id": $0, "error": ["code": -32003, "message": "This assistant isn't linked to Yab on this Mac any more."]] })
+            done(original.map { ["jsonrpc": "2.0", "id": $0, "error": ["code": -32003, "message": "This assistant isn't linked to \(Brand.name) on this Mac any more."]] })
             return
         }
         if grant.paused, body["method"] as? String == "tools/call" {
-            let says = "status: paused\nThe user paused \(grant.name) in Yab on their Mac, so nothing was done. Ask them to resume it in Yab › Settings › AI › Assistants."
+            let says = "status: paused\nThe user paused \(grant.name) in \(Brand.name) on their Mac, so nothing was done. Ask them to resume it in \(Brand.name) › Settings › AI › Assistants."
             done(original.map { ["jsonrpc": "2.0", "id": $0, "result": Mcp.text(says, error: true)] })
             return
         }
         guard let child = pick(assistant) else {
-            done(original.map { ["jsonrpc": "2.0", "id": $0, "error": ["code": -32002, "message": "Yab couldn't start its MCP server on the Mac."]] })
+            done(original.map { ["jsonrpc": "2.0", "id": $0, "error": ["code": -32002, "message": "\(Brand.name) couldn't start its MCP server on the Mac."]] })
             return
         }
         var message = body
@@ -167,7 +167,7 @@ final class AssistantRunner {
     /// A child gone mid-call: what it held is answered as an error.
     private func ended(_ child: Child) {
         for entry in child.waiting.values {
-            entry.done(["jsonrpc": "2.0", "id": entry.original, "error": ["code": -32002, "message": "Yab's MCP server on the Mac stopped mid-call. Try again."]])
+            entry.done(["jsonrpc": "2.0", "id": entry.original, "error": ["code": -32002, "message": "\(Brand.name)'s MCP server on the Mac stopped mid-call. Try again."]])
         }
         child.waiting = [:]
         for (key, list) in children { children[key] = list.filter { $0 !== child } }

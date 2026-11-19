@@ -6,7 +6,7 @@ import PDFKit
 /// helper's credentialed network stack; WebKit returns its displayed copy.
 @MainActor
 enum AgentPDF {
-    static let unavailable = "Yab could not read the PDF document bytes on this engine."
+    static let unavailable = "\(Brand.name) could not read the PDF document bytes on this engine."
 
     static func isDocument(_ page: any PageHandle) async throws -> Bool {
         if let web = page.webKit { return web.webKitShowsPDF }

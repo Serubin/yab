@@ -86,7 +86,7 @@ struct McpTool {
     }
 
     static func subagentsCantChange(_ a: Mcp.Audience, _ input: [String: Any]) -> String? {
-        a.sub ? "A subagent cannot change native Yab state; report the proposed change to its parent" : nil
+        a.sub ? "A subagent cannot change native \(Brand.name) state; report the proposed change to its parent" : nil
     }
 
     static func explorers(_ name: String) -> String {

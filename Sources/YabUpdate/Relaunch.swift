@@ -11,7 +11,7 @@ public enum Relaunch {
     public static let environmentKeys = ["YAB_PROBE", "YAB_FEED", "YAB_HISTORY", "YAB_TEST_KEYCHAIN"]
     /// How long the app and what it started may take to wind down.
     static let patience: TimeInterval = 120
-    private static let log = Logger(subsystem: "dev.serafim.fast", category: "relaunch")
+    private static let log = Logger(subsystem: Store.productionBundleID, category: "relaunch")
 
     public struct Request: Equatable {
         public let pid: pid_t
@@ -68,7 +68,7 @@ public enum Relaunch {
     /// nothing LaunchServices counts as that application is left running.
     ///
     /// The app is not the only one: YabCore makes itself a UI element of the
-    /// same bundle (LSBundlePath yab.app, dev.serafim.fast), and it winds down
+    /// same bundle (LSBundlePath pane.app, net.serubin.pane), and it winds down
     /// after the app has gone, the longer the more tabs and extensions it had.
     /// An open of the bundle in that time finds "Yab" running in that
     /// YabCore on its way out and launches nothing: Yab closed and never

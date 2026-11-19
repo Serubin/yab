@@ -247,7 +247,7 @@ struct BoostSiteBlock: View {
     private func shareToStore(_ record: BoostRecord) {
         Task {
             let question = Question(title: "Share \(record.name) to the Store?",
-                                    detail: "\(browser.chatName) writes the listing and opens a pull request to yab-plugins from your GitHub account. Yab takes the pictures and checks it before anyone merges.",
+                                    detail: "\(browser.chatName) writes the listing and opens a pull request to yab-plugins from your GitHub account. \(Brand.name) takes the pictures and checks it before anyone merges.",
                                     lines: [], yes: "Share", no: "Not Now", place: .plain)
             guard await Questions.shared.ask(question) else { return }
             let folder = boosts.library.folder(record.id).path

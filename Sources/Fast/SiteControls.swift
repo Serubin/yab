@@ -318,7 +318,7 @@ struct SiteControlsView: View {
         guard DarkPages.active(windowDark: DarkPages.windowDark(for: tab), mode: prefs.darkPages), !tab.bench else { return nil }
         if extensions.installed.contains(where: { $0.id == DarkPages.extensionID && $0.enabled }) {
             return Setting(symbol: "moon", title: "Dark page", said: "Dark Reader does it here",
-                           end: AnyView(Button("Use Yab\u{2019}s") { DarkPages.takeOverFromExtension(); forgets += 1 }
+                           end: AnyView(Button("Use \(Brand.name)\u{2019}s") { DarkPages.takeOverFromExtension(); forgets += 1 }
                             .buttonStyle(.yab(.secondary, .small))))
         }
         let said: String
@@ -349,8 +349,8 @@ struct SiteControlsView: View {
         guard let chosen = shield.chosen else { return "On" }
         let name = Blockers.name(chosen)
         if shield.blocker(persistent: persistent) == chosen { return "On · \(name)" }
-        if shield.source == .extension(chosen), !persistent { return "On · Yab in private tabs" }
-        if shield.failed == nil, Extensions.shared.contexts[chosen] != nil { return "On · Yab until \(name) is ready" }
+        if shield.source == .extension(chosen), !persistent { return "On · \(Brand.name) in private tabs" }
+        if shield.failed == nil, Extensions.shared.contexts[chosen] != nil { return "On · \(Brand.name) until \(name) is ready" }
         return "On"
     }
 

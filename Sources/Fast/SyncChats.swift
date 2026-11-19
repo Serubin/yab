@@ -220,9 +220,9 @@ enum SyncChats {
         var effort: String? = nil
     }
 
-    static let filesUnreadable = "Yab couldn't read the attached files. Send them again."
+    static let filesUnreadable = "\(Brand.name) couldn't read the attached files. Send them again."
     static let filesBroken = "A file didn't arrive whole. Send it again."
-    static let filesUnsaved = "Yab couldn't save the attached files on this Mac."
+    static let filesUnsaved = "\(Brand.name) couldn't save the attached files on this Mac."
 
     /// Where a send's files are kept: a folder of its own, under Yab's.
     static var inbox: URL { Store.file("agent/inbox") }
@@ -298,7 +298,7 @@ enum SyncChats {
     /// the iPhone is its task record's, not a chat's.
     @MainActor
     static func control(_ action: SyncSend.Action, chat: String?, text: String) -> (reason: String?, made: String?) {
-        guard text.isEmpty, let chat, chat.hasPrefix("a:") else { return ("Yab doesn’t know that kind of request.", nil) }
+        guard text.isEmpty, let chat, chat.hasPrefix("a:") else { return ("\(Brand.name) doesn’t know that kind of request.", nil) }
         let id = String(chat.dropFirst(2))
         let agents = Agents.shared
         guard Chats.shared.chat(id) != nil || agents.session(id) != nil else { return ("That chat isn't on this Mac any more.", nil) }
@@ -448,12 +448,12 @@ extension SyncCenter {
             return (ChatAgent.invalid, nil)
         }
         guard words.kind == "agent" else {
-            return ("Yab doesn’t know that kind of request.", nil)
+            return ("\(Brand.name) doesn’t know that kind of request.", nil)
         }
         if words.choice != nil { return (SyncChoice.targetReason, nil) }
         let agents = Agents.shared
         if let action = words.action {
-            guard files.isEmpty else { return ("Yab doesn’t know that kind of request.", nil) }
+            guard files.isEmpty else { return ("\(Brand.name) doesn’t know that kind of request.", nil) }
             return SyncChats.control(action, chat: words.chat, text: words.text)
         }
         let attached = files.map(ChatAttachment.file)
@@ -484,7 +484,7 @@ extension SyncCenter {
                 agents.followUp(id, words.text, with: attached)
                 return (nil, nil)
             }
-            return ("Yab doesn't know that kind of chat.", nil)
+            return ("\(Brand.name) doesn't know that kind of chat.", nil)
         }
         // A model picked there, if this Mac has it; it picks the agent too
         // when none was named.

@@ -26,8 +26,8 @@ final class AppleModelControl: ObservableObject {
     /// The same native menu builder used by the other plan rows.
     func menuEntries() -> [SettingsMenuEntry] {
         if enabled {
-            return [.destructive("Disable in Yab") { self.setEnabled(false) }]
+            return [.destructive("Disable in \(Brand.name)") { self.setEnabled(false) }]
         }
-        return [.item("Enable in Yab") { self.setEnabled(true) }]
+        return [.item("Enable in \(Brand.name)") { self.setEnabled(true) }]
     }
 }

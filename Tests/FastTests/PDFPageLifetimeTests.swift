@@ -47,7 +47,7 @@ struct PDFPageLifetimeTests {
             let job = try #require(ProcessInfo.processInfo.environment["YAB_FARM_JOB"])
             try #require(!job.isEmpty && world.hasPrefix("appkit-gate-") && world.contains(job.lowercased()),
                          "Run in the canonical gate's disposable per-job Store/Wallet namespace")
-            suite = "dev.serafim.fast.test.\(world)"
+            suite = "net.serubin.pane.test.\(world)"
             defaults = Store.settings.persistentDomain(forName: suite)
             spacesBytes = try? Data(contentsOf: Store.file("spaces.json"))
             sharing = Spaces.sharing

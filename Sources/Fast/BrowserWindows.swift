@@ -386,7 +386,7 @@ final class BrowserWindows: ObservableObject {
         Awake.keep(window)
         window.isOpaque = false
         window.backgroundColor = .clear
-        window.title = "Yab"
+        window.title = "\(Brand.name)"
         // Its space's own Light or Dark before the first frame: the colors
         // are drawn in the shades of the window's appearance.
         if purpose == .normal { window.wearLookMode(of: browser.prefs) }
@@ -653,7 +653,7 @@ final class BrowserWindows: ObservableObject {
             title = BlankWindow.title
         } else {
             // No tab in front: the field, in the space it opens into.
-            title = entry.browser.prefs.usesSpaces ? entry.browser.space.name : "Yab"
+            title = entry.browser.prefs.usesSpaces ? entry.browser.space.name : "\(Brand.name)"
         }
         if entry.window.title != title { entry.window.title = title }
         PageContinuity.advertise(entry.browser, in: entry.window)

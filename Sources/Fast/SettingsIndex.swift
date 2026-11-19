@@ -43,7 +43,7 @@ struct SettingsItem: Identifiable, Hashable {
     }
 
     /// Also offered by General in the command field, as a setting destination.
-    static let showYab = SettingsItem(id: "show-yab", page: .general, title: "Show Yab",
+    static let showYab = SettingsItem(id: "show-yab", page: .general, title: "Show \(Brand.name)",
                                      words: "bring global shortcut hotkey")
 
     private static let fixed: [SettingsItem] = [
@@ -98,7 +98,7 @@ struct SettingsItem: Identifiable, Hashable {
 
         // Small Window
         SettingsItem(id: "small-links", page: .smallWindow, title: "Give links from other apps a small window",
-                     words: "small little window arc links other apps mail slack messages open in yab peek"),
+                     words: "small little window arc links other apps mail slack messages open in yab pane peek"),
         SettingsItem(id: "small-key", page: .smallWindow, title: "Open a small window from any app",
                      words: "small little window arc hotkey shortcut global option command n new quick look anywhere"),
 
@@ -115,6 +115,8 @@ struct SettingsItem: Identifiable, Hashable {
                      words: "import cards credit card addresses autofill wallet from another browser chrome arc dia brave edge safari contacts"),
         SettingsItem(id: "import-firefox", page: .bringIn, title: "Bring in from Zen or Firefox",
                      words: "import zen firefox mozilla bookmarks history places profile passwords logins csv export"),
+        SettingsItem(id: "import-yab", page: .bringIn, title: "Bring in from Yab",
+                     words: "import yab yet another browser bookmarks history passwords csv export"),
         SettingsItem(id: "import-bookmarks-file", page: .bringIn, title: "Bring bookmarks in from a file",
                      words: "import bookmarks html file export safari firefox netscape"),
         SettingsItem(id: "import-history-file", page: .bringIn, title: "Bring history in from a file",
@@ -135,7 +137,7 @@ struct SettingsItem: Identifiable, Hashable {
                      words: "smart rename downloads downloaded files clear names arc max apple intelligence claude chatgpt"),
 
         // Agents
-        SettingsItem(id: "bench", page: .agents, title: "Let agents use Yab",
+        SettingsItem(id: "bench", page: .agents, title: "Let agents use \(Brand.name)",
                      words: "bench script socket automation testing developer drive"),
         SettingsItem(id: "agents-routines", page: .ai, title: "Routines",
                      words: "schedule every daily weekdays weekly monthly yearly month year recurring cron repeat routine automation add new suggested"),
@@ -151,10 +153,10 @@ struct SettingsItem: Identifiable, Hashable {
                      words: "payment buy purchase checkout order limit threshold money spend card"),
         SettingsItem(id: "agents-asking", page: .agents, title: "Agents ask first",
                      words: "ask auto bypass permission mode confirm approve send pay delete upload sign in my tabs allow full access mac files terminal sandbox shell browser only"),
-        SettingsItem(id: "ai-use", page: .ai, title: "AI in Yab",
+        SettingsItem(id: "ai-use", page: .ai, title: "AI in \(Brand.name)",
                      words: "turn off ai disable ai no ai hide ai off when asked only on apple intelligence model claude chatgpt kill switch"),
-        SettingsItem(id: "dev-agents-allowed", page: .developers, title: "Let agents use Yab",
-                     words: "outside agents claude code codex cli mcp yab command drive yab agents use yab bench"),
+        SettingsItem(id: "dev-agents-allowed", page: .developers, title: "Let agents use \(Brand.name)",
+                     words: "outside agents claude code codex cli mcp pane yab command drive pane agents use pane bench"),
         SettingsItem(id: "agents-ask-opens", page: .ai, title: "Default view",
                      words: "asking about a page cmd j command j ask inline line field chat column open task default view"),
         SettingsItem(id: "agents-claude", page: .models, title: "Claude",
@@ -177,8 +179,8 @@ struct SettingsItem: Identifiable, Hashable {
                      words: "json tree pretty print formatter viewer text as sent api response"),
         SettingsItem(id: "dev-servers", page: .developers, title: "Servers",
                      words: "developer mode localhost servers ports forget", shown: { _ in !DevSites.servers.isEmpty }),
-        SettingsItem(id: "dev-command", page: .developers, title: "The yab command",
-                     words: "yab cli command line terminal shell path install zshrc"),
+        SettingsItem(id: "dev-command", page: .developers, title: "The \(AgentSetup.command) command",
+                     words: "pane yab cli command line terminal shell path install zshrc"),
         SettingsItem(id: "dev-claude", page: .developers, title: "Claude Code",
                      words: "skill mcp tools install add update remove claude code"),
         SettingsItem(id: "dev-codex", page: .developers, title: "Codex",
@@ -409,7 +411,7 @@ struct SettingsItem: Identifiable, Hashable {
                      words: "split summary summaries line claude chatgpt codex ai what matters", shown: { _ in !MailArrival.shows }),
         SettingsItem(id: "mail-pixels", page: .mailReading, title: "Block tracking pixels",
                      words: "tracking pixel privacy images read receipt opened", shown: { _ in !MailArrival.shows }),
-        SettingsItem(id: "mail-pdf-yab", page: .mailReading, title: "Open PDFs from Mail in Yab",
+        SettingsItem(id: "mail-pdf-yab", page: .mailReading, title: "Open PDFs from Mail in \(Brand.name)",
                      words: "pdf attachment file open preview sign fill contract tab", shown: { _ in !MailArrival.shows }),
         SettingsItem(id: "mail-motion", page: .mailReading, title: "Mail animations",
                      words: "animations motion reduce still fly morph transitions fast speed", shown: { _ in !MailArrival.shows }),
@@ -417,8 +419,6 @@ struct SettingsItem: Identifiable, Hashable {
                      words: "draft replies ahead claude chatgpt codex ai write", shown: { _ in !MailArrival.shows }),
         SettingsItem(id: "mail-undo", page: .mailWriting, title: "Undo send",
                      words: "undo send delay seconds cancel", shown: { _ in !MailArrival.shows }),
-        SettingsItem(id: "mail-reads", page: .mailWriting, title: "Read statuses",
-                     words: "read status receipt receipts opened open seen tracking pixel superhuman", shown: { _ in !MailArrival.shows }),
         SettingsItem(id: "mail-hours", page: .mailCalendar, title: "Working hours for free slots",
                      words: "calendar free slots availability working hours schedule meeting time", shown: { _ in !MailArrival.shows }),
         SettingsItem(id: "mail-slot-length", page: .mailCalendar, title: "Slot length",
@@ -430,7 +430,7 @@ struct SettingsItem: Identifiable, Hashable {
         SettingsItem(id: "mail-ahead-consent", page: .mailAgents, title: "Replies written ahead",
                      words: "draft replies ahead claude chatgpt codex ai write consent", shown: { _ in !MailArrival.shows }),
         SettingsItem(id: "mail-agents-others", page: .mailAgents, title: "Mail tools in other apps",
-                     words: "mcp yab mcp cursor zed windsurf other apps mail tools", shown: { _ in !MailArrival.shows }),
+                     words: "mcp pane mcp yab mcp cursor zed windsurf other apps mail tools", shown: { _ in !MailArrival.shows }),
         SettingsItem(id: "mail-memory", page: .mailAgents, title: "Let agents search all your mail",
                      words: "agents search index memory five years mail", shown: { _ in !MailArrival.shows }),
         SettingsItem(id: "mail-signature-replies", page: .mailWriting, title: "Signature in replies and forwards",
@@ -443,11 +443,11 @@ struct SettingsItem: Identifiable, Hashable {
         SettingsItem(id: "snippets-offer", page: .snippets, title: "Offer to keep what you paste often",
                      words: "snippets paste pasted often offer save card"),
         // Passwords
-        SettingsItem(id: "use-yab-passwords", page: .passwords, title: "Use Yab's passwords",
+        SettingsItem(id: "use-yab-passwords", page: .passwords, title: "Use \(Brand.name)'s passwords",
                      words: "default password manager built in own keychain fill save turn off"),
         SettingsItem(id: "connect-password-manager", page: .passwords, title: "Connect Password Manager",
                      words: "password manager connect 1password bitwarden nordpass proton pass dashlane lastpass apple passwords icloud extension unlock master password agents sign in"),
-        SettingsItem(id: "your-passwords", page: .passwords, title: "Saved in Yab",
+        SettingsItem(id: "your-passwords", page: .passwords, title: "Saved in \(Brand.name)",
                      words: "keychain touch id see show manage accounts logins"),
         SettingsItem(id: "save-passwords", page: .passwords, title: "Offer to save passwords",
                      words: "remember ask save logins"),
@@ -544,7 +544,7 @@ struct SettingsItem: Identifiable, Hashable {
                      words: "best friend bff charm halves"),
         SettingsItem(id: "best-color", page: .bestFriend, title: "Your half's color",
                      words: "charm half color colour mint lilac sky rose coral lemon indigo"),
-        SettingsItem(id: "best-shares", page: .bestFriend, title: "Let them see when I'm in Yab",
+        SettingsItem(id: "best-shares", page: .bestFriend, title: "Let them see when I'm in \(Brand.name)",
                      words: "presence online open share best friend see"),
         SettingsItem(id: "best-icon", page: .bestFriend, title: "Show it in the icon",
                      words: "charm apart away gap dock icon effect"),

@@ -1,7 +1,7 @@
 """Builds a demo world: Mira's browser, as it is the moment it's built.
 
-A world is a YAB_PROBE world ("Yab (demo-<scene>)" under Application
-Support, settings suite dev.serafim.fast.test.demo-<scene>), run by the demo
+A world is a YAB_PROBE world ("Pane (demo-<scene>)" under Application
+Support, settings suite net.serubin.pane.test.demo-<scene>), run by the demo
 copy of Yab (`./demo install`), whose bundle id is its own so it has no
 access the real Yab was given: no calendar, contacts or Messages.
 
@@ -34,17 +34,17 @@ import persona as P  # noqa: E402
 HOME = Path.home()
 CACHE = HOME / "Library/Caches/yab-demo"
 APP = Path(os.environ.get("YAB_DEMO_APP", str(HOME / "Applications/Yab Demo/Yab.app")))
-BUNDLE = "dev.serafim.fast.demo"
+BUNDLE = "net.serubin.pane.demo"
 MAIL = "http://127.0.0.1:8795"
 STATE = CACHE / "state.json"
 
 
 def folder(world):
-    return HOME / "Library/Application Support" / ("Yab (%s)" % world)
+    return HOME / "Library/Application Support" / ("Pane (%s)" % world)
 
 
 def suite(world):
-    return "dev.serafim.fast.test." + world
+    return "net.serubin.pane.test." + world
 
 
 def say(text):
@@ -64,7 +64,7 @@ def pid_of(world):
     except OSError:
         return None
     command = subprocess.run(["ps", "-p", str(pid), "-o", "comm="], capture_output=True, text=True).stdout.strip()
-    return pid if command.endswith("/MacOS/yab") or command == "yab" else None
+    return pid if command.endswith("/MacOS/pane") or command == "pane" else None
 
 
 def quit_world(world):

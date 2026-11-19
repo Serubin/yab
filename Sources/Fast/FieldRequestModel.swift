@@ -318,7 +318,7 @@ final class RequestModel {
         request.httpMethod = "POST"
         request.setValue("Bearer " + key, forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Yab", forHTTPHeaderField: "X-Title")
+        request.setValue("\(Brand.name)", forHTTPHeaderField: "X-Title")
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         guard let (data, response) = try? await OpenRouterKey.session.data(for: request),
               let code = (response as? HTTPURLResponse)?.statusCode else { return nil }
@@ -333,7 +333,7 @@ final class RequestModel {
 /// on the first in their order that OpenRouter hasn't just turned away
 /// (rate limited, out of credit), and on the next while it sits out.
 enum OpenRouterKey {
-    private static let service = "dev.serafim.fast.openrouter"
+    static let service = (Bundle.main.bundleIdentifier ?? Store.productionBundleID) + ".openrouter"
     /// The first key's keychain account, from when there was one key.
     static let first = "field-requests"
     private static let idsKey = "models.keys.openrouter.ids"

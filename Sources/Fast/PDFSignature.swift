@@ -238,7 +238,7 @@ final class SignatureKeychain: SignatureShelf {
         return rows.compactMap { row -> (Signature, Date)? in
             guard let id = row[kSecAttrAccount as String] as? String, let data = row[kSecValueData as String] as? Data else { return nil }
             let made = row[kSecAttrCreationDate as String] as? Date ?? .distantPast
-            return (Signature(id: id, png: data, initials: id.hasPrefix("Yab Initials")), made)
+            return (Signature(id: id, png: data, initials: id.hasPrefix("\(Brand.name) Initials")), made)
         }
         .sorted { $0.1 > $1.1 }
         .map(\.0)
@@ -246,7 +246,7 @@ final class SignatureKeychain: SignatureShelf {
 
     @discardableResult
     func keep(_ png: Data, initials: Bool) -> Signature? {
-        let stem = initials ? "Yab Initials" : "Yab Signature"
+        let stem = initials ? "\(Brand.name) Initials" : "\(Brand.name) Signature"
         let taken = Set(all().map(\.id))
         var n = 1
         while taken.contains("\(stem) \(n)") { n += 1 }
@@ -280,7 +280,7 @@ final class SignatureMemory: SignatureShelf {
 
     @discardableResult
     func keep(_ png: Data, initials: Bool) -> Signature? {
-        let stem = initials ? "Yab Initials" : "Yab Signature"
+        let stem = initials ? "\(Brand.name) Initials" : "\(Brand.name) Signature"
         let n = kept.filter { $0.initials == initials }.count + 1
         let made = Signature(id: "\(stem) \(n)", png: png, initials: initials)
         kept.insert(made, at: 0)

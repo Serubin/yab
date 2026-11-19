@@ -5,7 +5,7 @@ import Security
 /// Apple's helper checks its immediate parent's browser entitlement, and
 /// 1Password's checks its parent's code signature against the browsers it
 /// knows or was given (Settings › Browser › Add Browser records Yab.app's
-/// designated requirement, `identifier "dev.serafim.fast"`). CEF's browser
+/// designated requirement, `identifier "net.serubin.pane"`). CEF's browser
 /// process is `Contents/MacOS/YabCore`, signed as identifier `YabCore`
 /// without the restricted entitlement, so neither would ever accept it. Run
 /// this stdio-only door of the signed browser as the parent instead. Chromium
@@ -19,8 +19,8 @@ enum ChromiumNativeHostLauncher {
     /// Posted (object: the extension's id) when 1Password's host says it
     /// won't talk to this browser, or answers anything else, so the app's
     /// row and card follow it as they do for WebKit tabs.
-    static var refusedNotice: Notification.Name { .init((Bundle.main.bundleIdentifier ?? "dev.serafim.fast") + ".nativeHostRefused") }
-    static var answeredNotice: Notification.Name { .init((Bundle.main.bundleIdentifier ?? "dev.serafim.fast") + ".nativeHostAnswered") }
+    static var refusedNotice: Notification.Name { .init((Bundle.main.bundleIdentifier ?? Store.productionBundleID) + ".nativeHostRefused") }
+    static var answeredNotice: Notification.Name { .init((Bundle.main.bundleIdentifier ?? Store.productionBundleID) + ".nativeHostAnswered") }
 
     private struct ProcessStamp: Equatable {
         let pid: Int32, parent, uid: UInt32
@@ -121,7 +121,7 @@ enum ChromiumNativeHostLauncher {
             let watched = (try? JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as? [String: Any])?["name"] as? String == onePassword
             return try serve(host: host, origin: arguments[1], watched: watched)
         } catch {
-            FileHandle.standardError.write(Data("Yab could not start the approved native host: \(error.localizedDescription)\n".utf8))
+            FileHandle.standardError.write(Data("\(Brand.name) could not start the approved native host: \(error.localizedDescription)\n".utf8))
             return 69
         }
     }

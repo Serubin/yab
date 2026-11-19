@@ -36,7 +36,7 @@ import os
 // from before the switch existed.
 
 enum Crashes {
-    private static let log = Logger(subsystem: "dev.serafim.fast", category: "Crashes")
+    private static let log = Logger(subsystem: Store.productionBundleID, category: "Crashes")
     static let key = "crash.send"
     private static let since = "crash.since"
 
@@ -179,7 +179,7 @@ enum Crashes {
     static func ask(using questions: Questions? = nil) async -> Bool {
         await (questions ?? .shared).ask(Question(
             title: "Share saved crash reports?",
-            detail: "macOS saved crash reports from an earlier Yab session. They include what crashed and why, and the versions of Yab and macOS, never pages or anything you typed. Sharing them helps fix problems. You can turn on automatic sending in Settings › About.",
+            detail: "macOS saved crash reports from an earlier \(Brand.name) session. They include what crashed and why, and the versions of \(Brand.name) and macOS, never pages or anything you typed. Sharing them helps fix problems. You can turn on automatic sending in Settings › About.",
             icon: NSApp.applicationIconImage, ownIcon: true, yes: "Send", no: "Don’t Send"
         ))
     }
@@ -625,7 +625,7 @@ enum Crashes {
             (try? FileManager.default.contentsOfDirectory(at: $0, includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
         }
         return files.compactMap { file -> (URL, Date)? in
-            guard file.pathExtension == "ips", file.lastPathComponent.lowercased().hasPrefix("yab"),
+            guard file.pathExtension == "ips", OwnProcess.report(file.lastPathComponent),
                   seen.insert(file.lastPathComponent).inserted,
                   let written = try? file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate,
                   written > date,

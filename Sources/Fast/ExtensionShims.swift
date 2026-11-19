@@ -1176,7 +1176,7 @@ enum ExtensionShims {
 
     static func answer(_ message: Any, from context: WKWebExtensionContext, owner: Extensions) async throws -> Any? {
         guard let body = message as? [String: Any], let api = body["api"] as? String else {
-            return ["error": "Not a Yab message"]
+            return ["error": "Not a \(Brand.name) message"]
         }
         let args = body["args"] as? [Any] ?? []
         do {
@@ -2173,10 +2173,10 @@ enum ExtensionShims {
             // redirect "redirect_uri_mismatch" before anyone signs in
             // (evals/extensions/identity_probe.py, Save to Google Drive,
             // 2026-10-21), so there is nothing to build it on.
-            throw Unsupported(what: "Sign in with Google isn't available for extensions in Yab")
+            throw Unsupported(what: "Sign in with Google isn't available for extensions in \(Brand.name)")
 
         default:
-            throw Unsupported(what: "\(api) isn't available in Yab")
+            throw Unsupported(what: "\(api) isn't available in \(Brand.name)")
         }
     }
 

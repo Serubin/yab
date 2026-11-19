@@ -39,7 +39,7 @@ extension Bench {
         if let alone = agents.session(session), alone.unattended || Headless.nobody {
             if alone.quiet { Hints.shared.refusedQuiet(verb) }
             answer(["error": alone.quiet ? "this is a quiet task nobody is watching: don't ask the user, skip what needs them"
-                : "nobody is at Yab to do this for this task: don't ask the user, skip what needs them, and say in your answer what did"])
+                : "nobody is at \(Brand.name) to do this for this task: don't ask the user, skip what needs them, and say in your answer what did"])
             return
         }
         if agents.session(session)?.parent != nil {
@@ -142,7 +142,7 @@ extension Bench {
         if let alone = agents.session(session), alone.unattended || (Headless.nobody && !["tty", "caller"].contains(alone.person) && alone.cli != "external") {
             if alone.quiet { Hints.shared.refusedQuiet(verb) }
             answer(["error": alone.quiet ? "this is a quiet task nobody is watching: don't ask the user, skip what needs them"
-                : "nobody is at Yab to do this for this task: don't ask the user, skip what needs them, and say in your answer what did"])
+                : "nobody is at \(Brand.name) to do this for this task: don't ask the user, skip what needs them, and say in your answer what did"])
             return
         }
         if agents.session(session)?.parent != nil {
@@ -160,12 +160,12 @@ extension Bench {
         if pick, let asker = agents.session(session), asker.person == "caller" || (Headless.woken && asker.person == "app" && asker.cli != "external") {
             let options = request["options"] as? [String] ?? []
             asker.question = (request["question"] as? String ?? "Which one?") + (options.isEmpty ? "" : " (" + options.joined(separator: " / ") + ")")
-            answer(["end_turn": "Nobody is at Yab to answer: whoever started this task reads your answer. End your turn now with this question and its options as your whole answer; the reply comes as the next message."])
+            answer(["end_turn": "Nobody is at \(Brand.name) to answer: whoever started this task reads your answer. End your turn now with this question and its options as your whole answer; the reply comes as the next message."])
             return
         }
         // Hidden for an agent of its own: nobody sees Yab's cards.
         if pick, Headless.woken || Headless.nobody, agents.session(session)?.cli == "external" {
-            answer(["end_turn": "Yab is running hidden, and nobody sees its cards. Ask your user in your own chat, then carry on."])
+            answer(["end_turn": "\(Brand.name) is running hidden, and nobody sees its cards. Ask your user in your own chat, then carry on."])
             return
         }
         let named = (request["id"] as? String).flatMap { $0.isEmpty ? nil : find(request, in: browser) }
@@ -199,10 +199,10 @@ extension Bench {
         guard let found = agents.session(session) else { answer(["error": "no session \(session ?? "")"]); return }
         guard let id = found.asking, let tab = browser.everyTab.first(where: { $0.id == id }), tab.handoff != nil, tab.askedBy == found.id || tab.guest == found.id || tab.agent == found.id else {
             let waits = agents.tabs(of: found).contains { $0.handoff != nil } || browser.everyTab.contains { $0.permit?.session == found.id }
-            answer(["error": waits ? "this one is done in Yab, not here" : "nothing is asked here now"])
+            answer(["error": waits ? "this one is done in \(Brand.name), not here" : "nothing is asked here now"])
             return
         }
-        guard tab.permit == nil else { answer(["error": "this one is done in Yab, not here"]); return }
+        guard tab.permit == nil else { answer(["error": "this one is done in \(Brand.name), not here"]); return }
         let said = (request["text"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         guard !said.isEmpty else { answer(["error": "an answer needs words"]); return }
         found.asking = nil
@@ -223,7 +223,7 @@ extension Bench {
         if let alone = agents.session(session), alone.unattended || Headless.nobody {
             if alone.quiet { Hints.shared.refusedQuiet(verb) }
             answer(["error": alone.quiet ? "this is a quiet task nobody is watching: don't ask the user, skip what needs them"
-                : "nobody is at Yab to do this for this task: don't ask the user, skip what needs them, and say in your answer what did"])
+                : "nobody is at \(Brand.name) to do this for this task: don't ask the user, skip what needs them, and say in your answer what did"])
             return
         }
         guard let tab = own(), let session else { return }
@@ -249,20 +249,20 @@ extension Bench {
         let names = Array(Set(saved.map(\.user))).sorted()
         if let wanted = (request["user"] as? String)?.trimmingCharacters(in: .whitespaces).lowercased(), !wanted.isEmpty {
             guard let user = names.first(where: { $0.lowercased() == wanted }) ?? names.first(where: { $0.lowercased().contains(wanted) }) else {
-                answer(["error": "Yab has no saved password for \(wanted) on \(host); it has: \(names.joined(separator: ", ")). Ask the user, or call handoff"])
+                answer(["error": "\(Brand.name) has no saved password for \(wanted) on \(host); it has: \(names.joined(separator: ", ")). Ask the user, or call handoff"])
                 return
             }
             if AgentFiles.shared.signIns[session + key]?.user != user { AgentFiles.shared.signIns[session + key] = nil }
             if browser.prefs.asking(session) != .ask { AgentFiles.shared.signIns[session + key] = (user, Date()) }
             tab.chosen = user
         } else if names.count > 1, AgentFiles.shared.signIns[session + key] == nil, browser.prefs.asking(session) == .auto {
-            answer(["error": "Yab has \(names.count) accounts saved for \(Vault.registrable(host)): \(names.joined(separator: ", ")). Call sign_in again with user set to the one this task is for; if the task doesn't say, ask the user"])
+            answer(["error": "\(Brand.name) has \(names.count) accounts saved for \(Vault.registrable(host)): \(names.joined(separator: ", ")). Call sign_in again with user set to the one this task is for; if the task doesn't say, ask the user"])
             return
         }
         // Bypass never asks: the last account used there, as before,
         // and the agent told which others there are.
         let others = names.count > 1 && browser.prefs.asking(session) == .bypass && request["user"] == nil
-            ? " Yab also keeps \(names.filter { $0 != (AgentFiles.shared.signIns[session + key]?.user ?? saved[0].user) }.joined(separator: ", ")) here: call sign_in with user to use that instead."
+            ? " \(Brand.name) also keeps \(names.filter { $0 != (AgentFiles.shared.signIns[session + key]?.user ?? saved[0].user) }.joined(separator: ", ")) here: call sign_in with user to use that instead."
             : ""
         let kept = AgentFiles.shared.signIns[session + key].flatMap { Date().timeIntervalSince($0.at) < 600 ? $0 : nil }
         if kept == nil, let yes = tab.approved, yes.session == session, yes.ref == key {
@@ -332,7 +332,7 @@ extension Bench {
         let what = request["what"] as? String ?? "card"
         if what != "card" {
             guard let address = Wallet.preferredAddress() else {
-                answer(["error": "Yab keeps no address: ask the user for it, or call handoff"])
+                answer(["error": "\(Brand.name) keeps no address: ask the user for it, or call handoff"])
                 return
             }
             // An address is the person's to give to a site: asked at the
@@ -359,7 +359,7 @@ extension Bench {
             tab.walletLook()
             tab.walletFill(address.filling, what: .address, origin: origin) { filled in
                 guard filled > 0 else {
-                    answer(["error": "no address boxes here that Yab could fill: type it in, or call handoff"])
+                    answer(["error": "no address boxes here that \(Brand.name) could fill: type it in, or call handoff"])
                     return
                 }
                 DispatchQueue.global(qos: .utility).async { Wallet.touch(address: address.id, on: site) }
@@ -373,7 +373,7 @@ extension Bench {
         }
         let cards = Wallet.cards().filter { !$0.expired }
         guard !cards.isEmpty else {
-            answer(["error": "Yab keeps no card: call handoff so the person pays"])
+            answer(["error": "\(Brand.name) keeps no card: call handoff so the person pays"])
             return
         }
         let named = (request["card"] as? String ?? "").filter(\.isNumber)
@@ -381,7 +381,7 @@ extension Bench {
         let chosen: SavedCard
         if !named.isEmpty {
             guard let card = cards.first(where: { $0.last4 == String(named.suffix(4)) }) else {
-                answer(["error": "no card ending in \(named.suffix(4)); Yab keeps \(listed)"])
+                answer(["error": "no card ending in \(named.suffix(4)); \(Brand.name) keeps \(listed)"])
                 return
             }
             chosen = card
@@ -393,7 +393,7 @@ extension Bench {
             // The person picks, from the cards themselves (the tool puts
             // the question); the agent hears only which.
             answer(["choose": cards.map { $0.nickname.isEmpty ? $0.title : "\($0.nickname), \($0.title)" },
-                    "site": site, "error": "Yab keeps several cards: \(listed)"])
+                    "site": site, "error": "\(Brand.name) keeps several cards: \(listed)"])
             return
         }
         agents.touch(session, "autofill · \(site)")
@@ -421,11 +421,11 @@ extension Bench {
                     let empty = passed.isEmpty ? "" : " Card boxes in a frame of \(passed.joined(separator: ", ")), which is neither this shop nor a payment company, got nothing: call handoff so the person types them there."
                     tab.walletFill(data, what: .card, origin: origin) { filled in
                         guard filled > 0 else {
-                            answer(["error": passed.isEmpty ? "no card boxes here that Yab could fill: call handoff so the person pays" : "nothing filled." + empty])
+                            answer(["error": passed.isEmpty ? "no card boxes here that \(Brand.name) could fill: call handoff so the person pays" : "nothing filled." + empty])
                             return
                         }
                         DispatchQueue.global(qos: .utility).async { Wallet.touch(card: chosen.id, on: site) }
-                        let others = cards.count > 1 ? " Yab also keeps \(cards.filter { $0.id != chosen.id }.map(\.title).joined(separator: ", ")); card picks one." : ""
+                        let others = cards.count > 1 ? " \(Brand.name) also keeps \(cards.filter { $0.id != chosen.id }.map(\.title).joined(separator: ", ")); card picks one." : ""
                         answer(["ok": true, "said": "Filled \(chosen.title) (\(filled) boxes).\(empty)\(others)" + (code.isEmpty ? " Its security code isn't kept: if the page asks for it, call handoff so the person types it." : "")])
                     }
                 }
@@ -767,7 +767,7 @@ extension Bench {
                              _ answer: @escaping @MainActor ([String: Any]) -> Void) {
         let connections = PasswordManagers.Connections.shared
         let order = PasswordManagers.agentOrder(connections.list, on: PasswordManagers.extensionsOn)
-        let none: [String: Any] = ["error": "No sign-in for \(host) in Yab or a connected password manager. Call handoff so the person signs in."]
+        let none: [String: Any] = ["error": "No sign-in for \(host) in \(Brand.name) or a connected password manager. Call handoff so the person signs in."]
         guard !order.isEmpty else { answer(none); return }
         Task { @MainActor in
             for id in order {
@@ -787,14 +787,14 @@ extension Bench {
                         ? "If it asks to unlock, call unlock_manager(\"\(slug)\")." : "If it asks to unlock, call handoff to ask the person."
                     answer(["ok": true, "manager": id, "menu": true, "menuText": Store.testing ? lastMenuText : "",
                             "said": read
-                                ? "\(name)'s menu is open under the \(field) field. Pick the account in it; Yab has no sign-in here."
+                                ? "\(name)'s menu is open under the \(field) field. Pick the account in it; \(Brand.name) has no sign-in here."
                                 : "\(name)'s menu is open under the \(field) field; take a screenshot to see it. Pick the account in it. \(locked)"])
                     return
                 case .locked:
                     let name = PasswordManagers.name(id), slug = PasswordManagers.slug(id)
                     let yabUnlocks = connections.row(id) == .yabUnlocks
                     answer(["error": yabUnlocks
-                        ? "\(name) is locked. Yab has its unlock password: call unlock_manager(\"\(slug)\")."
+                        ? "\(name) is locked. \(Brand.name) has its unlock password: call unlock_manager(\"\(slug)\")."
                         : "\(name) is locked, and you unlock it yourself here: call handoff to ask the person to unlock \(name).",
                             "manager": id, "locked": true, "menuText": Store.testing ? lastMenuText : ""])
                     return
@@ -1008,7 +1008,7 @@ extension Bench {
         let answer = c.answer
         let session = c.session
         if let alone = c.agents.session(session), alone.unattended || Headless.nobody {
-            answer(["error": "nobody is at Yab to do this for this task: skip what needs the password manager, and say so in your answer"])
+            answer(["error": "nobody is at \(Brand.name) to do this for this task: skip what needs the password manager, and say so in your answer"])
             return
         }
         let connections = PasswordManagers.Connections.shared
@@ -1018,7 +1018,7 @@ extension Bench {
             PasswordManagers.slug($0) == wanted || PasswordManagers.name($0).lowercased() == wanted || $0 == wanted
         }) else {
             let names = connections.list.map { PasswordManagers.slug($0.provider) }
-            answer(["error": names.isEmpty ? "No password manager is connected to Yab: call handoff so the person signs in"
+            answer(["error": names.isEmpty ? "No password manager is connected to \(Brand.name): call handoff so the person signs in"
                 : "Name one of the connected password managers: \(names.joined(separator: ", "))"])
             return
         }
@@ -1041,7 +1041,7 @@ extension Bench {
                 answer(["error": "the person said not now to unlocking \(name): call handoff or stop"]); return
             } else {
                 c.agents.ask(page, AgentPermit(kind: .unlockManager(provider: id), session: session,
-                                               detail: "Yab types your \(name) unlock password; the agent doesn't see it."))
+                                               detail: "\(Brand.name) types your \(name) unlock password; the agent doesn't see it."))
                 answer(["error": "unlocking waits for the person's yes; asking them now", "asking": true]); return
             }
         }
@@ -1050,7 +1050,7 @@ extension Bench {
             let secret: String
             switch ManagerUnlock.fetch(id) {
             case .found(let text): secret = text
-            case .locked: answer(["error": "Your Mac is locked, so Yab can't read \(name)'s unlock password: call handoff"]); return
+            case .locked: answer(["error": "Your Mac is locked, so \(Brand.name) can't read \(name)'s unlock password: call handoff"]); return
             case .missing: answer(["error": "\(name)'s unlock password is missing on this Mac: call handoff to ask the person to unlock \(name)"]); return
             }
             ManagerUnlock.run(id, secret: secret, in: c.browser, session: session, house: { self.house($0) }) { outcome in
@@ -1068,7 +1068,7 @@ extension Bench {
                 case .noField:
                     answer(["error": "\(name)'s unlock page showed no password box, so it may be unlocked already: call sign_in again, else handoff"])
                 case .notRunning:
-                    answer(["error": "\(name)'s extension isn't on in Yab: call handoff"])
+                    answer(["error": "\(name)'s extension isn't on in \(Brand.name): call handoff"])
                 }
             }
         }

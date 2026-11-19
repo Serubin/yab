@@ -130,7 +130,7 @@ enum CrashExitLogs {
     static func evidence(at: Date, process: String, pid: Int32, message: String,
                          run: CrashSessionLedger.Run) -> Evidence? {
         let system = ["kernel", "launchd", "runningboardd", "watchdogd", "ReportCrash", "memorypressure"]
-        let own = run.processIDs.contains(pid) && (process.lowercased() == "yab" || process.hasPrefix("YabCore"))
+        let own = run.processIDs.contains(pid) && (process.lowercased() == OwnProcess.name || process.hasPrefix("YabCore"))
         let lower = message.lowercased()
         let namedPID = run.processIDs.first { value in
             message.range(of: "(?i)(?:\\b(?:pid|process(?: id)?)\\s*[:=/ ]\\s*\(value)\\b|\\[\(value)\\]|:\(value)\\])", options: .regularExpression) != nil
@@ -163,7 +163,7 @@ enum CrashExitLogs {
         let namespace = capture(in: lower, pattern: #"\bnamespace\s*[:= ]\s*(signal|jetsam|runningboard|watchdog|resource|dyld|codesigning)\b"#)?.uppercased()
         let codeText = termination ? capture(in: lower, pattern: #"\bcode\s*[:= ]\s*(0x[0-9a-f]+|[0-9]+)\b"#) : nil
         let code = codeText.flatMap { $0.hasPrefix("0x") ? UInt64($0.dropFirst(2), radix: 16) : UInt64($0) }
-        return Evidence(at: at, source: own ? (process.lowercased() == "yab" ? "yab" : "YabCore") : process,
+        return Evidence(at: at, source: own ? (process.lowercased() == OwnProcess.name ? OwnProcess.name : "YabCore") : process,
                         kind: kind, signal: signal, status: status, correlatedPID: namedPID ?? (own ? pid : nil),
                         reason: reason, namespace: namespace, code: code,
                         domain: termination ? number(in: lower, pattern: #"\bdomain\s*[:= ]\s*(\d+)\b"#) : nil)
@@ -224,9 +224,9 @@ enum CrashExitLogs {
         }
         let indicator = attributed.isEmpty ? "No clean-quit marker; exit cause unknown" :
             "No clean-quit marker; system log contains PID-correlated termination evidence (see systemLog)"
-        let head: [String: Any] = ["app_name": "yab", "app_version": run.version, "build_version": String(run.build),
+        let head: [String: Any] = ["app_name": OwnProcess.name, "app_version": run.version, "build_version": String(run.build),
                                    "bug_type": "YabUncleanExit", "incident_id": run.id.uuidString]
-        let body: [String: Any] = ["procName": "yab", "exception": ["type": "UNCLEAN_EXIT"],
+        let body: [String: Any] = ["procName": OwnProcess.name, "exception": ["type": "UNCLEAN_EXIT"],
                                    "termination": ["namespace": "YabSession", "indicator": indicator],
                                    "uncleanExit": ["session": session, "systemLog": evidence,
                                                     "lastObservationIsNotExitTime": true], "threads": [], "usedImages": []]
@@ -302,5 +302,16 @@ enum CrashSessions {
         memorySource?.cancel(); memorySource = nil
         do { try ledger.finish() }
         catch { NSLog("Crashes: clean-quit marker could not be cleared: %@", String(describing: error)) }
+    }
+}
+
+/// This app's process and crash-report names, so upstream Yab's reports are never taken as ours.
+enum OwnProcess {
+    static let name = "pane"
+
+    /// A DiagnosticReports file named for this app or its helper (YabCore, checked by bundle later).
+    static func report(_ file: String) -> Bool {
+        let lower = file.lowercased()
+        return lower.hasPrefix(name) || lower.hasPrefix("yabcore")
     }
 }

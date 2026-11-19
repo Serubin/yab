@@ -455,7 +455,7 @@ final class AssistantReach: ObservableObject {
         if wanted, assertion == 0 {
             var id: IOPMAssertionID = 0
             if IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleSystemSleep as CFString, IOPMAssertionLevel(kIOPMAssertionLevelOn),
-                                           "Yab keeps this Mac reachable for your assistants and routines" as CFString, &id) == kIOReturnSuccess {
+                                           "\(Brand.name) keeps this Mac reachable for your assistants and routines" as CFString, &id) == kIOReturnSuccess {
                 assertion = id
             }
         } else if !wanted, assertion != 0 {

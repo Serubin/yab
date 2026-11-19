@@ -207,7 +207,7 @@ enum ExtensionProxy {
         }
         switch mode {
         case "direct", "system", "fixed_servers", "pac_script": return nil
-        default: return "This proxy mode is not available in Yab"
+        default: return "This proxy mode is not available in \(Brand.name)"
         }
     }
 

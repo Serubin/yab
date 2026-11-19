@@ -16,7 +16,7 @@ enum BoostTools {
     }
     static func list(session: String?) -> [[String: Any]] {
         available(session: session).map { package, tool in
-            ["name": package.id + "." + tool.name, "description": tool.description + (tool.acts == nil ? "" : " Changes the site; Yab asks before running."), "inputSchema": tool.schema]
+            ["name": package.id + "." + tool.name, "description": tool.description + (tool.acts == nil ? "" : " Changes the site; \(Brand.name) asks before running."), "inputSchema": tool.schema]
         }
     }
     static func run(_ name: String, arguments: [String: Any], requestID: String, session: String, browser: Browser) async -> [String: Any] {
@@ -55,7 +55,7 @@ enum BoostTools {
                         Agents.shared.ask(tab, AgentPermit(kind: .press(label: tool.description, ref: ref), session: session,
                                                           detail: package.name + " on " + site, draft: BoostScript.json(arguments), pays: tool.acts == "pay"))
                     }
-                    return ["asking": true, "error": "Waiting for your approval in Yab.", "tab": Bench.short(tab)]
+                    return ["asking": true, "error": "Waiting for your approval in \(Brand.name).", "tab": Bench.short(tab)]
                 }
                 tab.approved = nil
             }

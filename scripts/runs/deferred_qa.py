@@ -1257,10 +1257,10 @@ def fetch_nightly(version, out, site=None, opener=None):
     if hashlib.sha256(archive).hexdigest() != feed.get('sha256'):
         raise ValueError('the Nightly archive differs from its feed')
     folder = Path(tempfile.mkdtemp(prefix='nightly-', dir=out))
-    zipped = folder / 'yab.zip'
+    zipped = folder / 'pane.zip'
     zipped.write_bytes(archive)
     subprocess.run(['ditto', '-x', '-k', str(zipped), str(folder)], check=True)
-    return folder / 'yab.app'
+    return folder / 'pane.app'
 
 
 def unit_run(root, commit, store, output):

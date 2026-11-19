@@ -65,7 +65,7 @@ final class OpenAtLogin: ObservableObject {
         do {
             if wanted { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
         } catch {
-            trouble = wanted ? "macOS didn't add Yab to your login items." : "macOS didn't take Yab out of your login items."
+            trouble = wanted ? "macOS didn't add \(Brand.name) to your login items." : "macOS didn't take \(Brand.name) out of your login items."
         }
         // Pressed: what macOS says now, before sync tells the iPhone.
         take(SMAppService.mainApp.status)
@@ -94,7 +94,7 @@ final class OpenAtLogin: ObservableObject {
     /// waits for; the title says the rest.
     var detail: String {
         if let trouble { return trouble }
-        if waiting { return "Allow Yab in System Settings › General › Login Items." }
+        if waiting { return "Allow \(Brand.name) in System Settings › General › Login Items." }
         return ""
     }
 

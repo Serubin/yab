@@ -557,7 +557,7 @@ extension Bench {
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let now = Date()
         let files: [(String, String, String, String, TimeInterval)] = [
-            ("hero@2x.png", "cdn.example.com", "https://yetanotherbrowser.com/", "Yab, yet another browser", -86400 * 3),
+            ("hero@2x.png", "cdn.example.com", "https://yetanotherbrowser.com/", "\(Brand.name), yet another browser", -86400 * 3),
             ("design-assets.zip", "figma.com", "https://www.figma.com/design/launcher", "Launcher, Export", -86400),
             ("invoice-2026-08.pdf", "files.stripe.com", "https://dashboard.stripe.com/invoices/in_1", "Acme Corp, Billing, August", -600),
         ]

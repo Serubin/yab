@@ -392,7 +392,7 @@ final class SyncCenter: ObservableObject {
     func askToJoin(invite: String? = nil) {
         let invited = invite.flatMap { JoinInvite.code(scanned: $0) }
         if invite != nil, invited == nil {
-            joinTrouble = "That isn’t a code from Yab. On the other Mac, choose Add a Device in Settings › Sync."
+            joinTrouble = "That isn’t a code from \(Brand.name). On the other Mac, choose Add a Device in Settings › Sync."
             return
         }
         let joining = Joining(code: invited)
@@ -439,7 +439,7 @@ final class SyncCenter: ObservableObject {
         case (.expired, true): "That code ran out. On the other Mac, choose Add a Device for a new one."
         // This Mac's own code ran out: a new one, nothing to say.
         case (.expired, false): nil
-        case (.unreadable, _), (.refused, _): "The other Mac couldn’t let this Mac in. Check it has the latest Yab, then try again."
+        case (.unreadable, _), (.refused, _): "The other Mac couldn’t let this Mac in. Check it has the latest \(Brand.name), then try again."
         }
     }
 
