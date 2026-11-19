@@ -337,6 +337,7 @@ build_icons() {
   mkdir -p "$ICON_RESOURCES/AppIcons"
   cp -R "$ICONS/pane.icon" "$ICONS/pane-dark.icon"
   sed -E -i '' 's/"value" *: *"automatic"/"value": { "solid": "extended-srgb:0.07843,0.07843,0.07843,1.00000" }/' "$ICONS/pane-dark.icon/icon.json"
+  python3 scripts/icon_dark_fill.py "$ICONS/pane-dark.icon/icon.json"
   xcrun actool "$ICONS/pane-dark.icon" --compile "$ICONS" \
     --output-partial-info-plist "$ICONS/pane-dark-partial.plist" \
     --app-icon pane-dark --include-all-app-icons --enable-on-demand-resources NO \
@@ -356,6 +357,7 @@ build_icons() {
     cp "$ICONS/pane-standard-build/pane-standard.icns" "$ICON_RESOURCES/AppIcons/"
     cp -R "$ICONS/pane-standard.icon" "$ICONS/pane-standard-dark.icon"
     sed -E -i '' 's/"value" *: *"automatic"/"value": { "solid": "extended-srgb:0.07843,0.07843,0.07843,1.00000" }/' "$ICONS/pane-standard-dark.icon/icon.json"
+    python3 scripts/icon_dark_fill.py "$ICONS/pane-standard-dark.icon/icon.json"
     xcrun actool "$ICONS/pane-standard-dark.icon" --compile "$ICONS/pane-standard-dark-build" \
       --output-partial-info-plist "$ICONS/pane-standard-dark-build/partial.plist" \
       --app-icon pane-standard-dark --include-all-app-icons --enable-on-demand-resources NO \
@@ -916,6 +918,7 @@ rm -rf "$DARK"
 mkdir -p "$DARK"
 cp -R Icon/pane.icon "$DARK/pane.icon"
 sed -E -i '' 's/"value" *: *"automatic"/"value": { "solid": "extended-srgb:0.07843,0.07843,0.07843,1.00000" }/' "$DARK/pane.icon/icon.json"
+python3 scripts/icon_dark_fill.py "$DARK/pane.icon/icon.json"
 xcrun actool "$DARK/pane.icon" --compile "$DARK" \
   --output-partial-info-plist "$DARK/partial.plist" \
   --app-icon pane --include-all-app-icons --enable-on-demand-resources NO \

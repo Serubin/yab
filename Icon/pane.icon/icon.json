@@ -1,12 +1,14 @@
 {
   "fill-specializations": [
     {
-      "value": "automatic"
+      "value": {
+        "solid": "srgb:0.95294,0.96471,0.99608,1.00000"
+      }
     },
     {
       "appearance": "dark",
       "value": {
-        "solid": "extended-srgb:0.07843,0.07843,0.07843,1.00000"
+        "solid": "srgb:0.05490,0.08235,0.18824,1.00000"
       }
     }
   ],
@@ -14,8 +16,42 @@
     {
       "layers": [
         {
-          "name": "Art",
-          "image-name": "art.png",
+          "name": "Face",
+          "image-name": "face.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "none",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "layers": [
+        {
+          "name": "Front",
+          "image-name": "front.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "none",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "layers": [
+        {
+          "name": "Back",
+          "image-name": "back.svg",
           "glass": false
         }
       ],

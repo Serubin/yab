@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1254" height="1254" viewBox="6 5 88 88">
+  <defs>
+    <clipPath id="clip-back"><rect x="13" y="17" width="48" height="52" rx="16"/></clipPath>
+    <radialGradient id="back-body" cx="0.46" cy="0.42" r="0.72"><stop offset="0" stop-color="#4FA2FF" stop-opacity="0.92"/><stop offset="0.6" stop-color="#1C6CFF" stop-opacity="0.97"/><stop offset="1" stop-color="#0A3FD0" stop-opacity="0.92"/></radialGradient>
+    <mask id="back-out" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect x="0" y="0" width="100" height="100" fill="#FFFFFF"/><rect x="13" y="17" width="48" height="52" rx="16" fill="#000000"/></mask>
+    <linearGradient id="back-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="0.45" stop-color="#FFFFFF" stop-opacity="0.2"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.6"/></linearGradient>
+    <linearGradient id="back-streak" gradientUnits="userSpaceOnUse" x1="13" y1="45.6" x2="41.8" y2="17"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.45" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="back-gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.8"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.08"/></linearGradient>
+    <linearGradient id="back-glint" gradientUnits="userSpaceOnUse" x1="61" y1="43.0" x2="34.6" y2="69"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.9"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="back-fresnel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#DDF0FF" stop-opacity="0.9"/><stop offset="0.5" stop-color="#7FC0FF" stop-opacity="0.3"/><stop offset="1" stop-color="#BFE4FF" stop-opacity="0.85"/></linearGradient>
+    <linearGradient id="back-window" gradientUnits="userSpaceOnUse" x1="13" y1="53.4" x2="49.0" y2="17"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.85"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="back-edge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A3FD0" stop-opacity="0.35"/><stop offset="1" stop-color="#0A3FD0" stop-opacity="0.95"/></linearGradient>
+    <clipPath id="clip-front"><rect x="39" y="31" width="48" height="52" rx="16"/></clipPath>
+    <radialGradient id="front-body" cx="0.46" cy="0.42" r="0.72"><stop offset="0" stop-color="#7CC6FF" stop-opacity="0.82"/><stop offset="0.6" stop-color="#2E86FF" stop-opacity="0.9"/><stop offset="1" stop-color="#0B4FE0" stop-opacity="0.92"/></radialGradient>
+    <mask id="front-out" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect x="0" y="0" width="100" height="100" fill="#FFFFFF"/><rect x="39" y="31" width="48" height="52" rx="16" fill="#000000"/></mask>
+    <linearGradient id="front-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="0.45" stop-color="#FFFFFF" stop-opacity="0.2"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.6"/></linearGradient>
+    <linearGradient id="front-streak" gradientUnits="userSpaceOnUse" x1="39" y1="59.6" x2="67.8" y2="31"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.45" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="front-gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.8"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.08"/></linearGradient>
+    <linearGradient id="front-glint" gradientUnits="userSpaceOnUse" x1="87" y1="57.0" x2="60.6" y2="83"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.9"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="front-fresnel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#DDF0FF" stop-opacity="0.9"/><stop offset="0.5" stop-color="#7FC0FF" stop-opacity="0.3"/><stop offset="1" stop-color="#BFE4FF" stop-opacity="0.85"/></linearGradient>
+    <linearGradient id="front-window" gradientUnits="userSpaceOnUse" x1="39" y1="67.4" x2="75.0" y2="31"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.85"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="front-edge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B4FE0" stop-opacity="0.35"/><stop offset="1" stop-color="#0B4FE0" stop-opacity="0.95"/></linearGradient>
+    <filter id="shade" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="drop" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#0F2F98" flood-opacity="0.24"/></filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.1"/></filter>
+    <filter id="core" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="turn" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="fold" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0.9"/></filter>
+    <filter id="wall" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
+    <filter id="rimsoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0.55"/></filter>
+    <filter id="crisp" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0.18"/></filter>
+    <filter id="streak" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0.45"/></filter>
+    <filter id="hair" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="0.25"/></filter>
+    <filter id="glow" x="-50%" y="-100%" width="200%" height="300%"><feGaussianBlur stdDeviation="1.6"/></filter>
+    <filter id="ink" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="0.4" stdDeviation="0.4" flood-color="#FFFFFF" flood-opacity="0.45"/></filter>
+  </defs>
+  <g mask="url(#front-out)"><rect x="39" y="32.8" width="48" height="52" rx="16" fill="#0B4FE0" opacity="0.22" filter="url(#shade)"/></g>
+  <rect x="39" y="31" width="48" height="52" rx="16" fill="url(#front-body)"/>
+  <g clip-path="url(#clip-front)">
+    <rect x="39" y="31" width="48" height="52" rx="16" fill="none" stroke="url(#front-edge)" stroke-width="16" opacity="0.65" filter="url(#turn)"/>
+    <rect x="39" y="31" width="48" height="52" rx="16" fill="none" stroke="url(#front-fresnel)" stroke-width="2.4" filter="url(#rimsoft)"/>
+    <rect x="45" y="37" width="36" height="40" rx="10" fill="none" stroke="#DCE9FF" stroke-opacity="0.35" stroke-width="1.6" filter="url(#wall)"/>
+    <ellipse cx="63.96" cy="62.2" rx="16.32" ry="15.6" fill="#BFF0FF" opacity="0.28" filter="url(#core)"/>
+    <path d="M43 63 V47 A12 12 0 0 1 55 35 H72" fill="none" stroke="url(#front-window)" stroke-width="2.6" stroke-linecap="round" filter="url(#fold)"/>
+    <ellipse cx="49.5" cy="40.5" rx="3.6" ry="2.4" fill="#FFFFFF" opacity="0.6" filter="url(#fold)"/>
+    <ellipse cx="48.5" cy="40" rx="1.5" ry="0.9" fill="#FFFFFF" opacity="1" filter="url(#crisp)"/>
+    <ellipse cx="68" cy="33.2" rx="3.2" ry="0.45" fill="#FFFFFF" opacity="0.95" filter="url(#crisp)"/>
+    <ellipse cx="85" cy="66" rx="0.45" ry="2.8" fill="#FFFFFF" opacity="0.8" filter="url(#crisp)"/>
+    <ellipse cx="53" cy="81" rx="4" ry="0.45" fill="#FFFFFF" opacity="0.7" filter="url(#crisp)"/>
+    <ellipse cx="80.5" cy="36.5" rx="0.5" ry="0.5" fill="#FFFFFF" opacity="0.9" filter="url(#crisp)"/>
+    <ellipse cx="68" cy="77" rx="18" ry="5.5" fill="#DCE8FF" opacity="0.5" filter="url(#glow)"/>
+    <ellipse cx="59.16" cy="21.64" rx="37.44" ry="31.2" fill="url(#front-gloss)" opacity="0.45" filter="url(#wall)"/>
+  </g><g filter="url(#ink)"><rect x="51" y="48" width="6.5" height="16" rx="3.25" fill="#0B1A45"/><g transform="rotate(40 72 56)"><polygon points="72,45.5 75.2,56 68.8,56" fill="#0B1A45" stroke="#0B1A45" stroke-width="1.6" stroke-linejoin="round"/><polygon points="72,66.5 75.2,56 68.8,56" fill="#2463EB" stroke="#2463EB" stroke-width="1.6" stroke-linejoin="round"/></g></g>
+</svg>

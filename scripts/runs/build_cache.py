@@ -78,7 +78,7 @@ def record_sources(root, manifest):
 
 
 def icon_key(root, step, minimum, toolchain):
-    paths = [root / "build.sh"]
+    paths = [root / "build.sh", root / "scripts/icon_dark_fill.py"]
     paths.extend((root / "Icon/pane.icon").rglob("*"))
     if step == "app":
         paths.extend((root / "Icon/pane Dev.icon").rglob("*"))
