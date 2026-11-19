@@ -78,7 +78,9 @@ final class LinkWindow: NSObject, NSWindowDelegate {
     static var all: [LinkWindow] { open }
 
     let tab: Tab
-    private weak var browser: Browser?
+    private(set) weak var browser: Browser?
+    /// This window as extensions know it (Extensions.follow).
+    let extensionKey = UUID()
     let window: NSWindow
     /// Where the page lies, the card under the bar.
     private let holder: PageHolder
@@ -127,6 +129,16 @@ final class LinkWindow: NSObject, NSWindowDelegate {
     /// The one showing this page, if one is.
     static func owning(page: NSView) -> LinkWindow? {
         open.first { $0.tab.builtPage === page }
+    }
+
+    /// The one in front: key, or under the key popover hung from it.
+    static var inFront: LinkWindow? {
+        var window = NSApp.keyWindow
+        while let current = window {
+            if let link = owning(current) { return link }
+            window = current.parent
+        }
+        return nil
     }
 
     /// Its keys, heard by the app for any window of its, before the menus
@@ -202,6 +214,7 @@ final class LinkWindow: NSObject, NSWindowDelegate {
                               remembersFrame: remembersFrame, over: over)
         open.append(link)
         guard let frame else { return link.settle() }
+        if #available(macOS 15.4, *) { Extensions.all.forEach { $0.follow(link) } }
         if over { link.joinFullScreenSpace() }
         link.appear(at: frame)
     }
@@ -585,7 +598,9 @@ final class LinkWindow: NSObject, NSWindowDelegate {
             tab.finder.step(forward: Keymap.shared.action(for: hotkey) == .findNext)
             return true
         case .print: Browser.printSheet(tab, in: window); return true
-        case .extensions: return true
+        case .extensions:
+            if #available(macOS 15.4, *), !tab.isBlank { ExtensionPanel.shared.toggle(tab: tab, browser: browser) }
+            return true
         default: break
         }
         if Keymap.shared.matches(event, .smallSpace) { showSpaces(); return true }
@@ -789,6 +804,8 @@ final class LinkWindow: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        // Last, once the page is let go or in the row: its move is told before its window closes.
+        defer { if #available(macOS 15.4, *) { Extensions.all.forEach { $0.unfollow(self) } } }
         moveEnd?.cancel()
         moveEnd = nil
         moving = false
@@ -1104,6 +1121,9 @@ private struct LinkBar: View {
                 .frame(width: Lights.run, height: LinkRoom.bar)
                 .padding(.leading, 18 - Lights.lead)
             LinkField(browser: browser, tab: tab, bar: bar, steer: steer)
+            if !tab.isBlank {
+                SiteControlsDoor(browser: browser, tab: tab, side: Door.Size.band.side, glyph: Door.Size.band.glyph)
+            }
             OpenButton(browser: browser, bar: bar, home: home, action: keep, spaces: spaces)
         }
         .padding(.trailing, LinkRoom.inset)
