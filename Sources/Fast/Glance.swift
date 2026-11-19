@@ -1599,7 +1599,7 @@ struct FolderPreview: View {
         let found = glance.items(id)
         let words = glance.query
         let inside = glance.at.flatMap { browser.folderBook.folder($0)?.nest }
-        let appearance = LookMode(rawValue: browser.prefs.lookMode)?.scheme ?? scheme
+        let appearance = LookMode(rawValue: browser.prefs.wornLookMode)?.scheme ?? scheme
         VStack(alignment: .leading, spacing: 0) {
             if glance.previewFalls {
                 search(inside: inside, scheme: appearance)

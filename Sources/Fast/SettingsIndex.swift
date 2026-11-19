@@ -291,7 +291,7 @@ struct SettingsItem: Identifiable, Hashable {
                      words: "backdrop background edge to edge card color site's match follow bar "
                          + Backdrop.allCases.map(\.title).joined(separator: " ")),
         SettingsItem(id: "color", page: .appearance, title: "Look",
-                     words: "color colour gray backdrop swatch tint wallpaper your own custom picker field dot any grain noise texture paper film dial knob amount rough fine lightness space spaces each gradient multiple colors harmony linked add remove sidebar"),
+                     words: "color colour gray backdrop swatch tint wallpaper your own custom picker field dot any grain noise texture paper film dial knob amount rough fine lightness space spaces each gradient multiple colors harmony linked add remove sidebar dark light night mode match"),
         // The wave's step past its end, in Look's editor.
         SettingsItem(id: "glass", page: .appearance, title: "Glass",
                      words: "glass liquid transparency transparent desktop window frame see through clear frosted",

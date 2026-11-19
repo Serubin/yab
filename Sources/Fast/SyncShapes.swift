@@ -538,7 +538,7 @@ enum SyncShapes {
     static let localSpaceKeys: Set<String> = [
         "space.current", "backdrop.swatch", "backdrop.color", "backdrop.colors", "backdrop.transparency",
         "backdrop.grain", "backdrop.grain.amount", "backdrop.shift", "backdrop.site-tint",
-        "backdrop.drawings", "backdrop.drawings.strength", "backdrop.mode", "backdrop.glass",
+        "backdrop.drawings", "backdrop.drawings.strength", "backdrop.mode", "backdrop.glass", "backdrop.dark",
     ]
     static let settingExceptions: Set<String> = localSpaceKeys.union(["models.recent"])
     static let charmPaletteKeys: Set<String> = ["invite.charm.left", "invite.charm.right"]

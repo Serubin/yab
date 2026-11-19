@@ -214,6 +214,9 @@
       <property name="color" code="colr" description="The space's color in the light look, as hex: 'F2E9E3'." type="text" access="r">
         <cocoa key="color"/>
       </property>
+      <property name="dark color" code="spDk" description="The space's color in the dark look, as hex: '1F1E1C'." type="text" access="r">
+        <cocoa key="darkColor"/>
+      </property>
       <responds-to command="focus">
         <cocoa method="handleFocusCommand:"/>
       </responds-to>

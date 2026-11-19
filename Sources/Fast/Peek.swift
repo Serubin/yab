@@ -933,7 +933,7 @@ struct ColumnRoot: View {
         // dark scheme and private paint do not supply its environment.
         if privateWindow { return Tone(ContentView.privateBackdrop, lifted: true) }
         guard prefs.backdrop != .none || prefs.edgeBackdrop else { return nil }
-        return Tone(prefs.swatch.color(dark: scheme == .dark, custom: prefs.backdropColor), lifted: true, glass: glassActive)
+        return Tone(prefs.lookColor(dark: scheme == .dark), lifted: true, glass: glassActive)
     }
 
     /// Edge to edge and put away, the space's color for the column out
@@ -942,7 +942,7 @@ struct ColumnRoot: View {
     /// (SpaceWash.card).
     private var card: Tone? {
         guard !privateWindow, prefs.backdrop == .none, !prefs.edgeBackdrop else { return nil }
-        return Tone(prefs.swatch.color(dark: scheme == .dark, custom: prefs.backdropColor), lifted: true,
+        return Tone(prefs.lookColor(dark: scheme == .dark), lifted: true,
                     glass: prefs.lookGlass && WindowGlassPolicy.supported)
     }
 

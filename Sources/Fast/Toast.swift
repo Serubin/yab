@@ -336,7 +336,7 @@ struct Notice: View {
         }
         .frame(width: Self.lead + Self.icon + Self.gap + head + tail, height: Self.side, alignment: .leading)
         .clipShape(RoundedRectangle(cornerRadius: Self.corner, style: .continuous))
-        .background { if lit { HUD.plate(Self.corner, space: browser.prefs.swatch.color(dark: false, custom: browser.prefs.backdropColor)) } }
+        .background { if lit { HUD.plate(Self.corner, space: browser.prefs.lookColor(dark: false)) } }
         .noticeFling(.top, token: "\(say.head)|\(say.tail)|\(toaster.nods)|\(tidier.count)|\(flingCall?.flingToken ?? "none")") {
             dismiss(say, call: flingCall)
         }

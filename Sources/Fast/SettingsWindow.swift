@@ -2822,7 +2822,7 @@ private struct WindowPicture: View {
 
     var body: some View {
         let dark = scheme == .dark
-        let swatch = prefs.swatch.color(dark: dark, custom: prefs.backdropColor)
+        let swatch = prefs.lookColor(dark: dark)
         let paint: NSColor? = switch mode {
         case .none: nil
         case .color: swatch
@@ -2992,7 +2992,8 @@ struct WindowMenu: View {
     /// the size it is drawn at, so its lines stay sharp.
     private func picture(_ mode: Backdrop) -> NSImage {
         let key = [mode.rawValue, scheme == .dark ? "dark" : "light", prefs.swatch.rawValue, prefs.backdropColor.hex,
-                   "\(prefs.grain)", "\(prefs.sidebar)", prefs.sideFlank.rawValue, "\(prefs.addressBar)", prefs.backdropColors.joined()].joined(separator: " ")
+                   "\(prefs.grain)", "\(prefs.sidebar)", prefs.sideFlank.rawValue, "\(prefs.addressBar)", prefs.backdropColors.joined(),
+                   prefs.lookDark.map { $0.color + $0.colors.joined() } ?? ""].joined(separator: " ")
         if let kept = pictures.kept[key] { return kept }
         let renderer = ImageRenderer(content: WindowPicture(prefs: prefs, mode: mode).environment(\.colorScheme, scheme))
         renderer.scale = 2

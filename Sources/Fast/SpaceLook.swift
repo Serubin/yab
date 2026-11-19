@@ -23,6 +23,8 @@ struct ColorEditor: View {
     private let glass: Binding<Bool>?
     /// No Color, the Grays page's first dot; nil where a look can't wear it.
     private let plain: Binding<Bool>?
+    /// The colors are a dark window's own, worn as picked rather than deepened.
+    private let deep: Bool
     var width: CGFloat = 260
     var onPick: () -> Void = {}
 
@@ -58,7 +60,7 @@ struct ColorEditor: View {
 
     init(color: Binding<NSColor>, transparency: Binding<Double>, grain: Binding<Double>, colors: Binding<[String]>? = nil,
          mode: Binding<String>? = nil, corner: AnyView? = nil, glass: Binding<Bool>? = nil, plain: Binding<Bool>? = nil,
-         width: CGFloat = 260, onPick: @escaping () -> Void = {}) {
+         deep: Bool = false, width: CGFloat = 260, onPick: @escaping () -> Void = {}) {
         _transparency = transparency
         _color = color
         _grain = grain
@@ -68,6 +70,7 @@ struct ColorEditor: View {
         self.corner = corner
         self.glass = glass
         self.plain = plain
+        self.deep = deep
         _openedGlass = State(initialValue: glass?.wrappedValue ?? false)
         _first = State(initialValue: LookPresets.index(of: color.wrappedValue, colors: colors?.wrappedValue ?? []))
         self.width = width
@@ -96,7 +99,7 @@ struct ColorEditor: View {
 
     /// A color as the window wears it in this look: deepened when dark.
     private func worn(_ lch: (CGFloat, CGFloat, CGFloat)) -> NSColor {
-        guard scheme == .dark else { return NSColor(oklch: lch) }
+        guard scheme == .dark, !deep else { return NSColor(oklch: lch) }
         let (l, c) = NSColor.deep(lch.0, lch.1)
         return NSColor(oklch: (l, c, lch.2))
     }

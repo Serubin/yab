@@ -345,7 +345,7 @@ struct AppearancePage: View {
             // where its dot would be.
             .overlay(alignment: .trailing) {
                 LookPicker(paint: look(of: browser.spaceID), named: browser.space.marked(),
-                           asked: $lookAsked, dotless: true)
+                           asked: $lookAsked, dotless: true, preview: preview)
                     .frame(width: 24, height: 24)
             }
             .accessibilityHint("Opens Spaces")
@@ -358,7 +358,7 @@ struct AppearancePage: View {
                     if !prefs.backdropColors.isEmpty, prefs.backdrop == .site { prefs.backdrop = .color }
                 }, footer: {
                     BrowserLook(browser: browser, prefs: prefs, under: true)
-                }, asked: $lookAsked)
+                }, asked: $lookAsked, preview: preview)
             }
             .settingsAnchor("color")
             .task { BrowserLookFinder.shared.load() }
@@ -375,6 +375,11 @@ struct AppearancePage: View {
             // Mail's look is its own too, kept apart from the list (MailSpaceLook).
             if id == Space.mailID || browser.spaces.contains(where: { $0.id == id }) { browser.setSpacePaint(id, to: paint) } else { paint.wear(prefs) }
         })
+    }
+
+    /// The window behind Settings wears the Light or Dark tab picked.
+    private var preview: Binding<LookMode?> {
+        Binding(get: { prefs.lookPreview }, set: { prefs.lookPreview = $0 })
     }
 
     /// With spaces, a look is each space's own, set on its page in Spaces;

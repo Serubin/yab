@@ -333,6 +333,10 @@ final class YabScriptSpace: NSObject {
     @objc var color: String {
         (space.paint ?? window.browser.map { SpacePaint($0.prefs) })?.color(dark: false).hex ?? ""
     }
+    /// The dark look's: its own, or the light one deepened.
+    @objc var darkColor: String {
+        (space.paint ?? window.browser.map { SpacePaint($0.prefs) })?.color(dark: true).hex ?? ""
+    }
 
     @objc var scriptTabs: [YabScriptTab] {
         window.listed().filter { $0.space == space.id }.map { YabScriptTab($0.tab, space: $0.space, in: window) }

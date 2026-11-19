@@ -314,7 +314,7 @@ enum NativeActions {
             action("settings.open", "Open a Settings page", "application", ["page": ["type": "string", "enum": SettingsPage.allCases.map(\.rawValue)]], required: ["page"]),
             action("space.create", "Create a space", "application", ["name": string, "separateSignIns": ["type": "boolean"]], required: ["name"], undo: true),
             action("space.rename", "Rename a space", "space", ["name": string], required: ["name"], undo: true),
-            action("space.set_appearance", "Set a space's background", "space", ["color": string, "colors": ["type": "array", "items": string, "minItems": 0, "maxItems": 6], "grain": ["type": "number", "minimum": 0, "maximum": 1]], required: ["color"], undo: true),
+            action("space.set_appearance", "Set a space's background", "space", ["color": string, "colors": ["type": "array", "items": string, "minItems": 0, "maxItems": 6], "darkColor": string, "darkColors": ["type": "array", "items": string, "minItems": 0, "maxItems": 2], "grain": ["type": "number", "minimum": 0, "maximum": 1]], required: ["color"], undo: true),
             action("space.switch", "Show a space", "space", [:], undo: true),
             action("space.delete", "Delete a space and its local data", "space", [:], permission: "confirm"),
             action("tabs.pin", "Pin a tab", "tab", ["value": ["type": "boolean"]], required: ["value"], undo: true),

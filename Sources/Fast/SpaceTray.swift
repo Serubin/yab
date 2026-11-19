@@ -36,6 +36,8 @@ final class SpaceDraft: ObservableObject {
     @Published var strength: Double
     /// The window as Liquid Glass, the wave's step past its end.
     @Published var glass = false
+    /// Its own dark colors, nil for the light ones deepened.
+    @Published var dark: SpacePaint.Dark? = nil
     @Published var own = false
     /// The tab to take along, when there is one to take.
     let tab: Tab?
@@ -94,7 +96,7 @@ final class SpaceDraft: ObservableObject {
 
     var paint: SpacePaint {
         SpacePaint(swatch: swatch, color: custom, grain: grain, colors: colors, transparency: transparency,
-                   shift: shift, site: site, drawings: drawings, drawingsStrength: strength, glass: glass)
+                   shift: shift, site: site, drawings: drawings, drawingsStrength: strength, glass: glass, dark: dark)
     }
 
     /// The look card's controls on the draft (LookControls).
@@ -115,9 +117,12 @@ final class SpaceDraft: ObservableObject {
                        guard on else { return }
                        self.custom = NSColor(hex: Swatch.plainSeed) ?? .white
                        self.colors = []
+                       self.dark = nil
                        self.swatch = .plain
                        self.swatchByHand = true
-                   }))
+                   }),
+                   dark: Binding(get: { self.dark }, set: { self.dark = $0 }),
+                   darkWorn: { self.paint.darkWorn })
     }
     var named: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
@@ -133,6 +138,7 @@ final class SpaceDraft: ObservableObject {
         // Your own starts from the color the card has now, not from one
         // picked long ago: the card keeps its color as the wheel comes up.
         if swatch == .custom, self.swatch != .custom { custom = self.swatch.color(dark: false, custom: custom) }
+        if swatch != .custom { dark = nil }
         self.swatch = swatch
         swatchByHand = true
     }

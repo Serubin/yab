@@ -717,7 +717,7 @@ final class SpacePager {
         let prefs = browser.prefs
         // Edge to edge, the space's look the column wears (SpaceWash.grounded).
         let tone: Tone? = paint(index, browser).map { Tone($0.color, lifted: true, glass: $0.glass) }
-            ?? (prefs.backdrop == .none && !prefs.edgeBackdrop ? nil : Tone(prefs.swatch.color(dark: dark, custom: prefs.backdropColor), lifted: true, glass: prefs.wearsGlass))
+            ?? (prefs.backdrop == .none && !prefs.edgeBackdrop ? nil : Tone(prefs.lookColor(dark: dark), lifted: true, glass: prefs.wearsGlass))
         let renderer = ImageRenderer(content: PagedDoors(browser: browser, mail: mail, tab: front, paired: paired)
             .modifier(SidebarTypography())
             .toned(tone)
@@ -1287,7 +1287,7 @@ struct PagedSpaceRoot: View {
         // over the page (Column.card).
         guard prefs.backdrop != .none || prefs.edgeBackdrop || paint != nil else { return nil }
         if let paint { return Tone(paint.color, lifted: true, glass: glassActive) }
-        return Tone(prefs.swatch.color(dark: scheme == .dark, custom: prefs.backdropColor), lifted: true, glass: glassActive)
+        return Tone(prefs.lookColor(dark: scheme == .dark), lifted: true, glass: glassActive)
     }
 }
 
@@ -1329,7 +1329,7 @@ struct PagedGround: View {
 
     private var swatch: Tone? {
         guard prefs.backdrop != .none || prefs.edgeBackdrop else { return nil }
-        return Tone(prefs.swatch.color(dark: scheme == .dark, custom: prefs.backdropColor), lifted: true, glass: glassActive)
+        return Tone(prefs.lookColor(dark: scheme == .dark), lifted: true, glass: glassActive)
     }
 
     @ViewBuilder

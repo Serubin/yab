@@ -19,8 +19,8 @@ final class BrowserWindow: NSWindow {
     /// with its own Dark opened in the light shades of its colors beside
     /// the window it came from (R2588, feedback #2029).
     func wearLookMode(of prefs: Preferences) {
-        looked = prefs.changes(\.lookMode).sink { [weak self] mode in
-            self?.appearance = LookMode(rawValue: mode)?.appearance
+        looked = prefs.changes(\.lookMode).combineLatest(prefs.changes(\.lookPreview)).sink { [weak self] mode, preview in
+            self?.appearance = LookMode(rawValue: Preferences.worn(mode: mode, preview: preview))?.appearance
         }
     }
 
