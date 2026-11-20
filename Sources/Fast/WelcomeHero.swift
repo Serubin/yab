@@ -107,10 +107,10 @@ struct Title {
     /// Pixels a point: the screen's, times the scale the letters stand at.
     let density: CGFloat
 
-    static let texts: [(String, Int?)] = [("y", 0), ("et ", nil), ("a", 1), ("nother ", nil), ("b", 2), ("rowser", nil), (".", nil)]
-    static let headerTexts: [(String, Int?)] = [("y", 0), ("a", 1), ("b", 2)]
-    /// The three words, for the way they come in.
-    static let words: [[Int]] = [[0, 1], [2, 3], [4, 5, 6]]
+    static let texts: [(String, Int?)] = [("Pane", 0), (" browser", nil), (".", nil)]
+    static let headerTexts: [(String, Int?)] = [("Pane", 0)]
+    /// The two words, for the way they come in.
+    static let words: [[Int]] = [[0], [1, 2]]
 
     /// The name's ink, Palette's, in either look.
     static func ink(dark: Bool) -> NSColor { resolved(Palette.NS.ink, dark: dark) }
@@ -125,14 +125,14 @@ struct Title {
         return NSColor(cgColor: cg) ?? color
     }
 
-    /// Where "another" starts and ends along the line at 44, for the pen's
+    /// Where "Pane" starts and ends along the line at 44, for the pen's
     /// line under it.
     static let another: (start: CGFloat, end: CGFloat) = {
         let size = WelcomeType.name
         let whole = NSAttributedString(string: texts.map(\.0).joined(),
                                        attributes: [.font: HeroLayout.font(size), .kern: WelcomeType.tracking * size])
         let line = CTLineCreateWithAttributedString(whole)
-        return (CTLineGetOffsetForStringIndex(line, 4, nil), CTLineGetOffsetForStringIndex(line, 11, nil))
+        return (CTLineGetOffsetForStringIndex(line, 0, nil), CTLineGetOffsetForStringIndex(line, 4, nil))
     }()
 
     /// The pen's line under "another", as yetanotherbrowser.com draws it

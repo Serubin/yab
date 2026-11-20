@@ -995,7 +995,7 @@ extension Bench {
         let web = tab.page
         AgentPage.arm(web, on: browser.prefs.asking(session) != .bypass) { armed in
             guard armed else {
-                answer(["error": "Yab couldn't set up its guard on this page, so the script wasn't run; reload the tab (nav) and try again"])
+                answer(["error": "\(Brand.name) couldn't set up its guard on this page, so the script wasn't run; reload the tab (nav) and try again"])
                 return
             }
             AgentPage.eval(web, js) { result in

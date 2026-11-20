@@ -83,9 +83,9 @@ final class Invites: ObservableObject {
     private init() {
         let settings = Store.settings
         message = settings.string(forKey: "invite.message")
-            ?? "Here's Yab, the browser I was telling you about. You get an app icon nobody else can download."
+            ?? "Here's \(Brand.name), the browser I was telling you about. You get an app icon nobody else can download."
         bestMessage = settings.string(forKey: "invite.bestMessage")
-            ?? "Best friends in Yab? I kept the other half of the charm, this one's yours."
+            ?? "Best friends in \(Brand.name)? I kept the other half of the charm, this one's yours."
         myColor = settings.string(forKey: "invite.myColor") ?? "mint"
         shares = settings.object(forKey: "invite.shares") as? Bool ?? true
         showsAway = settings.object(forKey: "invite.showsAway") as? Bool ?? true
@@ -409,7 +409,7 @@ final class Invites: ObservableObject {
 
     private func bestJoined() {
         guard let best, let browser = BrowserWindows.shared.activeBrowser else { return }
-        browser.announce("\(best.name) opened Yab. Your halves are joined.", mark: "brand.blobplus")
+        browser.announce("\(best.name) opened \(Brand.name). Your halves are joined.", mark: "brand.blobplus")
         AppIconStyle.charm.choose()
     }
 

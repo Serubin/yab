@@ -2695,7 +2695,7 @@ class App : public CefApp, public CefBrowserProcessHandler {
   void OnBeforeCommandLineProcessing(const CefString&, CefRefPtr<CefCommandLine> command) override {
     // Before Chrome starts: it launches its notification service while the
     // context is still coming up, and a service launched without the stand-in
-    // reaches macOS itself, which asks about "YabCore Helper".
+    // reaches macOS itself, which asks about "PaneCore Helper".
     StartSiteNotices();
     // The global context must not follow Chrome's last-used space profile.
     command->AppendSwitchWithValue("profile-directory", "Default");
@@ -2828,8 +2828,8 @@ class App : public CefApp, public CefBrowserProcessHandler {
     // Chrome's notification service runs in its " (Alerts)" helper
     // (kChildProcessHelperAlerts), every other utility in the plain one. The
     // explicit path below would otherwise put it in the plain helper too.
-    NSString* name = type == "renderer" ? @"YabCore Helper (Renderer)" :
-      type == "gpu-process" ? @"YabCore Helper (GPU)" : IsNoticeService(command) ? @"YabCore Helper (Alerts)" : @"YabCore Helper";
+    NSString* name = type == "renderer" ? @"PaneCore Helper (Renderer)" :
+      type == "gpu-process" ? @"PaneCore Helper (GPU)" : IsNoticeService(command) ? @"PaneCore Helper (Alerts)" : @"PaneCore Helper";
     // Every child comes from the bundle this process runs from, never from
     // the path it started at: after an update that path is the new build,
     // whose helper and framework do not match this browser.

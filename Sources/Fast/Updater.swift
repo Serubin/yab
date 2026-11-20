@@ -397,7 +397,7 @@ final class Updater: ObservableObject {
     /// is enrolled, never a copy waiting for approval. A build without the
     /// plist (a development build) answers `.notFound` and is left alone.
     enum Agent {
-        static let plist = "YabUpdater.plist"
+        static let plist = "PaneUpdater.plist"
 
         /// Off the main thread: both calls go to the system and wait for it.
         static func enroll() {

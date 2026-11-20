@@ -95,7 +95,7 @@ final class NativeChanges {
         for index in receipts.indices where ["prepared", "running", "needs_user"].contains(receipts[index].status) {
             receipts[index].status = "unknown_outcome"
             receipts[index].result = .object(["status": .string("unknown_outcome"), "operationId": .string(receipts[index].id),
-                                             "message": .string("Yab restarted during this operation. Read the current state before trying again.")])
+                                             "message": .string("\(Brand.name) restarted during this operation. Read the current state before trying again.")])
         }
     }
 
@@ -147,6 +147,6 @@ final class NativeChanges {
             try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
             try JSONEncoder().encode(receipts).write(to: file, options: .atomic)
             try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
-        } catch { throw NativeFailure("journal_unavailable", "Yab could not save this operation safely") }
+        } catch { throw NativeFailure("journal_unavailable", "\(Brand.name) could not save this operation safely") }
     }
 }

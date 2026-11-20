@@ -32,7 +32,7 @@ struct ExtensionCommandSections: View {
                 Text(group.short)
             } footer: {
                 if index == groups.count - 1 {
-                    SettingsNote("Aliases run commands from ⌘T. Hotkeys work while Yab is active.")
+                    SettingsNote("Aliases run commands from ⌘T. Hotkeys work while \(Brand.name) is active.")
                 }
             }
         }

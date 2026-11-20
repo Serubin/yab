@@ -29,7 +29,7 @@ public enum MailTrouble: Error, Equatable {
 }
 
 public struct MailGmail: Sendable {
-    public static let log = Logger(subsystem: "dev.serafim.fast", category: "Mail")
+    public static let log = Logger(subsystem: Store.productionBundleID, category: "Mail")
     public var base = URL(string: "https://gmail.googleapis.com/gmail/v1/users/me/")!
     /// Never the app's shared session, whose cache on disk would keep what
     /// Gmail answers: an account's engine gives each its own line (MailWire).

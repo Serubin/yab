@@ -173,7 +173,7 @@ final class ExtensionOmnibox {
             refresh()
             return nil
         default:
-            throw ExtensionShims.Unsupported(what: "\(api) isn't available in Yab")
+            throw ExtensionShims.Unsupported(what: "\(api) isn't available in \(Brand.name)")
         }
     }
 

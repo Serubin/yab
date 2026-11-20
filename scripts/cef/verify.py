@@ -58,7 +58,7 @@ def package(out, result):
     app_info = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
     assert app_info['CFBundleName'] == app_info['CFBundleDisplayName'] == result['task']
     result['helpers'] = []
-    for helper in sorted((app / 'Contents/Frameworks').glob('YabCore Helper*.app')):
+    for helper in sorted((app / 'Contents/Frameworks').glob('PaneCore Helper*.app')):
         info = plistlib.loads((helper / 'Contents/Info.plist').read_bytes())
         assert info['CFBundleIdentifier'].startswith(app_info['CFBundleIdentifier'] + '.helper')
         assert info['LSUIElement'] is True

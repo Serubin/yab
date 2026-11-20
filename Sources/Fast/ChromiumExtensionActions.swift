@@ -350,7 +350,7 @@ struct ChromiumPinActions: View {
                 }
             }
             Divider()
-            SwiftUI.Button("Remove from Yab…", mark: "trash") {
+            SwiftUI.Button("Remove from \(Brand.name)…", mark: "trash") {
                 native.perform {
                     guard try await native.reviewRemoval(id, name: name, place: .plain) else { return }
                     try? native.setPinned(id, false)

@@ -12,4 +12,4 @@ export YAB_CEF_DIR="$YAB_FARM_OUT/sdk"
 export YABCORE_BUILD_DIR="$YAB_FARM_OUT/core-build"
 export YAB_CEF_API_VERSION=999999
 bash YabCore/build.sh > "$YAB_FARM_OUT/core-app.txt"
-python3 YabCore/tests/devtools_accelerator.py "$(cat "$YAB_FARM_OUT/core-app.txt")/Contents/MacOS/YabCore"
+python3 YabCore/tests/devtools_accelerator.py "$(cat "$YAB_FARM_OUT/core-app.txt")/Contents/MacOS/PaneCore"

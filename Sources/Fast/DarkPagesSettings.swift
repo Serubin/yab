@@ -25,9 +25,9 @@ struct DarkPagesSettings: View {
         .onReceive(NotificationCenter.default.publisher(for: DarkPagesSettings.open)) { _ in sheet = true }
         if extensions.installed.contains(where: { $0.id == DarkPages.extensionID && $0.enabled }) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
-                SettingsNote("Dark Reader is on in Extensions. Yab leaves dark pages to it. Switch to Yab\u{2019}s brings its \(moving) sites over and turns it off.")
+                SettingsNote("Dark Reader is on in Extensions. \(Brand.name) leaves dark pages to it. Switch to \(Brand.name)\u{2019}s brings its \(moving) sites over and turns it off.")
                 Spacer(minLength: 0)
-                Button("Switch to Yab\u{2019}s") { DarkPages.takeOverFromExtension() }.settingsButton()
+                Button("Switch to \(Brand.name)\u{2019}s") { DarkPages.takeOverFromExtension() }.settingsButton()
             }
             .onAppear { moving = DarkReaderStorage.read()?.lightSites.count ?? 0 }
         }

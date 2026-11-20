@@ -7,7 +7,7 @@ import Foundation
 extension Mcp {
     static let shelfTools: [McpTool] = [
         McpTool("files_search", .read("Search Files"),
-                "The user's files as Yab's Files lists them (⇧⌘J): what they downloaded, the files their mail brought (pictures pasted into a mail's words too) and the ones they sent, and files they gave sites, newest first. Words are looked for in names, where each came from (the sender, the mail's subject, the site) and the words inside PDFs and documents, so \"signed lease\" or \"security deposit\" find the lease a landlord mailed. Each comes with an id and, when it is on this Mac, its path: give the path to upload or to mail_draft's files, or the id to files_read, which fetches one not here yet and gives its path.",
+                "The user's files as \(Brand.name)'s Files lists them (⇧⌘J): what they downloaded, the files their mail brought (pictures pasted into a mail's words too) and the ones they sent, and files they gave sites, newest first. Words are looked for in names, where each came from (the sender, the mail's subject, the site) and the words inside PDFs and documents, so \"signed lease\" or \"security deposit\" find the lease a landlord mailed. Each comes with an id and, when it is on this Mac, its path: give the path to upload or to mail_draft's files, or the id to files_read, which fetches one not here yet and gives its path.",
                 ["query": ["type": "string"],
                  "from": ["type": "string", "enum": ["downloaded", "mail", "sent"], "description": "Only downloads, only files mail brought, or only what the user sent (mail and sites)"],
                  "limit": ["type": "number", "description": "20 unless said, at most 50"]],
@@ -32,7 +32,7 @@ extension Mcp {
             }
         },
         McpTool("purchases", .read("Purchases"),
-                "What the user pays for and has coming, read from receipts, renewal notices and shipping mail on this Mac. kind subscriptions (default): each with its price, how often, the card's last four, the next charge and when the user last opened the site, with the monthly total; orders: what is on the way, its carrier, tracking number and where it is; receipts: past purchases matching query (a MacBook's receipt, last month's Uber). To stop a subscription renewing, open the merchant's billing page and click; Yab asks the user before the final button. Never pay or type card numbers.",
+                "What the user pays for and has coming, read from receipts, renewal notices and shipping mail on this Mac. kind subscriptions (default): each with its price, how often, the card's last four, the next charge and when the user last opened the site, with the monthly total; orders: what is on the way, its carrier, tracking number and where it is; receipts: past purchases matching query (a MacBook's receipt, last month's Uber). To stop a subscription renewing, open the merchant's billing page and click; \(Brand.name) asks the user before the final button. Never pay or type card numbers.",
                 ["kind": ["type": "string", "enum": ["subscriptions", "orders", "receipts"]],
                  "query": ["type": "string", "description": "Words to keep to: a merchant, a product"]],
                 subs: false, when: { $0.mailbox }) { name, input, id in

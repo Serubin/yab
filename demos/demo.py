@@ -7,7 +7,7 @@
     ./demo SCENE --frame 4:3|square|16:9|screen   the window's frame, centered (4:3, 1200x900, unless the scene says)
     ./demo SCENE --size 1440x900   the window at exactly that size, centered
     ./demo SCENE --background   build and open it without taking the screen (checks)
-    ./demo install [--app PATH] build Yab from HEAD (or take a built yab.app) as the demo copy
+    ./demo install [--app PATH] build Yab from HEAD (or take a built Pane.app) as the demo copy
     ./demo cli [--terminal]     the command that starts Claude Code driving the cli scene's world
     ./demo check [SCENE]        build each scene out of sight, check what it holds, keep a picture of it
     ./demo launchers            an app for each scene beside the demo copy of Yab, to double-click
@@ -119,7 +119,7 @@ def record_hint(world, name):
 
 def cli_command(world):
     """Claude Code with Yab's MCP server, pointed at this world only."""
-    binary = Wd.APP / "Contents/MacOS/yab"
+    binary = Wd.APP / "Contents/MacOS/pane"
     config = Wd.CACHE / ("mcp-%s.json" % world)
     config.parent.mkdir(parents=True, exist_ok=True)
     config.write_text(json.dumps({"mcpServers": {"yab-browser": {
@@ -156,8 +156,8 @@ def install(app=None):
         subprocess.run(["git", "-C", str(REPO), "worktree", "add", "--detach", str(tree), "HEAD"], check=True)
         try:
             subprocess.run(["./build.sh", "release", "prod"], cwd=tree, check=True)
-            built = tree / "build/yab.app"
-            staged = tmp / "yab.app"
+            built = tree / "build/Pane.app"
+            staged = tmp / "Pane.app"
             shutil.copytree(built, staged, symlinks=True)
             built = staged
         finally:

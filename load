@@ -6,7 +6,7 @@
     ./load --pages real         real sites (needs a network; they change daily)
     ./load --asleep             tabs brought back asleep: the row's own cost
     ./load --steps 10,20,40     these counts instead of the default ladder
-    ./load --app PATH           this yab.app rather than build/yab Dev.app
+    ./load --app PATH           this Pane.app rather than build/Pane Dev.app
 
 A world of its own, "yab (load)", wiped first: nothing of yours is touched.
 Launched with YAB_MEASURE, so hidden pages are slowed the way WebKit slows
@@ -43,7 +43,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 # YAB_LOAD_WORLD=NAME for a second run beside the first.
 WORLD = os.environ.get("YAB_LOAD_WORLD", "load")
-SUITE = f"dev.serafim.fast.test.{WORLD}"
+SUITE = f"net.serubin.pane.test.{WORLD}"
 FOLDER = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
 SOCK = os.path.join(FOLDER, "bench.sock")
 
@@ -286,7 +286,7 @@ def switching(ids, times=10):
 def main(argv):
     asleep = "--asleep" in argv
     kind = argv[argv.index("--pages") + 1] if "--pages" in argv else "heavy"
-    app = argv[argv.index("--app") + 1] if "--app" in argv else os.path.join(HERE, "build/yab Dev.app")
+    app = argv[argv.index("--app") + 1] if "--app" in argv else os.path.join(HERE, "build/Pane Dev.app")
     steps = ([int(x) for x in argv[argv.index("--steps") + 1].split(",")] if "--steps" in argv
              else ASLEEP_LADDER if asleep else LADDER)
     quiet = float(argv[argv.index("--quiet") + 1]) if "--quiet" in argv else 10.0

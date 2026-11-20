@@ -351,7 +351,7 @@ extension MailInvite {
     /// address only as mail writes one and a rule only in a rule's
     /// letters, so no word of the invitation's adds a property or a line.
     public func reply(_ answer: Answer, from me: MailPerson, at now: Date = Date()) -> String {
-        var lines = ["BEGIN:VCALENDAR", "PRODID:-//Yab//Yab Mail//EN", "VERSION:2.0", "CALSCALE:GREGORIAN", "METHOD:REPLY", "BEGIN:VEVENT"]
+        var lines = ["BEGIN:VCALENDAR", "PRODID:-//\(Brand.name)//\(Brand.name) Mail//EN", "VERSION:2.0", "CALSCALE:GREGORIAN", "METHOD:REPLY", "BEGIN:VEVENT"]
         lines.append("UID:" + MailICS.safe(uid))
         if !recurrence.isEmpty { lines.append(recurrence) }
         lines.append("SEQUENCE:\(sequence)")

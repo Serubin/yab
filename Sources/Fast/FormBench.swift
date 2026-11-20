@@ -162,7 +162,7 @@ extension Bench {
         tab.formPlan { read in
             defer { giveBack() }
             guard var plan = read, plan.steps.contains(where: { $0.field.type != "checkbox" }) else {
-                answer(["error": "no form here that Yab could read: take a snapshot and type the boxes in"])
+                answer(["error": "no form here that \(Brand.name) could read: take a snapshot and type the boxes in"])
                 return
             }
             // An address is the person's to give to a site (as autofill address).

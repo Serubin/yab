@@ -109,7 +109,7 @@ enum Lingering {
     static let watching = Store.development || Store.testing
     /// What was still there, for the bench (`processes`).
     private(set) static var seen: [String] = []
-    private static let log = Logger(subsystem: "dev.serafim.fast", category: "Lingering")
+    private static let log = Logger(subsystem: Store.productionBundleID, category: "Lingering")
 
     /// Each thing let go, followed until it goes: when it did, for the
     /// bench (`processes`' followed), to tell a page held for good from

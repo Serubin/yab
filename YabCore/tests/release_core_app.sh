@@ -15,5 +15,5 @@ export YAB_CEF_API_VERSION=999999
 export YABCORE_BUILD_DIR="${YABCORE_BUILD_DIR:-$HOME/.local/state/yab-spike-cef/crash-probe-core-$(basename "$(dirname "$YAB_CEF_DIR")")}"
 bash YabCore/build.sh > "$YAB_FARM_OUT/core-build.log" 2>&1 || { tail -40 "$YAB_FARM_OUT/core-build.log"; return 1; }
 APP="$(cat "$YAB_FARM_OUT/app-path.txt")"
-test -x "$APP/Contents/MacOS/YabCore" || { echo "no YabCore in $APP" >&2; return 1; }
+test -x "$APP/Contents/MacOS/PaneCore" || { echo "no YabCore in $APP" >&2; return 1; }
 echo "CEF $(dwarfdump --uuid "$APP/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework" | head -1)"

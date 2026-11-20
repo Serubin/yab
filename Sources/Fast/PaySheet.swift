@@ -492,7 +492,7 @@ private struct PayList: View {
         let model = flow.model
         let cards = pane == .cards
         VStack(spacing: 0) {
-            PayBackHead(title: cards ? "Pay With" : "Ship To", detail: cards ? "Cards in Yab" : "Addresses in Yab") { flow.back() }
+            PayBackHead(title: cards ? "Pay With" : "Ship To", detail: cards ? "Cards in \(Brand.name)" : "Addresses in \(Brand.name)") { flow.back() }
             PayGroup {
                 if cards {
                     ForEach(Array(model.cards.enumerated()), id: \.element.id) { index, card in
@@ -523,7 +523,7 @@ private struct PayForm: View {
         let card = pane == .newCard
         VStack(spacing: 0) {
             PayBackHead(title: card ? "Add Card" : "Add Address",
-                        detail: card ? "Kept in Yab, opened with Touch ID" : "Kept in Yab, Settings \u{203A} Autofill") { flow.back() }
+                        detail: card ? "Kept in \(Brand.name), opened with Touch ID" : "Kept in \(Brand.name), Settings \u{203A} Autofill") { flow.back() }
             PayGroup {
                 if card {
                     field("Number", "Card number", $flow.form.number)

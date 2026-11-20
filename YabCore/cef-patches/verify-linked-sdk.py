@@ -38,8 +38,8 @@ def main():
             digest.update(block)
     assert digest.hexdigest() == manifest['frameworkSha256'], 'SDK changed after acceptance started'
     embedded = args.app / 'Contents/Frameworks/Chromium Embedded Framework.framework'
-    helper = args.app / 'Contents/MacOS/YabCore'
-    source_helper = args.core_app / 'Contents/MacOS/YabCore'
+    helper = args.app / 'Contents/MacOS/PaneCore'
+    source_helper = args.core_app / 'Contents/MacOS/PaneCore'
     source_uuid, embedded_uuid = uuid(source), uuid(embedded / 'Chromium Embedded Framework')
     assert source_uuid == embedded_uuid, 'Signed app has a different CEF framework'
     helper_uuid, source_helper_uuid = uuid(helper), uuid(source_helper)

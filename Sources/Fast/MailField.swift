@@ -607,7 +607,7 @@ extension Browser {
             let chosen = slots.filter { picked.contains($0.start.timeIntervalSince1970) }
             let text = MailSlots.text(chosen, booking: MailSlots.booking, now: now)
             if kept.busy == nil {
-                add("slots.nocalendar", "Yab can\u{2019}t see your calendar", "These are your working hours", .note, section: "Free Slots", end: "",
+                add("slots.nocalendar", "\(Brand.name) can\u{2019}t see your calendar", "These are your working hours", .note, section: "Free Slots", end: "",
                     symbol: "calendar")
             }
             if !text.isEmpty {

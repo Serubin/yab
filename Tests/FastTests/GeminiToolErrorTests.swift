@@ -10,7 +10,7 @@ struct GeminiToolErrorTests {
         // Replay the real CLI's exact ERROR event shape under the browser
         // hook's reason. The original text-only transcript still must fail.
         let recorded = try String(contentsOf: file, encoding: .utf8)
-            .replacingOccurrences(of: "Yab text-only chats do not run tools.", with: "Yab gives Gemini only its own browser tools.")
+            .replacingOccurrences(of: "Yab text-only chats do not run tools.", with: "Pane gives Gemini only its own browser tools.")
         var stream = GeminiStream(yabTools: true)
         _ = try stream.prompt("The recorded hook probe")
         let events = stream.receive(Data(recorded.utf8)) + stream.end(code: 0)
@@ -29,14 +29,14 @@ struct GeminiToolErrorTests {
     }
 
     /// Real agy 1.4.4 hook-denial transcripts use ERROR, not DONE, for
-    /// a denied tool. The CLI must be allowed to recover through Yab.
+    /// a denied tool. The CLI must be allowed to recover through Pane.
     @Test func nativeErrorDeniedByYabCanRecoverThroughItsBrowserTools() throws {
         var stream = GeminiStream(yabTools: true)
-        _ = try stream.prompt("Read the page using Yab")
+        _ = try stream.prompt("Read the page using Pane")
         _ = try GeminiRunnerTests.initialize(&stream)
         _ = try step(&stream, index: 1, state: "ACTIVE", name: "list_resources")
         let ended = try step(&stream, index: 1, state: "ERROR", name: "list_resources", error: [
-            "type": "TOOL_ERROR", "message": "tool call denied by pre-tool hook: Yab gives Gemini only its own browser tools."])
+            "type": "TOOL_ERROR", "message": "tool call denied by pre-tool hook: Pane gives Gemini only its own browser tools."])
         #expect(!stream.broken)
         #expect(ended.contains { if case .step(let item) = $0 { return item.state == .failed }; return false })
         let browser = try step(&stream, index: 2, state: "DONE", name: GeminiRunnerTests.yabTool)
@@ -59,19 +59,19 @@ struct GeminiToolErrorTests {
 
     @Test func aNativeRecoveryNeverErasesALaterYabToolFailure() throws {
         var stream = GeminiStream(yabTools: true)
-        _ = try stream.prompt("Read through Yab")
+        _ = try stream.prompt("Read through Pane")
         _ = try GeminiRunnerTests.initialize(&stream)
         _ = try step(&stream, index: 1, state: "ERROR", name: "list_resources", error: [
-            "type": "TOOL_ERROR", "message": "Yab gives Gemini only its own browser tools."])
+            "type": "TOOL_ERROR", "message": "Pane gives Gemini only its own browser tools."])
         _ = try step(&stream, index: 2, state: "ERROR", name: GeminiRunnerTests.yabTool)
-        stream.diagnostic("list_resources auto-denied by Yab's pre-tool hook.\n")
+        stream.diagnostic("list_resources auto-denied by Pane's pre-tool hook.\n")
         #expect(try GeminiRunnerTests.result(&stream)?.succeeded == false)
     }
 
     @Test(arguments: ["ERROR", "DONE"])
     func anUnconfirmedNativeTerminalStepStillFailsClosed(state: String) throws {
         var stream = GeminiStream(yabTools: true)
-        _ = try stream.prompt("Use Yab only")
+        _ = try stream.prompt("Use Pane only")
         _ = try GeminiRunnerTests.initialize(&stream)
         _ = try step(&stream, index: 1, state: state, name: "run_command",
                      error: state == "ERROR" ? ["type": "TOOL_ERROR", "message": "Unknown error"] : nil)
@@ -84,7 +84,7 @@ struct GeminiToolErrorTests {
         _ = try stream.prompt("Text only")
         _ = try GeminiRunnerTests.initialize(&stream)
         _ = try step(&stream, index: 1, state: "ERROR", name: "list_resources", error: [
-            "type": "TOOL_ERROR", "message": "tool call denied by pre-tool hook: Yab text-only chats do not run tools."])
+            "type": "TOOL_ERROR", "message": "tool call denied by pre-tool hook: Pane text-only chats do not run tools."])
         #expect(stream.broken)
     }
 

@@ -72,7 +72,7 @@ step() {
 if want build; then
   step swift-build swift build
   step build-app ./build.sh
-  step codesign codesign -dv "build/yab Dev.app"
+  step codesign codesign -dv "build/Pane Dev.app"
 fi
 if want lint; then
   step parse-check scripts/swift-parse-check --base HEAD
@@ -92,7 +92,7 @@ export YABCORE_BUILD_DIR="$WORK/yabcore"
 step yabcore-build env YAB_CEF_DIR="$CEF_DIR" YAB_FARM_OUT="$WORK/yabcore-out" bash YabCore/build.sh
 CORE_APP="$(tail -1 "$OUT/yabcore-build.log")"
 step build-app-cef env YAB_CEF=1 YAB_UNIVERSAL=0 YAB_CEF_DIR="$CEF_DIR" \
-  YAB_CEF_HELPER="$CORE_APP/Contents/MacOS/YabCore" ./build.sh
+  YAB_CEF_HELPER="$CORE_APP/Contents/MacOS/PaneCore" ./build.sh
 fi
 
 if [ -f "$OUT/swift-test.log" ]; then

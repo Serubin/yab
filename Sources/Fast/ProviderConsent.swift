@@ -4,7 +4,7 @@ import Foundation
 @MainActor
 final class ProviderConsent {
     static let shared = ProviderConsent()
-    static let refusal = "Connect this AI in Yab › Settings › AI before using it."
+    static let refusal = "Connect this AI in \(Brand.name) › Settings › AI before using it."
     private let authority = UUID().uuidString
     private let settings: UserDefaults
     private let key = "agents.explicit-connections.v1"

@@ -34,7 +34,7 @@ class NativeRPC:
         self.log = (self.out / 'helper.log').open('w')
         endpoint = self.directory / 'core.sock'
         env = dict(os.environ, YAB_CEF_TRACE_CDP='1'); env.pop('YAB_CEF_EXTENSION_WINDOWS', None)
-        self.process = subprocess.Popen([str(Path(app) / 'Contents/MacOS/YabCore'), f'--socket={endpoint}',
+        self.process = subprocess.Popen([str(Path(app) / 'Contents/MacOS/PaneCore'), f'--socket={endpoint}',
             f'--data-root={self.directory / "data"}', *(() if sandboxed else ('--no-sandbox',)), '--use-mock-keychain',
             '--no-default-browser-check', *extra_args], env=env, stdout=self.log, stderr=self.log, start_new_session=True)
         self.lifetime = PreparedHelperLifetime(Path(app).resolve(), self.process, self.directory / 'data', self.out)

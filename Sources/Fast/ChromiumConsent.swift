@@ -174,7 +174,7 @@ enum ChromiumConsent {
         // Preserve Chrome's wording, including the secondary permission detail.
         let lines = ask.warnings.flatMap { $0.details.isEmpty ? [$0.text] : [$0.text, $0.details] }
         return Question(title: title,
-                        detail: uninstall ? "What it kept in Yab goes with it." : lines.isEmpty ? "It asks for no special access." : "It can:",
+                        detail: uninstall ? "What it kept in \(Brand.name) goes with it." : lines.isEmpty ? "It asks for no special access." : "It can:",
                         lines: lines, yes: uninstall ? "Remove" : ask.operation == "install" ? "Add" : "Allow",
                         danger: uninstall, window: window.windowNumber)
     }

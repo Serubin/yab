@@ -5415,7 +5415,7 @@ final class Bench {
             // A notice said by the browser or by Settings, and where each
             // corner stands after it: Settings shows only its own.
             if request["from"] as? String == "settings" {
-                browser.announce("Yab is up to date", mark: "checkmark.circle", on: SettingsWindow.shared.toaster)
+                browser.announce("\(Brand.name) is up to date", mark: "checkmark.circle", on: SettingsWindow.shared.toaster)
             } else if request["from"] as? String == "browser" {
                 browser.announce("Link copied", mark: "link")
             }
@@ -7810,7 +7810,7 @@ final class Bench {
                 ? Question(title: "Add “RoboForm Password Manager”?", detail: "It will read and change every site you visit.",
                            folded: ["See which tabs you have open, and where", "Read and set cookies", "Follow where you browse",
                                     "Watch what pages load", "Talk to other apps on your Mac", "Run its own code on pages",
-                                    "Change Yab's privacy settings"],
+                                    "Change \(Brand.name)'s privacy settings"],
                            foldedNote: "It may ask later to " + Extensions.listed(["read and edit your bookmarks", "see the sites you visit most",
                                                                                    "put things on your clipboard"]) + ".",
                            yes: "Add", place: place)
@@ -8635,6 +8635,11 @@ final class Bench {
                 Firefox.standIns = path.isEmpty ? [] : Firefox.known.filter { $0.name == name || name == "Zen+Firefox" }.map {
                     var source = $0
                     source.dataRoot = name == "Zen+Firefox" ? URL(fileURLWithPath: path).appendingPathComponent($0.folder) : URL(fileURLWithPath: path)
+                    return source
+                }
+                YabBrowser.standIns = path.isEmpty ? [] : YabBrowser.known.filter { $0.name == name }.map {
+                    var source = $0
+                    source.dataRoot = URL(fileURLWithPath: path)
                     return source
                 }
             }
@@ -9683,7 +9688,7 @@ final class Bench {
     /// A verb this build has no word for, said with the build, so whoever
     /// sent it can tell it came from another (Wire.stranger says the rest).
     nonisolated static func unknown(_ verb: String) -> [String: Any] {
-        ["error": "this Yab (build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "dev")) doesn't know “\(verb)”", "unknown": verb]
+        ["error": "this \(Brand.name) (build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "dev")) doesn't know “\(verb)”", "unknown": verb]
     }
 
     func find(_ request: [String: Any], in browser: Browser) -> Tab? {
@@ -11369,7 +11374,7 @@ nonisolated final class MainSampler: @unchecked Sendable {
         let port: thread_act_t = Thread.isMainThread ? pthread_mach_thread_np(pthread_self())
             : DispatchQueue.main.sync { pthread_mach_thread_np(pthread_self()) }
         Thread.detachNewThread { [self] in
-            Thread.current.name = "Yab main sampler"
+            Thread.current.name = "\(Brand.name) main sampler"
             while true {
                 lock.lock(); let going = on; lock.unlock()
                 guard going else { return }

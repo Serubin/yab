@@ -221,7 +221,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .spaces: return ("Spaces", \.usesSpaces)
         case .liveFolders: return ("Live Folders", \.usesLiveFolders)
         case .mail: return nil
-        case .agents: return ("Let agents use Yab", \.bench)
+        case .agents: return ("Let agents use \(Brand.name)", \.bench)
         case .agentMemory: return ("Agents remember what they learn about you", \.agentsRemember)
         default: return nil
         }
@@ -235,8 +235,8 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .boosts: return "Changes kept for sites, made by you, an agent or the Store."
         case .liveFolders: return "Automatically updated folders from your sites and feeds."
         case .sync: return "Sync spaces, tabs, bookmarks and settings across devices with end-to-end encryption."
-        case .mail: return "Manage your mail in Yab. Mail is stored on this Mac."
-        case .ai: return "Use your \(AgentSetupModel.list(AgentPlan.all.map(\.name))) subscriptions in Yab."
+        case .mail: return "Manage your mail in \(Brand.name). Mail is stored on this Mac."
+        case .ai: return "Use your \(AgentSetupModel.list(AgentPlan.all.map(\.name))) subscriptions in \(Brand.name)."
         case .models: return "Choose default models and connect subscriptions or API keys."
         case .agents: return "Manage agent permissions and browser access."
         case .assistants: return "Connect cloud assistants to your signed-in browser with your approval."
@@ -246,11 +246,11 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .search: return "Customize search results and suggestions."
         case .smallWindow: return "Open links from other apps in a small window."
         case .reading: return "Read articles without distractions. Customize fonts, colors and spacing."
-        case .passwords: return "Save and fill passwords with Yab or a connected password manager."
+        case .passwords: return "Save and fill passwords with \(Brand.name) or a connected password manager."
         case .autofill: return "Fill forms with saved profile details, cards and addresses."
         case .bringIn: return "Import browser data from Dia, Chrome, Arc, Brave, Edge, Zen or Firefox. Stored on this Mac."
         case .history: return "Find visited pages by title, address or page content."
-        case .agentRoutines: return "Schedule recurring tasks and watch for replies. Requires Yab to be open."
+        case .agentRoutines: return "Schedule recurring tasks and watch for replies. Requires \(Brand.name) to be open."
         case .agentMemory: return "Review, edit or delete agent memory stored on this Mac."
         case .developers: return "Configure Developer Mode, the command line and agent tools."
         case .experimental: return "Try features that are still in development."
@@ -258,13 +258,13 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .mailInbox: return "Choose which mail appears in your inbox and splits."
         case .mailNotify: return "Configure new mail alerts and unread counts."
         case .mailReading: return "Customize mail sorting, summaries and display."
-        case .mailWriting: return "Configure draft replies, Undo send, read statuses and signatures."
+        case .mailWriting: return "Configure draft replies, Undo send and signatures."
         case .snippets: return "Insert saved text by typing ; and a snippet name."
         case .mailCalendar: return "Share available meeting times from your calendar."
         case .mailAgents: return "Manage agent access to your mail."
         case .mailBlocked: return "Send new mail from blocked senders to Trash on this Mac."
         case .credits: return "Open-source licenses and acknowledgments."
-        case .inviteFriends: return "Invite friends to Yab and unlock exclusive app icons together."
+        case .inviteFriends: return "Invite friends to \(Brand.name) and unlock exclusive app icons together."
         default: return nil
         }
     }
@@ -352,7 +352,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
         case .mailReading:
             return "mail reading sort sum up apple intelligence summaries tracking pixels animations"
         case .mailWriting:
-            return "mail writing replies ahead undo send read statuses receipts signature signatures"
+            return "mail writing replies ahead undo send signature signatures"
         case .snippets:
             return "snippets snippet templates canned replies text expansion replacement abbreviations semicolon paste hotkey"
         case .mailCalendar:
@@ -1734,7 +1734,7 @@ private struct PageList: NSViewRepresentable {
                 cell.setSelected(false)
                 if isCommunity(row) {
                     cell.setAccessibilityLabel(SettingsWords.text("Community"))
-                    cell.title.keyTip("Yab's community chat on X", side: .pointer)
+                    cell.title.keyTip("\(Brand.name)'s community chat on X", side: .pointer)
                     return fill(cell, well: PenTile(symbol: "community", tint: PenArt.color(.credits)), icon: nil, tint: .labelColor, title: "Community", row: row)
                 }
                 cell.setAccessibilityLabel(SettingsWords.text("Send Feedback"))

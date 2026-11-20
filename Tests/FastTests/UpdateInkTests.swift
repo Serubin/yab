@@ -9,7 +9,7 @@ struct UpdateInkTests {
 
     @Test func theNoteSaysWhatThereIsToDo() {
         let ready = UpdateInk.words(.ready(version: "1.2"), halloween: false)
-        #expect(ready?.first == "Yab 1.2 is here!")
+        #expect(ready?.first == "Pane 1.2 is here!")
         #expect(ready?.second == "restart to update")
         #expect(ready?.aside == "not now")
         #expect(ready?.mark == .heart)

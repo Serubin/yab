@@ -97,6 +97,8 @@ enum WelcomeYours: WelcomeChapter {
         /// Its ad blockers that run in Yab, by id and name: they come turned
         /// off, and Bring's "Block ads with Yab" line answers which blocks.
         var blockers: [(id: String, name: String)] = []
+        /// An upstream Yab install, brought from its own files rather than as a Chromium browser.
+        var yab: YabBrowser.Source? = nil
         /// Bring's lines under the counts.
         var extras: Int { blockers.isEmpty ? 0 : 1 }
     }
@@ -123,7 +125,7 @@ enum WelcomeYours: WelcomeChapter {
         }
         // Discovery is enough to offer Bring In; inspecting credentials to
         // decide whether a browser deserves a button is not permitted.
-        return stage.bringing.sources.map { found($0, stage.bringing) }
+        return stage.bringing.sources.map { found($0, stage.bringing) } + stage.bringing.yabSources.map { found($0, stage.bringing) }
     }
 
     /// An abandoned data directory alone isn't a browser to bring from.
@@ -178,6 +180,36 @@ enum WelcomeYours: WelcomeChapter {
 
     private static func found(_ source: Chromium.Source, _ bringing: Bringing) -> Found {
         let counts = bringing.counts[source.id] ?? Bringing.Counts()
+        var rows = rows(counts)
+        if let extensions = counts.extensions?.count, extensions > 0 {
+            rows.append(Found.Row(mark: .init(symbol: "puzzlepiece.extension", tint: .systemIndigo), words: counted(extensions, "extension")))
+        }
+        let places = counts.holding
+        let extensions = counts.extensions ?? []
+        let manager = extensions.first { extensionsManager($0.id) }.map { PasswordManagers.canonical($0.id) }
+        var blockers: [(id: String, name: String)] = []
+        if #available(macOS 15.4, *) {
+            blockers = extensions.compactMap { one in
+                Blockers.known[one.id].flatMap { one.id == Blockers.classic ? nil : (id: one.id, name: $0) }
+            }
+        }
+        return Found(id: source.id, name: source.name, caption: bringing.caption(source), icon: bringing.icons[source.id], rows: rows,
+                     colors: counts.colors, places: places.count, placeWord: places.first?.isProfile == true ? "profiles" : "spaces",
+                     sidebar: DefaultBrowserImport.sidebar(for: source.bundle) == true, source: source, sample: nil,
+                     manager: manager, blockers: blockers)
+    }
+
+    /// An upstream Yab install: its spaces and tabs, bookmarks and history, counted once brought.
+    private static func found(_ source: YabBrowser.Source, _ bringing: Bringing) -> Found {
+        let id = Bringing.yabID(source)
+        let counts = bringing.counts[id] ?? Bringing.Counts()
+        return Found(id: id, name: source.name, caption: bringing.brought.contains(id) ? "Brought in" : "Available to import",
+                     icon: bringing.yabIcons[id], rows: rows(counts), colors: counts.colors, places: counts.holding.count,
+                     placeWord: "spaces", sidebar: false, source: nil, sample: nil, yab: source)
+    }
+
+    /// What a browser holds, a row each: its tabs, sign-ins, passwords and the rest.
+    private static func rows(_ counts: Bringing.Counts) -> [Found.Row] {
         var rows: [Found.Row] = []
         let pinned = counts.pinned, folders = counts.folders
         if pinned > 0 {
@@ -198,22 +230,7 @@ enum WelcomeYours: WelcomeChapter {
         } else if history > 0 {
             rows.append(Found.Row(mark: .init(symbol: "clock", tint: .systemOrange), words: "Your history"))
         }
-        if let extensions = counts.extensions?.count, extensions > 0 {
-            rows.append(Found.Row(mark: .init(symbol: "puzzlepiece.extension", tint: .systemIndigo), words: counted(extensions, "extension")))
-        }
-        let places = counts.holding
-        let extensions = counts.extensions ?? []
-        let manager = extensions.first { extensionsManager($0.id) }.map { PasswordManagers.canonical($0.id) }
-        var blockers: [(id: String, name: String)] = []
-        if #available(macOS 15.4, *) {
-            blockers = extensions.compactMap { one in
-                Blockers.known[one.id].flatMap { one.id == Blockers.classic ? nil : (id: one.id, name: $0) }
-            }
-        }
-        return Found(id: source.id, name: source.name, caption: bringing.caption(source), icon: bringing.icons[source.id], rows: rows,
-                     colors: counts.colors, places: places.count, placeWord: places.first?.isProfile == true ? "profiles" : "spaces",
-                     sidebar: DefaultBrowserImport.sidebar(for: source.bundle) == true, source: source, sample: nil,
-                     manager: manager, blockers: blockers)
+        return rows
     }
 
     /// A password manager's extension Bring offers to connect: one Yab
@@ -286,7 +303,7 @@ enum WelcomeYours: WelcomeChapter {
         if let sample = from.sample {
             return WelcomeYoursThings(pins: sample.pins.prefix(Browser.pinLimit).map { WelcomeMark.site($0) }, folders: sample.folders)
         }
-        guard let source = from.source, let counts = stage.bringing.counts[source.id] else { return WelcomeYoursThings() }
+        guard let counts = stage.bringing.counts[from.source?.id ?? from.id] else { return WelcomeYoursThings() }
         let things = Bringing.yours(counts, spaces: spacesCome(stage, from))
         return WelcomeYoursThings(pins: things.pins, folders: things.folders)
     }
@@ -388,6 +405,24 @@ enum WelcomeYours: WelcomeChapter {
         }
         guard let from = chosen(stage) else { return .next }
         if pretending(stage) || stage.pretend.bring != nil { return pretendBring(from, stage) }
+
+        if let yab = from.yab {
+            guard let browser = stage.browser, !stage.bringing.busy else { return .stay }
+            stage.bringFailure = nil
+            stage.bringing.bring(yab, into: browser) { [weak stage] answer in
+                guard let stage, stage.beat == .move, !stage.fresh, !stage.brought else { return false }
+                switch answer {
+                case .failed(let words):
+                    stage.bringFailure = words
+                    stage.refresh()
+                    return false
+                case .allowed:
+                    tick(chosen(stage) ?? from, stage)
+                    return true
+                }
+            }
+            return .stay
+        }
 
         // Really: macOS asks for the key now, and the welcome goes on the
         // moment it has said yes.
@@ -1017,9 +1052,9 @@ private struct WelcomeCountsCard: View {
             .padding(.top, 8)
         case .blocker:
             let name = found.blockers[0].name
-            choice(title: "Block ads with Yab", tick: extraTick,
+            choice(title: "Block ads with \(Brand.name)", tick: extraTick,
                    detail: yabBlocks ? "\(name) comes turned off: one blocker, the same lists."
-                                     : "\(name) blocks instead, and Yab\u{2019}s steps aside.",
+                                     : "\(name) blocks instead, and \(Brand.name)\u{2019}s steps aside.",
                    on: yabBlocks, turn: turnBlocks) {
                 mark(.init(symbol: "hand.raised", tint: .systemBlue))
             }

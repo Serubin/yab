@@ -35,7 +35,7 @@ def main():
             os.chmod(directory, 0o700)
             endpoint = directory / 'core.sock'
             env = dict(os.environ, YAB_CEF_TRACE_CDP='1')
-            process = subprocess.Popen([str(args.app / 'Contents/MacOS/YabCore'), f'--socket={endpoint}',
+            process = subprocess.Popen([str(args.app / 'Contents/MacOS/PaneCore'), f'--socket={endpoint}',
                 f'--data-root={directory / "data"}', '--no-sandbox', '--use-mock-keychain',
                 '--no-default-browser-check'], stdout=log, stderr=log, start_new_session=True, env=env)
             wait_socket(endpoint, process)

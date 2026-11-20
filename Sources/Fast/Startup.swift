@@ -18,7 +18,7 @@ import os
 //
 // What the launch does on the main thread is timed stage by stage too
 // (`stage`), and each stage is an interval for Instruments' os_signpost
-// track (subsystem dev.serafim.yab, category launch). Work nobody sees in
+// track (subsystem net.serubin.pane, category launch). Work nobody sees in
 // the first window waits (`later`) until the first page is in, or a few
 // seconds after the first frame, and then runs one piece at a time, so it
 // never stands between the window and the person (docs/lazy-launch.md).
@@ -63,7 +63,7 @@ enum Startup {
 
     // MARK: - stages
 
-    static let signposter = OSSignposter(subsystem: "dev.serafim.yab", category: "launch")
+    static let signposter = OSSignposter(subsystem: Store.productionBundleID, category: "launch")
     /// What each stage held the main thread, in ms, in the order they ran.
     private(set) static var stages: [(name: String, ms: Double)] = []
 

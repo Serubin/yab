@@ -456,21 +456,21 @@ final class MailCenter: ObservableObject {
         case nil:
             rest[account] = nil
         case MailTrouble.signedOut?:
-            trouble = engine.kind == .imap ? "\(serverName(account)) stopped accepting the password" : "Google stopped letting Yab in"
+            trouble = engine.kind == .imap ? "\(serverName(account)) stopped accepting the password" : "Google stopped letting \(Brand.name) in"
             out = true
         case MailTrouble.offline?:
             trouble = nil
         case MailTrouble.limited?:
             let length = min(900, max(120, (rest[account]?.length ?? 60) * 2))
             rest[account] = (Date().addingTimeInterval(length), length)
-            trouble = "Gmail asked Yab to slow down. Mail catches up in a few minutes."
+            trouble = "Gmail asked \(Brand.name) to slow down. Mail catches up in a few minutes."
         case let error?:
             if let server = error as? MailServerTrouble {
                 // An IMAP server's own trouble, in its words for a person.
-                trouble = "\(serverName(account)): \(server.words.prefix(1).lowercased() + server.words.dropFirst()). Yab asks again in a minute."
+                trouble = "\(serverName(account)): \(server.words.prefix(1).lowercased() + server.words.dropFirst()). \(Brand.name) asks again in a minute."
                 MailGmail.log.error("sync failed: \(server.hint, privacy: .public) \(server.said, privacy: .public)")
             } else {
-                trouble = "\(serverName(account)) didn’t answer. Yab asks again in a minute."
+                trouble = "\(serverName(account)) didn’t answer. \(Brand.name) asks again in a minute."
                 MailGmail.log.error("sync failed: \(MailGmail.said(error), privacy: .public)")
             }
         }
@@ -490,72 +490,9 @@ final class MailCenter: ObservableObject {
             skip(engine)
             sense(engine)
         }
-        readsDue(engine)
         if again.remove(account) != nil { run(engine) }
         schedule()
     }
-
-    // MARK: - read statuses
-
-    /// When each account last asked the site about all its mail's read
-    /// statuses (MailReads), each thread asked about on its own, and the
-    /// accounts asking now.
-    private var readsAsked: [String: Date] = [:]
-    private var threadsAsked: [String: Date] = [:]
-    private var readsAsking: Set<String> = []
-    /// A mail sent (⌘↩): from when it has gone, its undo window over, the
-    /// next sync asks, not five minutes on.
-    private var readsSoon: [String: Date] = [:]
-
-    /// After a sync: every five minutes while Yab is active, or mail is in
-    /// front, the site asked about the mail of the last 30 days, and after
-    /// a mail of yours went. The syncs are the beat, so a Mac at rest wakes
-    /// for nothing more.
-    private func readsDue(_ engine: Engine) {
-        let account = engine.account, now = Date()
-        let sent = readsSoon[account].map { now >= $0 } ?? false
-        guard NSApp?.isActive == true || pageInFront, !readsAsking.contains(account),
-              sent || now.timeIntervalSince(readsAsked[account] ?? .distantPast) >= MailReads.every else { return }
-        readsSoon[account] = nil
-        readsAsked[account] = now
-        Task { await askReads(account) }
-    }
-
-    /// The site asked now about an account's mail: one thread's (one with
-    /// mail of yours opened, `thread`), or all of the last 30 days'. Off
-    /// the main thread; what came drawn. One ask an account at a time (a
-    /// thread opened meanwhile asked once it is done), and a thread asked a
-    /// moment ago (J and K over it) not again. Whether anything new came.
-    @discardableResult
-    func askReads(_ account: String, thread: String? = nil) async -> Bool {
-        guard let engine = engines[account] else { return false }
-        guard !readsAsking.contains(account) else {
-            // A thread opened while its account's mail is asked about: its
-            // own ask once that one is done, which may have begun before the
-            // mail was opened.
-            if let thread { readsAfter[account, default: []].insert(thread) }
-            return false
-        }
-        if let thread {
-            let id = account + "|" + thread, now = Date()
-            guard now.timeIntervalSince(threadsAsked[id] ?? .distantPast) > 20 else { return false }
-            if threadsAsked.count > 64 { threadsAsked = threadsAsked.filter { now.timeIntervalSince($0.value) <= 20 } }
-            threadsAsked[id] = now
-        }
-        readsAsking.insert(account)
-        let store = engine.store
-        let news = await Task.detached(priority: .utility) { await MailReads.ask(store, thread: thread) }.value
-        readsAsking.remove(account)
-        if news, engines[account]?.store === store { note() }
-        if let next = readsAfter[account]?.popFirst() {
-            if readsAfter[account]?.isEmpty == true { readsAfter[account] = nil }
-            Task { await askReads(account, thread: next) }
-        }
-        return news
-    }
-
-    /// Threads opened while their account's reads were being asked about.
-    private var readsAfter: [String: Set<String>] = [:]
 
     /// Accounts whose new mail is being sorted now, and those to sort again after.
     private(set) var sensing: Set<String> = []
@@ -654,8 +591,6 @@ final class MailCenter: ObservableObject {
         guard let engine = engines[account] else { return nil }
         let seq = MailOps.act(kind, thread: thread, label: label, after: after, in: engine.store)
         note()
-        // A mail going out with a read status: the site asked once it went (readsDue).
-        if kind == .send { readsSoon[account] = Date().addingTimeInterval(after + 2) }
         DispatchQueue.main.asyncAfter(deadline: .now() + after + 0.5) { [weak self] in
             guard let self, let engine = engines[account] else { return }
             Task {
@@ -1088,7 +1023,7 @@ final class MailCenter: ObservableObject {
             }
             let workspace = NSWorkspace.shared
             let defaultApp = workspace.urlForApplication(toOpen: page)
-            let defaultIsYab = defaultApp.flatMap { Bundle(url: $0)?.bundleIdentifier }?.hasPrefix("dev.serafim.fast") == true
+            let defaultIsYab = defaultApp.flatMap { Bundle(url: $0)?.bundleIdentifier }.map(Store.bundleFamily) == true
             let external = defaultIsYab ? nil : defaultApp
             guard let application = external ?? workspace.urlForApplication(withBundleIdentifier: "com.apple.Safari") else {
                 throw MailTrouble.offline("No external browser for Google sign-in")
@@ -1199,7 +1134,7 @@ final class MailCenter: ObservableObject {
         case "landed": connecting = false; landed = account ?? accounts.first
         case "signedOut":
             guard let account = account ?? accounts.first else { return }
-            status[account] = Status(synced: status[account]?.synced, trouble: "Google stopped letting Yab in", signedOut: true)
+            status[account] = Status(synced: status[account]?.synced, trouble: "Google stopped letting \(Brand.name) in", signedOut: true)
         default: connecting = false; connectFailed = false; landed = nil
         }
     }
@@ -1409,7 +1344,7 @@ enum MailAllAccounts {
 /// for the yes.
 @MainActor
 final class GoogleSignInSheet: NSObject, ASWebAuthenticationPresentationContextProviding {
-    static let callbackScheme = "dev.serafim.fast.oauth"
+    static let callbackScheme = "net.serubin.pane.oauth"
 
     private let page: URL
     private weak var window: NSWindow?

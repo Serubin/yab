@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
     // derive a nonexistent yab Helper from its top-level Info.plist.
     NSString* bundle = NSBundle.mainBundle.bundlePath;
     NSString* subprocess = [bundle stringByAppendingPathComponent:
-      @"Contents/Frameworks/YabCore Helper.app/Contents/MacOS/YabCore Helper"];
+      @"Contents/Frameworks/PaneCore Helper.app/Contents/MacOS/PaneCore Helper"];
     CefString(&settings.browser_subprocess_path) = subprocess.UTF8String;
     // Started from a bundle the updater set aside (yab.app.old), CEF's own
     // lookup, the first path component ending in .app, finds no bundle at

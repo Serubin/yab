@@ -816,7 +816,7 @@ final class Boosts: ObservableObject {
         Its original request is: \(record.intent)
         Read skill('boosts') and boost_read('\(record.id)'). Open your own tab on the URL.
         Change only the stylesheet and checks needed to restore the original request. Keep its sites.
-        Call boost and inspect its checks. A passing CSS-only repair is saved by Yab.
+        Call boost and inspect its checks. A passing CSS-only repair is saved by \(Brand.name).
         Never add JavaScript, new sites or a new feature. Stop after five tries.
         """
         let session = Agents.shared.run(prompt: prompt, cli: nil, access: "browser", quiet: true,

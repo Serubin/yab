@@ -13,8 +13,8 @@ import Security
 
 enum AgentSetup {
     /// The development build answers to its own names everywhere, so trying
-    /// it never overwrites the yab someone uses.
-    static var command: String { Store.development ? "yab-dev" : "yab" }
+    /// it never overwrites the Pane someone uses.
+    static var command: String { Store.development ? "pane-dev" : "pane" }
     /// One name for the skill and the MCP server, with "browser" in it: an
     /// agent often sees only names (a skill's in its list, a deferred tool's
     /// mcp__yab-browser__click) and "yab" alone tells it nothing.
@@ -73,7 +73,7 @@ enum AgentSetup {
     }
 
     /// What a copy that may not install says instead.
-    static let notInstalled = "This copy of Yab isn't an installed app, so it doesn't put itself where agents look."
+    static let notInstalled = "This copy of \(Brand.name) isn't an installed app, so it doesn't put itself where agents look."
 
     static var shim: URL { home.appendingPathComponent(".local/bin/\(command)") }
     static var claudeSkill: URL { home.appendingPathComponent(".claude/skills/\(skill)/SKILL.md") }
@@ -83,7 +83,7 @@ enum AgentSetup {
     static var codexSkill: URL { home.appendingPathComponent(".agents/skills/\(skill)/SKILL.md") }
     static var codexConfig: URL { home.appendingPathComponent(".codex/config.toml") }
 
-    private static let mark = "# Put here by yab › Settings › Agents; remove it there."
+    private static let mark = "# Put here by Pane › Settings › Agents; remove it there."
 
     // MARK: - status
 
@@ -302,19 +302,19 @@ enum AgentSetup {
     ---
     name: \(skill)
     version: \(Guide.skillVersion)
-    description: Use Yab on this Mac for browser tasks that need the user's signed-in sites, an explicitly selected tab, browsing history or Yab settings. Supports delegated tasks and direct browser tools.
+    description: Use \(Brand.name) on this Mac for browser tasks that need the user's signed-in sites, an explicitly selected tab, browsing history or \(Brand.name) settings. Supports delegated tasks and direct browser tools.
     ---
 
-    # Yab
+    # \(Brand.name)
 
     Work in agent tabs so the user can keep browsing. Use a user's existing tab only when they
     explicitly ask to work there. A site name alone is not permission to take over their tab.
 
     Choose how to work:
 
-    - **Delegate a task** when you want a result from Yab's agent:
+    - **Delegate a task** when you want a result from \(Brand.name)'s agent:
       `\(command) "Find the unread message from Alex in Slack and summarize it" --access browser`.
-      This starts a separate AI run using the plan selected in Yab.
+      This starts a separate AI run using the plan selected in \(Brand.name).
     - **Drive tabs yourself** with the \(server) MCP tools: `open`, `snapshot`, `click`, `type`.
       Read `\(command) guide mcp` for the workflow and the offered schemas for exact arguments.
     - **Use a shell without MCP**: `\(command) exec 'const t = open("https://example.com"); return t.snapshot()'`.
@@ -322,7 +322,7 @@ enum AgentSetup {
 
     A delegated task prints `session <id>`, progress and its answer. Exit 3 means it needs the user:
     tell them what is waiting. For a question, ask them, then run
-    `\(command) session resume SESSION_ID "their answer"`. Sign-ins and approvals may need Yab.
+    `\(command) session resume SESSION_ID "their answer"`. Sign-ins and approvals may need \(Brand.name).
     `session list` finds task ids; `session steer SESSION_ID "new direction"` redirects a task;
     `session stop SESSION_ID` stops it. Keep the user informed while a task runs.
 
@@ -332,12 +332,12 @@ enum AgentSetup {
     Read a snapshot before acting; don't guess refs. Read the site's skill when offered.
     Only send, post, pay or delete when asked. Respect refusals. Use `sign_in` for saved passwords;
     hand captchas and sign-ins you cannot complete to the user with `handoff`.
-    Control Yab through its tools, not Computer Use, AppleScript or desktop keystrokes.
+    Control \(Brand.name) through its tools, not Computer Use, AppleScript or desktop keystrokes.
 
-    For Yab settings, inspect `native_context` and `native_actions`, then use a listed action with
+    For \(Brand.name) settings, inspect `native_context` and `native_actions`, then use a listed action with
     `native_apply`. Use `\(command) guide` for more examples and `\(command) guide setup` for setup.
     If the command is missing, the user can install it in Settings › Developers.
-    If agents are disabled, ask the user to enable Let agents use Yab there.
+    If agents are disabled, ask the user to enable Let agents use \(Brand.name) there.
     """ }
 
     private static func writeSkill(_ url: URL) -> String? {
@@ -412,7 +412,7 @@ enum AgentSetup {
         _ = await Shell.run(claude, ["mcp", "remove", "--scope", "user", server], env: found.env, permit: permit, localSetup: localSetup)
         let (code, _) = await Shell.run(claude, ["mcp", "add", "--scope", "user", server, "--", executable, "mcp"], env: found.env, permit: permit, localSetup: localSetup)
         guard localSetup?.valid == true || permit?.valid == true else { return ProviderConsent.refusal }
-        guard code == 0 else { return "Claude Code didn't take Yab's tools (claude mcp add failed)." }
+        guard code == 0 else { return "Claude Code didn't take \(Brand.name)'s tools (claude mcp add failed)." }
         for name in retiredClaudeServers() {
             _ = await Shell.run(claude, ["mcp", "remove", "--scope", "user", name], env: found.env, permit: permit, localSetup: localSetup)
         }
@@ -509,21 +509,17 @@ enum AgentSetup {
 
     // MARK: - what older builds put
 
-    /// Names older builds put where agents look: Fast's, before it was yab,
-    /// and yab's MCP server before it took the skill's name. Taken away when
-    /// this one sets up, so an agent isn't offered two browsers, and only
-    /// where they name a Fast or a yab app.
-    private static var retired: (servers: [String], skills: [String], commands: [String]) {
-        Store.development
-            ? (["yab-dev", "fast-dev"], ["fast-dev-browser"], ["fast-dev"])
-            : (["yab", "fast"], ["fast-browser"], ["fast"])
+    /// Names older builds put where agents look, taken away on setup. Empty:
+    /// upstream Yab's `yab`, `fast` and their skills belong to Yab, never to Pane.
+    static var retired: (servers: [String], skills: [String], commands: [String]) {
+        ([], [], [])
     }
 
-    /// A line or a command that names a Fast or a yab app's own binary.
-    private static func ours(_ text: String) -> Bool {
+    /// A line or a command that names a Pane app's own binary.
+    static func ours(_ text: String) -> Bool {
         guard let range = text.range(of: ".app/Contents/MacOS/") else { return false }
         let binary = text[range.upperBound...].prefix { $0 != "\"" }
-        return ["Fast", "yab"].contains(String(binary))
+        return ["pane"].contains(String(binary))
     }
 
     /// The retired servers in Claude Code's config that are ours.

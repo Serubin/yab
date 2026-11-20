@@ -112,8 +112,8 @@ enum WelcomeEnd: WelcomeChapter {
                                 sub: moment.beat == .access ? "Each one asks only when you press its button." : "It asks only when you press its button.",
                                 primary: last ? "Start Browsing" : "Continue", quiet: "Not Now")
         case .links:
-            let sub = slack(stage) ? "Make Yab your default browser, and links from Mail, Messages and Slack open here."
-                : "Make Yab your default browser, and links from Mail and Messages open here."
+            let sub = slack(stage) ? "Make \(Brand.name) your default browser, and links from Mail, Messages and Slack open here."
+                : "Make \(Brand.name) your default browser, and links from Mail and Messages open here."
             if stage.askedDefault { return WelcomeWords(title: linksTitle, sub: sub, primary: "Waiting for macOS", busy: true, quiet: "Not Now") }
             return WelcomeWords(title: linksTitle, sub: sub, primary: "Make Default", quiet: "Not Now")
         default:
@@ -341,7 +341,7 @@ enum WelcomeEnd: WelcomeChapter {
 
         static let knowDetail = "Reads your browsing history and the sites you’re signed in to."
         static let knowFoot = "About ten minutes. Inspect or clear it in AI › Memory."
-        static let googleDetail = "One Allow at Google, and Yab has your mail and meetings."
+        static let googleDetail = "One Allow at Google, and \(Brand.name) has your mail and meetings."
         static let points: [(glyph: String, words: String)] = [
             (glyph: "pencil", words: "Page text goes to your connected AI"),
             (glyph: "quote.bubble", words: "Nothing is sent or posted to those sites"),
@@ -496,9 +496,9 @@ enum WelcomeEnd: WelcomeChapter {
         var title: String {
             switch phase {
             case .connected: return "\(face?.email ?? "Google") is in."
-            case .asking: return "Allow Yab in Google."
+            case .asking: return "Allow \(Brand.name) in Google."
             case .ask, .failed, .unavailable:
-                return face.map { "Bring \($0.email) into Yab." } ?? "Bring your Google account into Yab."
+                return face.map { "Bring \($0.email) into \(Brand.name)." } ?? "Bring your Google account into \(Brand.name)."
             }
         }
 
@@ -507,11 +507,11 @@ enum WelcomeEnd: WelcomeChapter {
             case .connected:
                 return other.map { "Add \($0) any time in Settings › Mail." } ?? "Your mail, your meetings and your codes are here."
             case .asking: return "Google’s page is open in a tab."
-            case .failed: return "Google didn’t give Yab access. Nothing was read."
-            case .unavailable: return "This build of Yab can’t connect to Google."
+            case .failed: return "Google didn’t give \(Brand.name) access. Nothing was read."
+            case .unavailable: return "This build of \(Brand.name) can’t connect to Google."
             case .ask:
                 guard face != nil else { return "You sign in once in a tab, then Allow." }
-                return browser.map { "The Google account you use in \($0). One Allow at Google." } ?? "Signed in in Yab already. One Allow at Google."
+                return browser.map { "The Google account you use in \($0). One Allow at Google." } ?? "Signed in in \(Brand.name) already. One Allow at Google."
             }
         }
     }
@@ -755,7 +755,7 @@ private struct HelpsGoogleCard: View {
         switch step.phase {
         case .ask: return step.face?.email ?? "You sign in once in a tab."
         case .asking: return "Google’s page is open in a tab."
-        case .failed: return "Google didn’t give Yab access."
+        case .failed: return "Google didn’t give \(Brand.name) access."
         case .connected: return step.face?.email ?? ""
         case .unavailable: return "This build can’t connect to Google."
         }

@@ -469,11 +469,11 @@ struct MailFrontDoor: View {
     private var state: State {
         if center.connecting {
             return State(id: "waiting", sheets: [Laid(id: 0, look: .dashed, mark: "envelope")], title: "Waiting for Google.",
-                         line: "Finish in the window over the page. If Google says the app isn’t verified, choose Advanced, then Go to Yab.")
+                         line: "Finish in the window over the page. If Google says the app isn’t verified, choose Advanced, then Go to \(Brand.name).")
         }
         if center.connectFailed {
             let back = mailKey.keys.map { "come back with \($0.text) any time." } ?? "come back to Mail any time."
-            return State(id: "failed", sheets: [Laid(id: 0, look: .dashed, mark: "envelope")], title: "Google didn’t give Yab access.",
+            return State(id: "failed", sheets: [Laid(id: 0, look: .dashed, mark: "envelope")], title: "Google didn’t give \(Brand.name) access.",
                          line: "Nothing was read. Try again, or \(back)", button: "Try Again")
         }
         if center.connected {
@@ -482,7 +482,7 @@ struct MailFrontDoor: View {
         }
         return State(id: "door", sheets: [Laid(id: 0, look: .dashed, mark: "envelope")], title: "Mail, sorted.",
                      line: "Gmail, read on this Mac and sorted by what it wants from you.", button: "Connect Gmail",
-                     note: "Kept on this Mac, synced while Yab is open")
+                     note: "Kept on this Mac, synced while \(Brand.name) is open")
     }
 
     private func connect() {

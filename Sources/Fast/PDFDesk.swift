@@ -464,7 +464,7 @@ final class PDFDesk: ObservableObject {
     func adopt(_ png: Data, initials: Bool = false) {
         guard let kept = shelf.keep(png, initials: initials) else {
             // The keychain said no: used for this file all the same.
-            signature = Signature(id: initials ? "Yab Initials" : "Yab Signature", png: png, initials: initials)
+            signature = Signature(id: initials ? "\(Brand.name) Initials" : "\(Brand.name) Signature", png: png, initials: initials)
             sheet = false
             changedNow()
             return
@@ -507,7 +507,7 @@ final class PDFDesk: ObservableObject {
 
     /// Ours: signatures and lines of text the mode put on the pages.
     static func ours(_ annotation: PDFAnnotation) -> Bool {
-        annotation is PDFSignatureStamp || (annotation.type == "FreeText" && annotation.value(forAnnotationKey: .textLabel) as? String == "Yab")
+        annotation is PDFSignatureStamp || (annotation.type == "FreeText" && annotation.value(forAnnotationKey: .textLabel) as? String == Brand.name)
     }
 
     func pick(_ annotation: PDFAnnotation?) {

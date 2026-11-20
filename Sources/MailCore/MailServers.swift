@@ -436,7 +436,7 @@ public enum MailFinding {
     /// One GET with a short wait; nil for anything but a 200.
     @Sendable public static func get(_ url: URL) async -> Data? {
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 6)
-        request.setValue("Yab", forHTTPHeaderField: "User-Agent")
+        request.setValue("\(Brand.name)", forHTTPHeaderField: "User-Agent")
         guard let (data, response) = try? await MailGmail.uncached.data(for: request),
               (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
         return data

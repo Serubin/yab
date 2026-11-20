@@ -287,11 +287,11 @@ enum Command: String, CaseIterable {
         case .downloads: return "Downloads"
         case .bookmarks: return "Bookmarks"
         case .passwords: return "Passwords"
-        case .importYabPasswords: return "Import Yab Passwords…"
+        case .importYabPasswords: return "Import \(Brand.name) Passwords…"
         case .autofill: return "Cards and Addresses"
         case .bringCards: return "Bring In Cards and Addresses"
         case .settings: return "Settings"
-        case .manual: return "Yab Manual"
+        case .manual: return "\(Brand.name) Manual"
         case .bookmarkPage: return "Bookmark This Page"
         case .reader: return "Reading Mode"
         case .darkPage: return "Dark Page"
@@ -334,10 +334,10 @@ enum Command: String, CaseIterable {
         case .look: return "Edit Look"
         case .feedback: return "Send Feedback"
         case .invite: return "Invite a Friend…"
-        case .wrapped: return "Yab Wrapped"
+        case .wrapped: return "\(Brand.name) Wrapped"
         case .checkUpdates: return "Check for Updates"
         case .restartUpdate: return "Restart to Update"
-        case .makeDefault: return "Make Yab the Default Browser"
+        case .makeDefault: return "Make \(Brand.name) the Default Browser"
         case .splitView: return "Split View"
         case .separate: return "Separate Split View"
         case .showBar: return "Show Address Bar"
@@ -417,7 +417,7 @@ enum Command: String, CaseIterable {
         case .aiWhenAsked: return ["ai when asked", "when asked", "ai only when i ask"]
         case .hideAIRows: return ["hide ai rows", "hide ask and task", "hide ask rows", "remove ask and task"]
         case .showAIRows: return ["show ai rows", "show ask and task", "show ask rows"]
-        case .importYabPasswords: return ["import passwords", "import Yab passwords", "import to Apple Passwords", "importpasswords"]
+        case .importYabPasswords: return ["import passwords", "import \(Brand.name) passwords", "import yab passwords", "import to Apple Passwords", "importpasswords"]
         case .closeBefore:
             return ["close tabs to the left", "close tabs above", "close before", "close left", "close above"]
         case .closeAfter:
@@ -964,7 +964,7 @@ enum Command: String, CaseIterable {
         // is the note written in by the Update button once it is in (UpdateDoodle).
         case .checkUpdates:
             Updater.shared.check { found in
-                if found == nil { browser.announce("Yab is up to date", mark: "checkmark.circle") }
+                if found == nil { browser.announce("\(Brand.name) is up to date", mark: "checkmark.circle") }
             }
         case .restartUpdate: Updater.shared.relaunch()
         case .makeDefault: Links.becomeDefault { _ in }
@@ -1015,7 +1015,7 @@ enum Command: String, CaseIterable {
         case .inspector: aliases += ["devtools", "web inspector", "elements", "open elements panel"]
         case .console: aliases += ["console", "open console panel"]
         case .capture: aliases += ["screenshot", "capture page", "capture"]
-        case .makeDefault: aliases += ["make yab default browser"]
+        case .makeDefault: aliases += ["make pane default browser", "make yab default browser"]
         case .downloads: aliases += ["search downloads"]
         case .history: aliases += ["search history"]
         case .bookmarks: aliases += ["show bookmarks"]

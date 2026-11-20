@@ -164,7 +164,7 @@ extension DevCopy {
     private static var browser: String {
         let yab = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         let safari = Web.userAgentName.split(separator: " ").first.map { $0.replacingOccurrences(of: "Version/", with: "") }
-        return "Yab" + (yab.map { " " + $0 } ?? "") + (safari.map { ", WebKit (Safari \($0))" } ?? "")
+        return "\(Brand.name)" + (yab.map { " " + $0 } ?? "") + (safari.map { ", WebKit (Safari \($0))" } ?? "")
     }
 
     /// A body on one line, an HTML page's as its words, not its markup.

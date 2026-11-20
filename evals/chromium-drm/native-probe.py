@@ -22,7 +22,7 @@ def main(app, out):
         root = Path(temporary)
         endpoint = root / 'core.sock'
         with (out / 'helper.log').open('w') as log:
-            process = subprocess.Popen([str(app / 'Contents/MacOS/YabCore'), '--socket=' + str(endpoint),
+            process = subprocess.Popen([str(app / 'Contents/MacOS/PaneCore'), '--socket=' + str(endpoint),
                                         '--data-root=' + str(root / 'data'), '--use-mock-keychain', '--yab-test-bridge'], stdout=log, stderr=log)
             lifetime = PreparedHelperLifetime(app, process, root / 'data', out)
             peer = reader = None

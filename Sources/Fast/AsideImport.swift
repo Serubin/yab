@@ -165,7 +165,7 @@ enum AsideImport {
         while sqlite3_step(statement) == SQLITE_ROW {
             let name = text(1), prompt = text(2)
             guard !prompt.isEmpty else { continue }
-            let body = "# Aside routine: \(name.isEmpty ? "Untitled" : name)\n\nImported for reference. This routine is not scheduled in Yab.\n\n"
+            let body = "# Aside routine: \(name.isEmpty ? "Untitled" : name)\n\nImported for reference. This routine is not scheduled in \(Brand.name).\n\n"
                 + "Schedule: \(text(3))\nTime zone: \(text(4))\nSource state: \(text(5))\nTrigger: \(text(6))\n\n## Task\n\n\(prompt)\n"
             notes.append(Note(path: "agent/aside-\(owner)-routine-\(fingerprint(text(0))).md", text: body))
         }

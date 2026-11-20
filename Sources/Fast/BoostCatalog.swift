@@ -16,7 +16,7 @@ enum BoostCatalog {
             ["manifest.json": BoostScript.json(["manifest_version": 3, "name": name, "version": "1.0.0",
                 "content_scripts": [["matches": ["https://" + site + "/*"], "css": ["style.css"], "run_at": "document_end"]]]),
              "style.css": css,
-             "BOOST.md": "---\nname: \(name)\nsites: \(site)\nmade: Yab recipe\npreview: \(url.absoluteString)\nchecks:\n  - on /*: \(check)\n  - on /*: some of body\n---\n\n\(intent)"]
+             "BOOST.md": "---\nname: \(name)\nsites: \(site)\nmade: \(Brand.name) recipe\npreview: \(url.absoluteString)\nchecks:\n  - on /*: \(check)\n  - on /*: some of body\n---\n\n\(intent)"]
         }
     }
     static let entries: [Entry] = [

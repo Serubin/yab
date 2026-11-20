@@ -165,7 +165,7 @@ struct AssistantsPage: View {
     }
 
     static func message(client: String, nonce: String?) -> String {
-        "Connect Yab as my browser. On your own computer, run `npx -y yab-mcp@latest login --client \(client)\(nonce.map { " --nonce \($0)" } ?? "")`, and show me its eight-character code. Don't ask me for a Yab Sync key or token."
+        "Connect \(Brand.name) as my browser. On your own computer, run `npx -y yab-mcp@latest login --client \(client)\(nonce.map { " --nonce \($0)" } ?? "")`, and show me its eight-character code. Don't ask me for a \(Brand.name) Sync key or token."
     }
 
     private var footer: String {

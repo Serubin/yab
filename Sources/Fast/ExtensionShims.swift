@@ -1176,7 +1176,7 @@ enum ExtensionShims {
 
     static func answer(_ message: Any, from context: WKWebExtensionContext, owner: Extensions) async throws -> Any? {
         guard let body = message as? [String: Any], let api = body["api"] as? String else {
-            return ["error": "Not a Yab message"]
+            return ["error": "Not a \(Brand.name) message"]
         }
         let args = body["args"] as? [Any] ?? []
         do {
@@ -2060,7 +2060,7 @@ enum ExtensionShims {
             if let old = awake[id] { IOPMAssertionRelease(old) }
             var assertion: IOPMAssertionID = 0
             let kind = (display ? kIOPMAssertionTypePreventUserIdleDisplaySleep : kIOPMAssertionTypePreventUserIdleSystemSleep) as CFString
-            if IOPMAssertionCreateWithName(kind, IOPMAssertionLevel(kIOPMAssertionLevelOn), "An extension in Yab" as CFString, &assertion) == kIOReturnSuccess {
+            if IOPMAssertionCreateWithName(kind, IOPMAssertionLevel(kIOPMAssertionLevelOn), "An extension in \(Brand.name)" as CFString, &assertion) == kIOReturnSuccess {
                 awake[id] = assertion
                 releaseOnQuit()
             }
@@ -2072,7 +2072,7 @@ enum ExtensionShims {
             // One per extension, declared again each time: a known id
             // updates the assertion in place instead of adding one.
             var assertion = active[id] ?? 0
-            if IOPMAssertionDeclareUserActivity("An extension in Yab" as CFString, kIOPMUserActiveLocal, &assertion) == kIOReturnSuccess {
+            if IOPMAssertionDeclareUserActivity("An extension in \(Brand.name)" as CFString, kIOPMUserActiveLocal, &assertion) == kIOReturnSuccess {
                 active[id] = assertion
                 releaseOnQuit()
             }
@@ -2177,10 +2177,10 @@ enum ExtensionShims {
             // redirect "redirect_uri_mismatch" before anyone signs in
             // (evals/extensions/identity_probe.py, Save to Google Drive,
             // 2026-10-21), so there is nothing to build it on.
-            throw Unsupported(what: "Sign in with Google isn't available for extensions in Yab")
+            throw Unsupported(what: "Sign in with Google isn't available for extensions in \(Brand.name)")
 
         default:
-            throw Unsupported(what: "\(api) isn't available in Yab")
+            throw Unsupported(what: "\(api) isn't available in \(Brand.name)")
         }
     }
 

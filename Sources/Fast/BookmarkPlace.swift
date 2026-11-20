@@ -367,7 +367,7 @@ extension Browser {
         // Passwords has it, and a folder to start with.
         let sources = placeSources(place)
         let chosen = sources[min(query.spot, sources.count - 1)]
-        return PlaceEmpty(place: place, searching: false, title: "Your bookmarks, kept by Yab",
+        return PlaceEmpty(place: place, searching: false, title: "Your bookmarks, kept by \(Brand.name)",
                           detail: "Press \(add) on a page to keep it. Folders to file them in, and every one found here by its name or its site.",
                           footnote: chosen.icon != nil && chosen.name != "Safari" ? "Folders come as they are. Nothing changes in \(chosen.name)." : nil,
                           sources: sources, actions: [chosen.take, newFolder])

@@ -57,7 +57,7 @@ enum AgentHistory {
             scanned += 1
         }
         let yab = diaryVisits(since: since)
-        if !yab.isEmpty { sources.append("Yab") }
+        if !yab.isEmpty { sources.append("\(Brand.name)") }
         for visit in yab { add(visit.url, at: visit.at, signIn: Diary.isSignIn(visit.url)) }
         for source in (AgentFixture.requested ? [] : OtherHistory.sources()) {
             let visits = chromiumVisits(source, since: since)
@@ -67,7 +67,7 @@ enum AgentHistory {
         }
         // Sync keeps a place's last visit only: one each, from its device.
         let away = elsewhere.filter { $0.at >= since }
-        for device in Set(away.map(\.device)).sorted() { sources.append("Yab on \(device)") }
+        for device in Set(away.map(\.device)).sorted() { sources.append("\(Brand.name) on \(device)") }
         for visit in away { add(visit.url, at: visit.at, signIn: Diary.isSignIn(visit.url)) }
         let ranked = all.values
             .filter { $0.visits >= 5 && !($0.days.count == 1 && $0.visits < 20) }
@@ -161,7 +161,7 @@ enum AgentHistory {
         }
         let named = span.map { " " + $0.label.replacingOccurrences(of: "From your ", with: "this ").lowercased() } ?? ""
         var out = "# What the user did in their browser\(named)\n\n"
-        out += "_Pages grouped by what they were doing, in Yab on this Mac. Private tabs and pages an agent worked in are never kept. "
+        out += "_Pages grouped by what they were doing, in \(Brand.name) on this Mac. Private tabs and pages an agent worked in are never kept. "
             + "When you write from this, say in one plain line what you left out, and give the pages you used as links with their times._\n"
         guard !threads.isEmpty else { return out + "\nNothing for that." }
         var day = ""

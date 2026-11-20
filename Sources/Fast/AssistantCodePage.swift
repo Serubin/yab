@@ -163,7 +163,7 @@ struct AssistantCodePage: View {
     // MARK: the yes
 
     @ViewBuilder private func consent(_ link: AssistantHost.Link) -> some View {
-        AssistantSubHero(client: identity(link), title: "Let \(name) use Yab?",
+        AssistantSubHero(client: identity(link), title: "Let \(name) use \(Brand.name)?",
                          detail: "Code \(String(code.prefix(4)))-\(String(code.suffix(4))) from \(name)" + (link.redirectHost.map { " · access goes to \($0)" } ?? " · allow only if it matches the code your assistant showed."))
         Section {
             SettingsRow("Tabs of its own, signed in as you") { EmptyView() }

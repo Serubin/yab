@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 PAYLOADS = ['Chromium Embedded Framework.framework'] + [
-    'YabCore Helper' + suffix + '.app'
+    'PaneCore Helper' + suffix + '.app'
     for suffix in ('', ' (GPU)', ' (Renderer)', ' (Plugin)', ' (Alerts)')]
 
 
@@ -26,15 +26,15 @@ def relocate_payloads(app, bundle):
         if target.exists():
             raise RuntimeError('CEF payload already exists: ' + str(target))
         shutil.move(source, target)
-        source.symlink_to('YabCore.app/Contents/Frameworks/' + name, target_is_directory=True)
+        source.symlink_to('PaneCore.app/Contents/Frameworks/' + name, target_is_directory=True)
 
 
 def package(app):
     app = Path(app)
     outer = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
-    legacy = app / 'Contents/MacOS/YabCore'
-    bundle = app / 'Contents/Frameworks/YabCore.app'
-    binary = bundle / 'Contents/MacOS/YabCore'
+    legacy = app / 'Contents/MacOS/PaneCore'
+    bundle = app / 'Contents/Frameworks/PaneCore.app'
+    binary = bundle / 'Contents/MacOS/PaneCore'
     # Repeated embedding owns only this bundle and its legacy entry point.
     if legacy.is_symlink() or not legacy.is_file():
         raise RuntimeError('A freshly copied regular YabCore executable is required')
@@ -48,8 +48,8 @@ def package(app):
         shutil.rmtree(bundle)
     binary.parent.mkdir(parents=True)
     shutil.move(legacy, binary)
-    info = dict(CFBundleExecutable='YabCore', CFBundleName='YabCore',
-                CFBundleDisplayName='YabCore',
+    info = dict(CFBundleExecutable='PaneCore', CFBundleName='PaneCore',
+                CFBundleDisplayName='PaneCore',
                 CFBundleIdentifier=outer['CFBundleIdentifier'] + '.core',
                 CFBundlePackageType='APPL', CFBundleInfoDictionaryVersion='6.0',
                 CFBundleVersion=outer['CFBundleVersion'],
@@ -62,7 +62,7 @@ def package(app):
     # Keep the entire native browser tree together. Upward directory links
     # make the Chromium child sandbox reject the framework's resolved path.
     relocate_payloads(app, bundle)
-    legacy.symlink_to('../Frameworks/YabCore.app/Contents/MacOS/YabCore')
+    legacy.symlink_to('../Frameworks/PaneCore.app/Contents/MacOS/PaneCore')
     return bundle
 
 if __name__ == '__main__':

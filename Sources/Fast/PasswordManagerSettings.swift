@@ -33,7 +33,7 @@ struct PasswordManagersSection: View {
     @ObservedObject private var connections = PasswordManagers.Connections.shared
 
     private var note: String {
-        if !prefs.usesYabPasswords && connections.list.isEmpty { return "Yab doesn't fill or save passwords. Agents ask you to sign in." }
+        if !prefs.usesYabPasswords && connections.list.isEmpty { return "\(Brand.name) doesn't fill or save passwords. Agents ask you to sign in." }
         if connections.list.isEmpty { return "Connect the password manager you already use, and agents can sign in with it too." }
         return "Agents sign in with these. On a site, pick the sign-in from their own menu as you do now."
     }
@@ -50,14 +50,14 @@ struct PasswordManagersSection: View {
             HStack(spacing: 10) {
                 PenTileView(page: .passwords, side: 28).frame(width: 28, height: 28)
                 VStack(alignment: .leading, spacing: 3) { // design: SettingsRow's own 3 between a title and its line
-                    Text(SettingsWords.text("Use Yab's passwords"))
-                    Text("Yab fills and saves your sign-ins from this Mac's keychain.")
+                    Text(SettingsWords.text("Use Pane's passwords"))
+                    Text("\(Brand.name) fills and saves your sign-ins from this Mac's keychain.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                Toggle(SettingsWords.text("Use Yab's passwords"), isOn: $prefs.usesYabPasswords)
+                Toggle(SettingsWords.text("Use Pane's passwords"), isOn: $prefs.usesYabPasswords)
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.small)
@@ -362,9 +362,9 @@ struct ConnectManagersPage: View {
         let selectable = PasswordManagers.selectable(id)
         let added = PasswordManagers.installed(id) != nil
         let trouble = addTrouble(id)
-        let detail = !selectable ? "Needs Apple's approval for Yab"
+        let detail = !selectable ? "Needs Apple's approval for \(Brand.name)"
             : managers.adding == id ? "Adding its extension…"
-            : trouble ?? (added ? "Extension in Yab" : "Adds its extension to Yab")
+            : trouble ?? (added ? "Extension in \(Brand.name)" : "Adds its extension to \(Brand.name)")
         return HStack(spacing: 10) {
             ManagerIcon(id: id, side: 28)
             VStack(alignment: .leading, spacing: 3) { // design: SettingsRow's own 3 between a title and its line
@@ -529,7 +529,7 @@ struct ConnectManagerPage: View {
                 password = ""
             } more: { EmptyView() }
             if PasswordManagers.yabMayUnlock(id) || yab {
-                choice(on: yab, title: "Yab unlocks it",
+                choice(on: yab, title: "\(Brand.name) unlocks it",
                        detail: "Store the unlock password on this Mac. Agents can use it; manual use requires Touch ID once per session.") {
                     if mode != .yab { mode = .yab; password = ""; tried = false }
                 } more: {
@@ -539,7 +539,7 @@ struct ConnectManagerPage: View {
                         }
                         .onChange(of: password) { _, _ in failed = false }
                         if failed {
-                            Text("Yab couldn't save it on this Mac. Try again.")
+                            Text("\(Brand.name) couldn't save it on this Mac. Try again.")
                                 .font(.system(size: 11.5)).foregroundStyle(ButtonCSS.danger)
                         } else if tried && !valid {
                             Text("Enter the password you unlock \(name) with.")
@@ -573,7 +573,7 @@ struct ConnectManagerPage: View {
         let trouble = adding ? nil : addTrouble(id)
         step(mark: SetUpMark(number: 1, done: added, busy: adding),
              title: "Add the \(name) extension",
-             detail: added ? "Added." : adding ? "Adding…" : trouble ?? "From the Chrome Web Store, into Yab.",
+             detail: added ? "Added." : adding ? "Adding…" : trouble ?? "From the Chrome Web Store, into \(Brand.name).",
              trouble: trouble != nil) {
             if !added && !adding {
                 Button(trouble == nil ? "Add" : "Try Again") { managers.add(id) }.settingsButton()
@@ -581,9 +581,9 @@ struct ConnectManagerPage: View {
         }
         if allows {
             step(mark: SetUpMark(number: 2, done: allowed, busy: allowing && !allowed),
-                 title: "Allow Yab in 1Password",
-                 detail: allowed ? "1Password allowed Yab." : allowing ? "Waiting for 1Password…"
-                     : "In 1Password: Settings › Browser › Add Browser, then choose Yab.") {
+                 title: "Allow \(Brand.name) in 1Password",
+                 detail: allowed ? "1Password allowed \(Brand.name)." : allowing ? "Waiting for 1Password…"
+                     : "In 1Password: Settings › Browser › Add Browser, then choose \(Brand.name).") {
                 if !allowed && !allowing {
                     Button("Open 1Password") {
                         allowing = true
@@ -662,7 +662,7 @@ private struct UnlockPasswordCard: View {
                 UnlockField(placeholder: "\(name) unlock password", text: $password, bad: failed) { save() }
                     .onChange(of: password) { _, _ in failed = false }
                 if failed {
-                    Text("Yab couldn't save it on this Mac. Try again.")
+                    Text("\(Brand.name) couldn't save it on this Mac. Try again.")
                         .font(.system(size: 11.5)).foregroundStyle(ButtonCSS.danger)
                 }
             }

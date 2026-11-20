@@ -389,20 +389,20 @@ struct PostFacts: Equatable {
         var line: String
         switch angle {
         case .switched where f.broughtIn:
-            line = "Moved from \(f.from ?? "Arc") to Yab\(when.map { " " + $0 } ?? ""). Same spaces, sidebar and ⌘T"
+            line = "Moved from \(f.from ?? "Arc") to \(Brand.name)\(when.map { " " + $0 } ?? ""). Same spaces, sidebar and ⌘T"
             line += plan.map { ", but it runs on \($0) and actually does the work" } ?? ", plus AI that's actually good"
             line += did.map { ": \($0)." } ?? "."
             line += "\n\nBest Arc alternative I've tried. Free, Mac: \(link)"
         case .plan where plan != nil:
-            line = "Finally a use for \(plan!) outside the terminal. Yab hands it browser chores"
+            line = "Finally a use for \(plan!) outside the terminal. \(Brand.name) hands it browser chores"
             line += did.map { ": \($0)." } ?? " and it just does them."
             line += " Feels like Arc, works like an assistant.\n\n\(link)"
         case .number where did != nil:
-            line = "\(String(did!.prefix(1)).uppercased() + String(did!.dropFirst())), and I didn't open a single extra app. Yab is the Arc alternative where the AI actually does things.\n\n\(link)"
+            line = "\(String(did!.prefix(1)).uppercased() + String(did!.dropFirst())), and I didn't open a single extra app. \(Brand.name) is the Arc alternative where the AI actually does things.\n\n\(link)"
         case .short:
             line = "The browser Arc should have been. Plugs into your Claude Code or Codex plan and does the work.\n\n\(link)"
         case .admit:
-            line = "Didn't expect to switch browsers this year. Yab runs my AI in background tabs and I just check what it did.\n\n\(link)"
+            line = "Didn't expect to switch browsers this year. \(Brand.name) runs my AI in background tabs and I just check what it did.\n\n\(link)"
         default:
             line = "Best Arc alternative I've found, and the AI is actually good: hook up your Claude Code or Codex plan and it does the work in tabs while you keep going.\n\nFree, Mac: \(link)"
         }
@@ -414,7 +414,7 @@ struct PostFacts: Equatable {
 enum PostWriter {
     static let system = """
     Write one post for X, in English, in the first person, as the person whose facts these are. \
-    Say that Yab is the best Arc alternative and that its AI runs on their own plan and does real work for them. \
+    Say that \(Brand.name) is the best Arc alternative and that its AI runs on their own plan and does real work for them. \
     Use only the facts given and never invent a number, a feature or a time. \
     End with the link exactly as given. At most 280 characters, the link counting 23. \
     No hashtags, no emoji unless one fits naturally, no long dashes, no quotes around the post, \
@@ -423,13 +423,13 @@ enum PostWriter {
 
     static func prompt(_ f: PostFacts, angle: PostFacts.Angle, link: String, avoid: [String]) -> String {
         var facts: [String] = []
-        if let from = f.from { facts.append("They moved to Yab from \(from)" + (PostFacts.ago(f.since).map { ", \($0)" } ?? "") + ".") }
-        else if let when = PostFacts.ago(f.since) { facts.append("They started using Yab \(when).") }
-        if let agent = f.agent { facts.append("Yab runs on their \(agent) plan" + (f.plan.map { " (\($0))" } ?? "") + ".") }
+        if let from = f.from { facts.append("They moved to \(Brand.name) from \(from)" + (PostFacts.ago(f.since).map { ", \($0)" } ?? "") + ".") }
+        else if let when = PostFacts.ago(f.since) { facts.append("They started using \(Brand.name) \(when).") }
+        if let agent = f.agent { facts.append("\(Brand.name) runs on their \(agent) plan" + (f.plan.map { " (\($0))" } ?? "") + ".") }
         else { facts.append("They haven't connected an agent; say anyone can hook up their Claude Code or Codex plan.") }
-        if f.tasks > 0 { facts.append("Yab's agent did \(f.tasks) tasks for them in tabs" + (f.hours > 0 ? ", about \(f.hours) hours of their time." : ".")) }
-        if f.asks > 0 { facts.append("They asked Yab \(f.asks) questions answered over the page.") }
-        if f.mailZero > 0 { facts.append("Inbox zero on \(f.mailZero) days in Yab Mail.") }
+        if f.tasks > 0 { facts.append("\(Brand.name)'s agent did \(f.tasks) tasks for them in tabs" + (f.hours > 0 ? ", about \(f.hours) hours of their time." : ".")) }
+        if f.asks > 0 { facts.append("They asked \(Brand.name) \(f.asks) questions answered over the page.") }
+        if f.mailZero > 0 { facts.append("Inbox zero on \(f.mailZero) days in \(Brand.name) Mail.") }
         if f.ads > 0 { facts.append("\(f.ads) ads blocked.") }
         let angles: [PostFacts.Angle: String] = [
             .switched: "the switch: where they came from and when", .plan: "their AI plan finally doing work in the browser",

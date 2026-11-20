@@ -222,7 +222,7 @@ final class Assistants: ObservableObject {
             }
         }
         if matches(grant.never), !grant.allowedSites.orEmpty.contains(site) {
-            return "status: refused_site\nThe user doesn't let \(grant.name) open \(site) (Yab › Settings › AI › Assistants › \(grant.name)). Don't try another way; tell the user."
+            return "status: refused_site\nThe user doesn't let \(grant.name) open \(site) (\(Brand.name) › Settings › AI › Assistants › \(grant.name)). Don't try another way; tell the user."
         }
         if !grant.only.isEmpty, !matches(grant.only) {
             return "status: refused_site\nThe user lets \(grant.name) open only \(grant.only.joined(separator: ", ")). \(site) isn't one of them; tell the user."
@@ -320,7 +320,7 @@ enum AssistantBoundary {
             // to hold it: it does nothing, rather than all the user may.
             for key in ["callerSession", "session"] {
                 if let id = request[key] as? String, agents.session(id)?.assistantID != nil {
-                    return .refuse("status: removed\nThe user removed this assistant from Yab. Nothing was done.")
+                    return .refuse("status: removed\nThe user removed this assistant from \(Brand.name). Nothing was done.")
                 }
             }
             return .pass(request)
@@ -328,7 +328,7 @@ enum AssistantBoundary {
         let session = found.session, grant = found.grant
         let verb = request["do"] as? String ?? ""
         if grant.paused {
-            return .refuse("status: paused\nThe user paused \(grant.name) in Yab. Nothing was done; ask them to resume it in Yab › Settings › AI › Assistants.")
+            return .refuse("status: paused\nThe user paused \(grant.name) in \(Brand.name). Nothing was done; ask them to resume it in \(Brand.name) › Settings › AI › Assistants.")
         }
         if verb == "spaces", grant.allSpaces == true {
             Assistants.shared.used(grant.id)
@@ -336,20 +336,20 @@ enum AssistantBoundary {
         }
         if !allowed.contains(verb) {
             if mailVerbs.contains(verb) {
-                if !grant.mail { return .refuse("status: refused_tool\nThe user hasn't let \(grant.name) use their mail. They can switch it on in Yab › Settings › AI › Assistants › \(grant.name).") }
+                if !grant.mail { return .refuse("status: refused_tool\nThe user hasn't let \(grant.name) use their mail. They can switch it on in \(Brand.name) › Settings › AI › Assistants › \(grant.name).") }
             } else if messagesVerbs.contains(verb) {
                 if !grant.messages { return .refuse("status: refused_tool\nThe user hasn't let \(grant.name) read codes from Messages.") }
             } else if cardsVerbs.contains(verb) {
                 if !grant.cards { return .refuse("status: refused_tool\nThe user hasn't let \(grant.name) fill their saved cards and addresses.") }
             } else {
-                return .refuse("status: refused_tool\n\(grant.name) can't use \(verb) in Yab.")
+                return .refuse("status: refused_tool\n\(grant.name) can't use \(verb) in \(Brand.name).")
             }
         }
         // Another session's tab, or all of them: not there, to an assistant.
         if request["id"] as? String == "all" { return .refuse("status: refused_tool\n\(grant.name) works only in tabs it opened itself.") }
         if let refusal = targetRefusal(request, find: { bench.find($0, in: browser) }, refusal: { tab in
             if !grant.permits(tab, in: browser) {
-                return "status: refused_space\nThe user lets \(grant.name) work only in \(grant.spaceName(in: browser.spaces)). They can choose All spaces in Yab › Settings › AI › Assistants › \(grant.name). Nothing was done."
+                return "status: refused_space\nThe user lets \(grant.name) work only in \(grant.spaceName(in: browser.spaces)). They can choose All spaces in \(Brand.name) › Settings › AI › Assistants › \(grant.name). Nothing was done."
             }
             if agents.session(tab.agent)?.assistantID != grant.id {
                 // The user's own tabs follow the same rules for every
@@ -369,13 +369,13 @@ enum AssistantBoundary {
         if verb == "open" {
             let mine = browser.everyTab.filter { agents.session($0.agent)?.assistantID == grant.id }.count
             if mine >= tabLimit {
-                return .refuse("status: too_many\n\(grant.name) has \(mine) tabs open in Yab, the most it may. Close the ones you are done with (close), then open this one.")
+                return .refuse("status: too_many\n\(grant.name) has \(mine) tabs open in \(Brand.name), the most it may. Close the ones you are done with (close), then open this one.")
             }
         }
         if verb == "agent-run", request["resume"] == nil {
             let running = agents.sessions.filter { $0.assistant == grant.id && $0.cli != "external" && $0.state.live }.count
             if running >= taskLimit {
-                return .refuse("status: too_many\n\(grant.name) has \(running) tasks running in Yab, the most at once. Wait for one with task_status, or stop one (task_stop).")
+                return .refuse("status: too_many\n\(grant.name) has \(running) tasks running in \(Brand.name), the most at once. Wait for one with task_status, or stop one (task_stop).")
             }
         }
         var out = request

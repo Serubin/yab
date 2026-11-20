@@ -370,7 +370,7 @@ public actor IMAPClient {
     /// ID (RFC 2971): some servers (163.com, some hosts) won't go on without it.
     public func id() async {
         guard has("ID") else { return }
-        _ = try? await run("ID (\"name\" \"Yab\" \"vendor\" \"Yab\")")
+        _ = try? await run("ID (\"name\" \"\(Brand.name)\" \"vendor\" \"\(Brand.name)\")")
     }
 
     /// ENABLE CONDSTORE and QRESYNC where offered (RFC 5161).

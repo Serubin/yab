@@ -36,7 +36,7 @@ final class ExtensionToolbar: NSObject {
         let item = NSToolbarItem(itemIdentifier: id)
         item.label = id == Self.addID ? "Add" : "Import"
         item.title = item.label
-        item.toolTip = id == Self.addID ? "Add Extension" : "Import Yab Extensions"
+        item.toolTip = id == Self.addID ? "Add Extension" : "Import \(Brand.name) Extensions"
         item.target = self
         item.action = id == Self.addID ? #selector(addPressed(_:)) : #selector(importPressed(_:))
         item.isBordered = true

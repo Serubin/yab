@@ -2796,7 +2796,7 @@
   // it can't: a rejection, or lastError for a callback.
   const refuse = (what) => (...args) => {
     const callback = args.length && typeof args[args.length - 1] === "function" ? args.pop() : null;
-    const error = new Error(what + " isn't available in Yab");
+    const error = new Error(what + " isn't available in Pane");
     if (!callback) return Promise.reject(error);
     withLastError(error, callback);
   };
@@ -3016,7 +3016,7 @@
       }
       const share = typeof MediaDevices !== "undefined" && MediaDevices.prototype[Symbol.for("yab.share")];
       if (!share || typeof share.stream !== "function") {
-        throw new DOMException("Capturing a tab or a screen works in Yab from an extension's own tab, not from this page", "NotSupportedError");
+        throw new DOMException("Capturing a tab or a screen works in Pane from an extension's own tab, not from this page", "NotSupportedError");
       }
       if (!want) return share.sound(sound);
       const picture = await share.stream(want.id, want.width, want.height);
@@ -3078,7 +3078,7 @@
     };
     const tabOf = (target) => {
       if (target && typeof target.tabId === "number") return target.tabId;
-      throw new Error(target && (target.targetId || target.extensionId) ? "Only tabs can be debugged in Yab." : "Either tab id or extension id must be specified.");
+      throw new Error(target && (target.targetId || target.extensionId) ? "Only tabs can be debugged in Pane." : "Either tab id or extension id must be specified.");
     };
     put2("debugger", {
       attach: withCallback(async (target, version) => {

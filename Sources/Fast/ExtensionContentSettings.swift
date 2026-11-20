@@ -24,7 +24,7 @@ enum ExtensionContentSettings {
     static func run(_ api: String, _ args: [Any], extensionID id: String) throws -> Any? {
         // "contentSettings.camera.get" and the like.
         let parts = api.split(separator: ".").map(String.init)
-        guard parts.count == 3 else { throw ExtensionShims.Unsupported(what: "\(api) isn't available in Yab") }
+        guard parts.count == 3 else { throw ExtensionShims.Unsupported(what: "\(api) isn't available in \(Brand.name)") }
         let name = parts[1], verb = parts[2]
         let spec = args.first as? [String: Any] ?? [:]
         switch verb {
@@ -40,10 +40,10 @@ enum ExtensionContentSettings {
                 throw ExtensionShims.Unsupported(what: "Invalid invocation: Error at property 'setting': Value must be one of \(allowed.joined(separator: ", ")).")
             }
             guard ["camera", "microphone", "location", "notifications", "popups", "automaticDownloads"].contains(name) else {
-                throw ExtensionShims.Unsupported(what: "Yab has no per-site switch for \(name): it stays allowed")
+                throw ExtensionShims.Unsupported(what: "\(Brand.name) has no per-site switch for \(name): it stays allowed")
             }
             guard let site = site(spec["primaryPattern"] as? String ?? "") else {
-                throw ExtensionShims.Unsupported(what: "Yab sets \(name) for one site: a pattern like https://example.com/*")
+                throw ExtensionShims.Unsupported(what: "\(Brand.name) sets \(name) for one site: a pattern like https://example.com/*")
             }
             write(name, site: site, setting: setting)
             var kept = Store.settings.dictionary(forKey: setKey(id)) as? [String: [String]] ?? [:]
@@ -62,7 +62,7 @@ enum ExtensionContentSettings {
         case "getResourceIdentifiers":
             return [Any]()
         default:
-            throw ExtensionShims.Unsupported(what: "\(api) isn't available in Yab")
+            throw ExtensionShims.Unsupported(what: "\(api) isn't available in \(Brand.name)")
         }
     }
 

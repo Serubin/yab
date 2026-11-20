@@ -657,7 +657,7 @@ private struct ShareDoor: View {
         switch kind {
         case .tabs: return real == 1 ? "1 tab" : "\(real) tabs"
         // Without Screen Recording only Yab's own are listed.
-        case .windows: return allowed ? (real == 1 ? "1 window" : "\(real) windows") : "\(real) in Yab"
+        case .windows: return allowed ? (real == 1 ? "1 window" : "\(real) windows") : "\(real) in \(Brand.name)"
         case .screens: return real == 1 ? "1 screen" : "\(real) screens"
         }
     }

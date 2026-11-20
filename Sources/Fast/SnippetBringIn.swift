@@ -49,7 +49,7 @@ struct SnippetBringMenu: View {
         if SnippetSuperhuman.offered {
             picks.append(.superhuman)
             lines.append(DropList.Line(title: "Superhuman", picture: SnippetSource.superhuman.picture(),
-                                       note: Agents.preferredName + " reads them in Yab"))
+                                       note: Agents.preferredName + " reads them in \(Brand.name)"))
         }
         picks.append(.raycast)
         lines.append(DropList.Line(title: "Raycast…", picture: SnippetSource.raycast.picture(), note: "The file its Export Snippets saves"))
@@ -129,7 +129,7 @@ struct SnippetSourceRows: View {
                     }
                 }
                 if SnippetSuperhuman.offered {
-                    row(.superhuman, detail: Agents.preferredName + " reads them from Superhuman in Yab") {
+                    row(.superhuman, detail: Agents.preferredName + " reads them from Superhuman in \(Brand.name)") {
                         Button("Bring In") { SnippetSuperhuman.start() }
                             .settingsButton()
                     }
@@ -296,8 +296,8 @@ enum SnippetSuperhuman {
 
     static func prompt(_ url: URL) -> String {
         """
-        Read the user's snippets from Superhuman, in Yab, to bring them into Yab's own snippets. Change nothing in Superhuman.
-        1. Open \(url.absoluteString) in Yab: it is signed in as the user is there. If it shows only a sign-in page you can't get past with sign_in, stop and answer exactly {"error": "signin"}.
+        Read the user's snippets from Superhuman, in \(Brand.name), to bring them into \(Brand.name)'s own snippets. Change nothing in Superhuman.
+        1. Open \(url.absoluteString) in \(Brand.name): it is signed in as the user is there. If it shows only a sign-in page you can't get past with sign_in, stop and answer exactly {"error": "signin"}.
         2. Go to Superhuman's snippets: Settings, then Snippets (or ⌘K and "Snippets"). Read every snippet, scrolling and opening each one when the list shows only part of it: its name; its words exactly as written, line breaks kept and variables such as {first_name} left as they are; and To, Cc, Bcc and Subject when it has them.
         3. Never edit, send, create, share or delete anything there.
         Answer with only a JSON array, nothing before or after it: [{"name": "", "body": "", "to": "", "cc": "", "bcc": "", "subject": ""}]. [] when there are none.
@@ -352,7 +352,7 @@ enum SnippetSuperhuman {
                 SnippetEditing.shared.bring(.superhuman, from: home.host() ?? "Superhuman", found: found)
             }
         } else if answer.contains("\"signin\"") {
-            toaster.pop("Sign in to Superhuman in Yab first", mark: "person.crop.circle.badge.exclamationmark")
+            toaster.pop("Sign in to Superhuman in \(Brand.name) first", mark: "person.crop.circle.badge.exclamationmark")
         } else if session.state == .failed, let said = answer.split(whereSeparator: \.isNewline).first, !said.isEmpty, said.count < 120 {
             // The agent's own words: out of room, not signed in.
             toaster.pop(String(said), mark: "exclamationmark.triangle")
@@ -377,7 +377,7 @@ struct SnippetReadingCard: View {
                     Text("Reading Superhuman’s snippets")
                         .font(CardFrame.title)
                     // Its own words while it has some beyond "… is working".
-                    Text(now.isEmpty || now.hasSuffix(" is working") ? Agents.preferredName + " is opening Superhuman in Yab" : now)
+                    Text(now.isEmpty || now.hasSuffix(" is working") ? Agents.preferredName + " is opening Superhuman in \(Brand.name)" : now)
                         .font(CardFrame.detail)
                         .foregroundStyle(Palette.muted)
                         .lineLimit(1)

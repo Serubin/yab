@@ -71,19 +71,16 @@ struct MailNoticeQueueTests {
         let readReturned = DispatchSemaphore(value: 0)
         let writerReleased = DispatchSemaphore(value: 0)
         let watchdogDone = DispatchSemaphore(value: 0)
-        let now = Self.now
         writerDone.enter()
         defer {
             releaseWriter.signal()
             #expect(writerDone.wait(timeout: .now() + 10) == .success)
         }
         DispatchQueue(label: "test.mail-notice.writer").async {
-            // The public maker runs inside the writer's queue, before its
-            // INSERT. Holding it changes no seeded mail or notice values.
-            _ = store.readKey(message: "held-writer", at: now) {
+            // Runs inside the writer's queue; holding it changes no seeded mail or notice values.
+            store.holdWriter(0) {
                 entered.signal()
                 if releaseWriter.wait(timeout: .now() + 15) == .timedOut { writerTimedOut.signal() }
-                return "held-key"
             }
             writerDone.leave()
         }
@@ -110,7 +107,6 @@ struct MailNoticeQueueTests {
         let writerFinished = writerDone.wait(timeout: .now() + 5)
         try #require(writerFinished == .success)
         #expect(writerTimedOut.wait(timeout: .now()) == .timedOut)
-        #expect(store.readKey(message: "held-writer", at: Self.now) { "unexpected" } == "held-key")
 
         // The reader must see commits made after an earlier notice read,
         // including both the Waiting mark and its undo.
@@ -140,12 +136,10 @@ struct MailNoticeQueueTests {
         let returned = DispatchSemaphore(value: 0), released = DispatchSemaphore(value: 0)
         let writerDone = DispatchGroup(), watchdogDone = DispatchGroup()
         writerDone.enter()
-        let now = Self.now
         DispatchQueue(label: "test.field-mail.writer").async {
-            _ = store.readKey(message: "held-field-writer", at: now) {
+            store.holdWriter(0) {
                 entered.signal()
                 _ = release.wait(timeout: .now() + 15)
-                return "fixture-key"
             }
             writerDone.leave()
         }

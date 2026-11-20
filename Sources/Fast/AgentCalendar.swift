@@ -64,7 +64,7 @@ enum AgentCalendar {
 
     static func describe(_ busy: [BusyTime]?, from: Date, days: Int, meetings: [Meeting]) -> String {
         guard let busy else {
-            return "No calendar Yab can read. Google's comes with the account connected in Settings › Mail (its consent includes the calendar); the Mac's calendars once macOS lets Yab read them (System Settings › Privacy & Security › Calendars)."
+            return "No calendar \(Brand.name) can read. Google's comes with the account connected in Settings › Mail (its consent includes the calendar); the Mac's calendars once macOS lets \(Brand.name) read them (System Settings › Privacy & Security › Calendars)."
         }
         let calendar = Calendar.current
         let dayName = DateFormatter()
@@ -163,7 +163,7 @@ enum AgentCalendar {
             ?? start.addingTimeInterval(Double(request["minutes"] as? Int ?? 30) * 60)
         guard end > start else { return .failure(Failure(text: "The end comes before the start")) }
         if let asked = request["account"] as? String, !asked.isEmpty, account(request, accounts: accounts) == nil {
-            return .failure(Failure(text: "\(asked) isn't connected in Yab. Connected: \(accounts.isEmpty ? "none" : accounts.joined(separator: ", "))."))
+            return .failure(Failure(text: "\(asked) isn't connected in \(Brand.name). Connected: \(accounts.isEmpty ? "none" : accounts.joined(separator: ", "))."))
         }
         let utc = DateFormatter()
         utc.locale = Locale(identifier: "en_US_POSIX")

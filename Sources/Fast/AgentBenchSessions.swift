@@ -134,7 +134,7 @@ extension Bench {
         let agents = c.agents
         let session = c.session
         guard let task = agents.session(session), task.cli != "external", task.parent == nil, task.state.live else {
-            answer(["error": "only a running Yab task can request Mac access"])
+            answer(["error": "only a running \(Brand.name) task can request Mac access"])
             return
         }
         if task.full { answer(["full": true]); return }
@@ -170,7 +170,7 @@ extension Bench {
         // A folder macOS keeps closed (FolderAccess): read again by Yab,
         // and asked for at the chat's foot only if that fails too.
         guard let task = agents.session(session), task.cli != "external", task.parent == nil, task.state.live else {
-            answer(["error": "only a running Yab task can ask for a folder; tell the parent task what it needs"])
+            answer(["error": "only a running \(Brand.name) task can ask for a folder; tell the parent task what it needs"])
             return
         }
         guard task.full else {
@@ -532,7 +532,7 @@ extension Bench {
                 title: "Bring in \(source.name)’s sign-ins?",
                 detail: "Its passwords and cookies, for you and for the agents working in \(Links.appName).",
                 icon: NSApp.applicationIconImage, ownIcon: true, yes: "Bring In"))
-            guard yes else { answer(["error": "Not brought in: the answer in Yab was no."]); return }
+            guard yes else { answer(["error": "Not brought in: the answer in \(Brand.name) was no."]); return }
             let source = source.authorizingImport()
             DispatchQueue.global(qos: .userInitiated).async {
                 let read = Result { try Chromium.read(source) }
@@ -555,7 +555,7 @@ extension Bench {
         let agents = c.agents
         // Only a yab nobody opened: one someone is using quits from
         // its own menu.
-        guard Headless.hidden else { answer(["error": "Yab is open, and someone may be using it: quit it from Yab itself"]); return }
+        guard Headless.hidden else { answer(["error": "\(Brand.name) is open, and someone may be using it: quit it from \(Brand.name) itself"]); return }
         let working = agents.sessions.filter(\.atWork)
         if !working.isEmpty, request["force"] as? Bool != true {
             answer(["error": "\(working.count == 1 ? "a task is" : "\(working.count) tasks are") still working, and quitting stops \(working.count == 1 ? "it" : "them"): `\(AgentSetup.command) quit --force`, or wait"])

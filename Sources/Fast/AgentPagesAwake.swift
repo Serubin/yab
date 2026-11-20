@@ -40,7 +40,7 @@ extension Browser {
             // finishes loading is exactly one that grows.
             sleep(tab, waiving: ["a bench tab", "still loading"]) { said in
                 guard said == "asleep" else { return }
-                StuckWatch.notices[tab.id] = "Yab put this tab to sleep to save memory while more agent tabs were open, and loaded it again at the same address: what you did on it before is gone, read it again. Close tabs you are done with."
+                StuckWatch.notices[tab.id] = "\(Brand.name) put this tab to sleep to save memory while more agent tabs were open, and loaded it again at the same address: what you did on it before is gone, read it again. Close tabs you are done with."
             }
         }
     }

@@ -25,34 +25,34 @@ extension Mcp {
                 "Read the currently selected element's matched and computed styles from Developer Tools. Does not edit styles or run page code.",
                 ["tab": tab],
                 required: ["tab"], call: devtoolsCall),
-        McpTool("native_context", .read("Read Yab's Settings"),
-                "Read Yab's own current settings, spaces, tabs, folders, live folders, mail accounts, permissions and this task's native operations. These are native controls, separate from website snapshots. Query narrows settings; tabs are paginated. Private tabs and credentials are excluded. Read this before changing Yab; use native_actions for supported operations.",
+        McpTool("native_context", .read("Read \(Brand.name)'s Settings"),
+                "Read \(Brand.name)'s own current settings, spaces, tabs, folders, live folders, mail accounts, permissions and this task's native operations. These are native controls, separate from website snapshots. Query narrows settings; tabs are paginated. Private tabs and credentials are excluded. Read this before changing \(Brand.name); use native_actions for supported operations.",
                 ["query": ["type": "string"], "section": ["type": "string", "enum": ["summary", "settings", "catalog"]],
                   "includeCatalog": ["type": "boolean"], "target": ["type": "object", "properties": ["kind": ["type": "string", "enum": ["application", "tab", "space", "folder", "liveFolder", "mailAccount"]], "id": ["type": "string"]], "required": ["kind", "id"]],
                   "action": ["type": "string", "description": "Read-only action preview; give its target and arguments to get the exact resourceVersion. Required for aggregate actions such as pin, move, group, reorder, site zoom and space deletion"], "arguments": ["type": "object"],
                   "offset": ["type": "integer", "minimum": 0], "limit": ["type": "integer", "minimum": 1, "maximum": 50]], call: nativeCall),
-        McpTool("native_actions", .read("List Yab's Actions"),
-                "List native Yab actions with their strict argument schemas, targetKind, undo support and permission requirements. Query matches the id or title. Only listed actions can be performed; settings marked user_only cannot be changed by an agent.",
+        McpTool("native_actions", .read("List \(Brand.name)'s Actions"),
+                "List native \(Brand.name) actions with their strict argument schemas, targetKind, undo support and permission requirements. Query matches the id or title. Only listed actions can be performed; settings marked user_only cannot be changed by an agent.",
                 ["query": ["type": "string"]], call: nativeCall),
-        McpTool("native_apply", .risky("Change Yab", outside: false),
-                "Perform a native Yab action explicitly requested by the user: settings (mail's and sync's too), which space a site's links open in, spaces, tabs and their folders, live folders, page fonts, a mail account's notifications and read statuses, or connecting Gmail. Read native_context and native_actions first. Give the exact target id/kind and schema arguments, expectedVersion from context where available, and a unique requestId for this effect. Reuse the same requestId on retries, never for another payload. needs_user means a confirmation in Yab; running means OAuth is still pending. Follow native_operation until verified; never claim completion beforehand. This does not grant Mac access or permission to change the agent's own rules.",
+        McpTool("native_apply", .risky("Change \(Brand.name)", outside: false),
+                "Perform a native \(Brand.name) action explicitly requested by the user: settings (mail's and sync's too), which space a site's links open in, spaces, tabs and their folders, live folders, page fonts, a mail account's notifications, or connecting Gmail. Read native_context and native_actions first. Give the exact target id/kind and schema arguments, expectedVersion from context where available, and a unique requestId for this effect. Reuse the same requestId on retries, never for another payload. needs_user means a confirmation in \(Brand.name); running means OAuth is still pending. Follow native_operation until verified; never claim completion beforehand. This does not grant Mac access or permission to change the agent's own rules.",
                 ["action": ["type": "string"], "target": ["type": "object", "properties": ["kind": ["type": "string", "enum": ["application", "space", "tab", "folder", "liveFolder", "mailAccount"]], "id": ["type": "string"]], "required": ["kind", "id"], "additionalProperties": false],
                   "arguments": ["type": "object"], "expectedVersion": ["type": "string"], "requestId": ["type": "string", "maxLength": 128]],
                 required: ["action", "target", "arguments", "requestId"],
                 acts: true, subs: false,
                 refuse: McpTool.subagentsCantChange, call: nativeCall),
-        McpTool("native_operation", .change("Follow a Yab Change"),
+        McpTool("native_operation", .change("Follow a \(Brand.name) Change"),
                 "Read this task's native operation by operationId, or wait for a change up to seconds (0 to 10). cancel stops an unfinished operation and invalidates its OAuth attempt. A verified connection can still be syncing; read native_context for current mail status. Unknown outcomes after a restart must be reconciled by reading actual state before another attempt.",
                 ["operationId": ["type": "string"], "seconds": ["type": "number", "minimum": 0, "maximum": 10], "cancel": ["type": "boolean"]],
                 required: ["operationId"],
                 refuse: { a, input in a.sub && input["cancel"] as? Bool == true ? "A subagent cannot cancel native operations" : nil }, call: nativeCall),
-        McpTool("native_undo", .change("Undo a Yab Change"),
-                "Undo a native change of this task by its changeId (or the last undoable change). Later manual edits and changes after a Yab restart are preserved: a conflict means read current state instead of forcing Undo. Account disconnection and deletion are not undoable.",
+        McpTool("native_undo", .change("Undo a \(Brand.name) Change"),
+                "Undo a native change of this task by its changeId (or the last undoable change). Later manual edits and changes after a \(Brand.name) restart are preserved: a conflict means read current state instead of forcing Undo. Account disconnection and deletion are not undoable.",
                 ["changeId": ["type": "string"]],
                 acts: true, subs: false,
                 refuse: McpTool.subagentsCantChange, call: nativeCall),
         McpTool("tabs", .read("List Tabs"),
-                "List the tabs open in Yab, the user's and the agents'. Use this when the user explicitly refers to an existing tab or asks about their open tabs. Otherwise open an agent tab with open; do not pick a user tab by matching its URL or domain.",
+                "List the tabs open in \(Brand.name), the user's and the agents'. Use this when the user explicitly refers to an existing tab or asks about their open tabs. Otherwise open an agent tab with open; do not pick a user tab by matching its URL or domain.",
                 phone: true) { name, input, id in
             let got = ask(["do": "agent-tabs"])
             let tabs = got["tabs"] as? [[String: Any]] ?? []
@@ -67,7 +67,7 @@ extension Mcp {
             return done(got) { text(lines.isEmpty ? "No tabs." : lines.joined(separator: "\n")) }
         },
         McpTool("open", .change("Open Page", outside: true),
-                "Open a web page (URL) in an agent tab in Yab, signed in to the user's sites. Never reuses a user tab, even when its URL or domain matches. A disposable tab left by a finished agent may be reused. Never in front of the user: show puts it there when they asked to see it. To work in a user tab they explicitly named, use that tab's id instead. Waits for it to load and returns its id and an interactive snapshot. With urls, opens them all at once and returns each tab's id and title. With space, the tab is signed in where that space of the user's is (see spaces); without, where the user is signed in to the site, the space on screen first.",
+                "Open a web page (URL) in an agent tab in \(Brand.name), signed in to the user's sites. Never reuses a user tab, even when its URL or domain matches. A disposable tab left by a finished agent may be reused. Never in front of the user: show puts it there when they asked to see it. To work in a user tab they explicitly named, use that tab's id instead. Waits for it to load and returns its id and an interactive snapshot. With urls, opens them all at once and returns each tab's id and title. With space, the tab is signed in where that space of the user's is (see spaces); without, where the user is signed in to the site, the space on screen first.",
                 ["url": ["type": "string"], "urls": ["type": "array", "items": ["type": "string"]],
                   "space": ["type": "string", "description": "A space's name, as `spaces` lists it"]],
                 phone: true) { name, input, id in
@@ -93,7 +93,7 @@ extension Mcp {
                     // the first: asked again it opened a second, and a busy
                     // browser with three agents doubled its tabs.
                     if error.hasPrefix("no answer within") {
-                        return text("Yab is busy and didn't open \(url) in time; wait a moment, then call tabs to see whether it opened before trying again.", error: true)
+                        return text("\(Brand.name) is busy and didn't open \(url) in time; wait a moment, then call tabs to see whether it opened before trying again.", error: true)
                     }
                     // Retry a failed open without reusing an agent leftover.
                     if got["id"] == nil, !error.hasPrefix("could not") {
@@ -355,7 +355,7 @@ extension Mcp {
 
     static let fileTools: [McpTool] = [
         McpTool("upload", .risky("Upload Files"),
-                "Give the page files from this Mac (the user may be asked first). ref is what attaches a file: an Upload or Add button, a paperclip, a drop zone, a file field, even one hidden behind a button. Yab presses it and answers the page's file picker itself, or drops the files on a drop zone; never click it yourself, and never ask the person to pick the file. Paths are absolute or ~/… (Downloads, Desktop, /tmp, the folder you work in); nothing hidden, at most 100 MB a file.",
+                "Give the page files from this Mac (the user may be asked first). ref is what attaches a file: an Upload or Add button, a paperclip, a drop zone, a file field, even one hidden behind a button. \(Brand.name) presses it and answers the page's file picker itself, or drops the files on a drop zone; never click it yourself, and never ask the person to pick the file. Paths are absolute or ~/… (Downloads, Desktop, /tmp, the folder you work in); nothing hidden, at most 100 MB a file.",
                 ["tab": tab, "ref": ref, "files": ["type": "array", "items": ["type": "string"]]],
                 required: ["tab", "files"],
                 acts: true, subs: false,
@@ -428,7 +428,7 @@ extension Mcp {
             let said = input["name"] as? String ?? ""
             let got = ask(["do": "agent-task-folder", "name": said])
             return done(got) {
-                guard let folder = got["folder"] as? String, !folder.isEmpty else { return text("Yab gave no folder for this task", error: true) }
+                guard let folder = got["folder"] as? String, !folder.isEmpty else { return text("\(Brand.name) gave no folder for this task", error: true) }
                 do {
                     let file = try SaveFile.write(input["text"] as? String ?? "", named: said, in: URL(fileURLWithPath: folder))
                     let size = (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize).map { ByteCountFormatter.string(fromByteCount: Int64($0), countStyle: .file) } ?? ""

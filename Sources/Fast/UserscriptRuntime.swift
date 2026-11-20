@@ -48,7 +48,7 @@ enum UserscriptRuntime {
         let rules = script.runs
         let rule = { (list: [(String, String)]) in BoostScript.json(list.map { [$0.0, $0.1] }) }
         let info: [String: Any] = [
-            "scriptHandler": "Yab", "version": appVersion, "scriptMetaStr": metaBlock(script.source),
+            "scriptHandler": Brand.name, "version": appVersion, "scriptMetaStr": metaBlock(script.source),
             "injectInto": inPage ? "page" : "content",
             "script": [
                 "name": script.name, "namespace": script.namespace, "version": script.version,

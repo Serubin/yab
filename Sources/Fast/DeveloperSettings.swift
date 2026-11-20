@@ -75,21 +75,21 @@ struct DevelopersPage: View {
             }
             .settingsAnchor("dev-json")
             if let name = JSONView.yieldsTo {
-                SettingsNote("\(name) shows these pages. Turn it off in Extensions to use Yab\u{2019}s.")
+                SettingsNote("\(name) shows these pages. Turn it off in Extensions to use \(Brand.name)\u{2019}s.")
             }
         }
         Section("Command Line") {
             command
                 .settingsAnchor("dev-command")
-            SettingsNote("In Terminal, \(AgentSetup.command) \u{201C}…\u{201D} hands Yab a task, and \(AgentSetup.command) guide says what else it does.")
+            SettingsNote("In Terminal, \(AgentSetup.command) \u{201C}…\u{201D} hands \(Brand.name) a task, and \(AgentSetup.command) guide says what else it does.")
         }
         Section("Agent Tools") {
             // The same setting as the switch at the top of AI › Agents, so the
             // same name, and it says the rest of what it stops.
-            SettingsRow("Let agents use Yab", detail: prefs.bench
-                        ? "Claude Code and others drive Yab through \(AgentSetup.command) and MCP. Off also stops Yab\u{2019}s own tasks and routines."
-                        : "Off. Claude Code and others can\u{2019}t drive Yab, and Yab\u{2019}s own tasks and routines are stopped.") {
-                Toggle(SettingsWords.text("Let agents use Yab"), isOn: $prefs.bench)
+            SettingsRow("Let agents use \(Brand.name)", detail: prefs.bench
+                        ? "Claude Code and others drive \(Brand.name) through \(AgentSetup.command) and MCP. Off also stops \(Brand.name)\u{2019}s own tasks and routines."
+                        : "Off. Claude Code and others can\u{2019}t drive \(Brand.name), and \(Brand.name)\u{2019}s own tasks and routines are stopped.") {
+                Toggle(SettingsWords.text("Let agents use Pane"), isOn: $prefs.bench)
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.small)
@@ -109,7 +109,7 @@ struct DevelopersPage: View {
             }
             .settingsAnchor("dev-mcp")
             SettingsNote(AgentSetup.mayInstall
-                         ? "Yab\u{2019}s skill and its MCP tools, nothing else; right-click to remove them. Signing in to a plan is on AI › Agents."
+                         ? "\(Brand.name)\u{2019}s skill and its MCP tools, nothing else; right-click to remove them. Signing in to a plan is on AI › Agents."
                          : AgentSetup.notInstalled)
         }
         .task { await look() }
@@ -138,7 +138,7 @@ struct DevelopersPage: View {
         let folder = tilde(AgentSetup.shim.deletingLastPathComponent())
         switch pieces.command {
         case .missing:
-            SettingsRow(title, detail: "Use Yab from Terminal and agent tools.") {
+            SettingsRow(title, detail: "Use \(Brand.name) from Terminal and agent tools.") {
                 if AgentSetup.mayInstall {
                     Button("Install") { run("command") { AgentSetup.installCommand() ?? AgentSetup.addPathLine($0) } }
                         .settingsButton(.primary)
@@ -146,9 +146,9 @@ struct DevelopersPage: View {
                 }
             }
         case .foreign:
-            Placed(title: title, path: path, note: "Someone else\u{2019}s file is there; Yab leaves it be.") { EmptyView() }
+            Placed(title: title, path: path, note: "Someone else\u{2019}s file is there; \(Brand.name) leaves it be.") { EmptyView() }
         case .otherCopy:
-            Placed(title: title, path: path, note: "Runs another copy of Yab.") {
+            Placed(title: title, path: path, note: "Runs another copy of \(Brand.name).") {
                 Button("Use This Copy") { run("command") { AgentSetup.installCommand() ?? AgentSetup.addPathLine($0) } }
                     .settingsButton(.primary)
                     .disabled(working != nil || !AgentSetup.mayInstall)
@@ -194,12 +194,12 @@ struct DevelopersPage: View {
             Placed(title: name, path: path) { EmptyView() }
                 .contextMenu { remove(cli) }
         case .stale:
-            Placed(title: name, path: path, note: "Added by an older Yab.") {
+            Placed(title: name, path: path, note: "Added by an older \(Brand.name).") {
                 Button("Update") { add() }.settingsButton(.primary).disabled(working != nil)
             }
             .contextMenu { remove(cli) }
         case .otherCopy:
-            Placed(title: name, path: path, note: "Set up for another copy of Yab.") {
+            Placed(title: name, path: path, note: "Set up for another copy of \(Brand.name).") {
                 Button("Use This Copy") { add() }.settingsButton(.primary).disabled(working != nil || !AgentSetup.mayInstall)
             }
             .contextMenu { remove(cli) }
@@ -207,7 +207,7 @@ struct DevelopersPage: View {
             if setup.ready, !setup.installed(cli) {
                 SettingsRow(name, detail: "Not on this Mac.") { EmptyView() }
             } else {
-                SettingsRow(name, detail: "Yab's skill and tools are not installed.") {
+                SettingsRow(name, detail: "\(Brand.name)'s skill and tools are not installed.") {
                     if AgentSetup.mayInstall {
                         Button(SettingsWords.text("Add")) { add() }.settingsButton(.primary).disabled(working != nil || !setup.ready)
                     }
@@ -216,7 +216,7 @@ struct DevelopersPage: View {
         }
     }
 
-    /// Where a piece is, from the home it was put in: `~/.local/bin/yab`.
+    /// Where a piece is, from the home it was put in: `~/.local/bin/pane`.
     private func tilde(_ url: URL) -> String {
         let home = AgentSetup.home.path
         return url.path.hasPrefix(home + "/") ? "~" + url.path.dropFirst(home.count) : url.path

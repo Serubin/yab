@@ -36,7 +36,7 @@ enum ExtensionPageCapture {
             return format.string(from: date)
         }()
         var out = ""
-        out += "From: <Saved by Yab>\r\n"
+        out += "From: <Saved by \(Brand.name)>\r\n"
         out += "Snapshot-Content-Location: \(main.url)\r\n"
         out += "Subject: \(encodedWord(title))\r\n"
         out += "Date: \(stamp)\r\n"

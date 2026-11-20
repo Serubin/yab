@@ -5,14 +5,14 @@ import Security
 import WebKit
 
 /// A connected password manager's unlock password: kept in this Mac's
-/// keychain only, read by Yab alone, and typed by Yab into the manager's
+/// keychain only, read by Pane alone, and typed by Pane into the manager's
 /// own unlock page when an agent finds it locked. The model never sees it.
 enum ManagerUnlock {
     /// One item a manager: service and account, this device only, in the
     /// data protection keychain where the build is entitled to it. A test
     /// world keeps its own, apart from the person's.
     static var service: String {
-        "Yab · password manager unlock" + (Store.testing ? " · \(Store.folder.lastPathComponent)" : "")
+        "\(Store.name) · password manager unlock"
     }
 
     static func query(_ id: String, protected: Bool) -> [String: Any] {
@@ -41,7 +41,7 @@ enum ManagerUnlock {
             var add = base
             add[kSecValueData as String] = Data(password.utf8)
             add[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-            add[kSecAttrLabel as String] = "Yab: \(PasswordManagers.name(id)) unlock password"
+            add[kSecAttrLabel as String] = "\(Brand.name): \(PasswordManagers.name(id)) unlock password"
             let status = Keychain.add(add as CFDictionary, nil)
             if status == errSecMissingEntitlement { continue }
             guard status == errSecSuccess else { return false }

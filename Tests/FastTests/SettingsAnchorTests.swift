@@ -48,12 +48,12 @@ struct SettingsAnchorTests {
     }
 
     /// One setting, one name: the switch at the top of Agents and the row
-    /// on Developers both say Let agents use Yab, and it left AI's own page.
+    /// on Developers both say Let agents use Pane, and it left AI's own page.
     @MainActor @Test func letAgentsUseYabLivesOnAgentsAndDevelopers() {
-        let items = SettingsItem.all.filter { $0.title == "Let agents use Yab" }
+        let items = SettingsItem.all.filter { $0.title == "Let agents use Pane" }
         #expect(Set(items.map(\.page)) == [.agents, .developers])
         #expect(!SettingsItem.all.contains { $0.id == "ai-outside-agents" })
-        #expect(SettingsPage.agents.master?.title == "Let agents use Yab")
+        #expect(SettingsPage.agents.master?.title == "Let agents use Pane")
     }
 
     /// Settings search finds "Allow in private tabs" on Extensions, so

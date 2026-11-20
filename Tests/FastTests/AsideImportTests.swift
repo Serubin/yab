@@ -94,6 +94,6 @@ struct AsideImportTests {
         #expect(notes.count == 1)
         #expect(notes[0].text.contains("FREQ=MONTHLY;BYMONTHDAY=5"))
         #expect(notes[0].text.contains("America/Los_Angeles"))
-        #expect(notes[0].text.contains("not scheduled in Yab"))
+        #expect(notes[0].text.contains("not scheduled in Pane"))
     }
 }

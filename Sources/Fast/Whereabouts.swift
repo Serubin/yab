@@ -115,7 +115,7 @@ final class Whereabouts: NSObject, CLLocationManagerDelegate {
         let all = waiting
         waiting = []
         for done in all { done(!refused) }
-        if refused, updating { fail("Location Services is off for Yab") }
+        if refused, updating { fail("Location Services is off for \(Brand.name)") }
     }
 
     /// macOS's answer about Yab: asked for, with its own window, if it was

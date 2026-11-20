@@ -150,18 +150,16 @@ public enum MailOps {
     /// Gmail not answering isn't Gmail not sending: before it goes again,
     /// Sent is asked whether it is already there, so it is never sent
     /// twice. Gone, its reminder if nobody answers is kept against it
-    /// (MailFollowups), its read status's key against its thread
-    /// (MailReads), and its draft goes, the copies of its files with it.
+    /// (MailFollowups), and its draft goes, the copies of its files with it.
     private static func send(_ op: MailOp, store: MailStore, provider: any MailProvider, now: () -> Date) async throws {
         guard let draft = store.draft(op.thread) else { return store.doneOp(op.seq) }
         // From the address it was written from (an alias's name with it), its signature under the words.
         let (me, going) = MailCompose.going(draft, store: store)
-        var extras = going
+        let extras = going
         // Gone in a thread, at a time: when it went, on mail's clock (a test
         // world's moved on).
         let sent = { (thread: String, at: Date) in
             MailFollowups.sent(draft, thread: thread, at: at, in: store)
-            MailReads.sent(draft, thread: thread, at: at, in: store)
             store.dropDraft(draft.id)
             MailAttach.drop(draft: draft.id, store: store)
             store.doneOp(op.seq)
@@ -176,13 +174,6 @@ public enum MailOps {
             // More than Gmail takes (refused at ⌘↩ already): never tried,
             // the draft kept to be sent again with less.
             guard MailAttach.tooBig(draft.files) == nil else { return store.doneOp(op.seq) }
-            // Its read status (MailReads): the picture last in the HTML part,
-            // which plain words get for it, its key kept before it goes.
-            if let key = MailReads.key(for: draft, in: store, now: now().addingTimeInterval(MailClock.shift)),
-               let token = MailReads.token(for: key) {
-                extras.twin = true
-                extras.tail = MailReads.image(token)
-            }
             let files = try await MailAttach.parts(of: draft, store: store, provider: provider)
             let receipt = try await provider.send(raw: MailCompose.raw(draft, from: me, files: files, extras: extras), thread: draft.thread)
             sent(receipt.thread, now().addingTimeInterval(MailClock.shift))

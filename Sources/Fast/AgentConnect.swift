@@ -192,7 +192,7 @@ struct AgentsIntro: View {
             if gemini.codeError == nil {
                 Text(badPaste ? "That isn't a whole code. Copy it from Google's page; it starts with 4/."
                      : pasted ? "Pasted. Connect sends it to Gemini."
-                     : "After Allow, Google shows a code. Yab picks it up by itself; if it doesn't, paste it here.")
+                     : "After Allow, Google shows a code. \(Brand.name) picks it up by itself; if it doesn't, paste it here.")
                     .font(.caption)
                     .foregroundStyle(badPaste ? Color.red : Color.secondary)
                     .multilineTextAlignment(.center)
@@ -280,15 +280,15 @@ struct AgentsIntro: View {
             return Words(title: "Connecting \(names(clis))", detail: "Checking the key with \(AgentKey.provider(clis.first ?? "claude"))…",
                          button: "Connecting…", cancel: true, ring: true)
         case .finishing(let clis) where keyFor != nil:
-            return Words(title: "Connecting \(names(clis))", detail: "Key taken. Adding Yab's skill and tools…", button: "Connecting…", ring: true)
+            return Words(title: "Connecting \(names(clis))", detail: "Key taken. Adding \(Brand.name)'s skill and tools…", button: "Connecting…", ring: true)
         case .installing(let cli) where keyFor != nil && !byHand:
             return Words(title: "Setting up \(AgentSetupModel.name(cli))",
                          detail: slow ? "Still downloading. A slow connection can take a few minutes."
-                             : "A minute or so, from \(AgentKey.provider(cli)). Then Yab checks your key.",
+                             : "A minute or so, from \(AgentKey.provider(cli)). Then \(Brand.name) checks your key.",
                          button: "Setting Up…", cancel: true, ring: true)
         case nil where keyFor != nil:
             let cli = keyFor ?? "claude"
-            return Words(title: "Let your agent use Yab",
+            return Words(title: "Let your agent use \(Brand.name)",
                          detail: "No \(AgentSetupModel.plan(cli)) plan? Connect with an API key of your own.",
                          button: trouble.map { Set($0.clis) == [cli] } == true ? "Try Again" : "Connect \(AgentSetupModel.name(cli))",
                          enabled: ready && !keyBlank)
@@ -299,7 +299,7 @@ struct AgentsIntro: View {
             let name = AgentSetupModel.name(cli)
             if byHand {
                 return Words(title: "Set up \(name) in Terminal",
-                             detail: "Yab couldn't install \(AgentSetupModel.tool(cli)), the tool it runs for \(name), from here. Paste the command into the Terminal that just opened; Yab notices when it's there.",
+                             detail: "\(Brand.name) couldn't install \(AgentSetupModel.tool(cli)), the tool it runs for \(name), from here. Paste the command into the Terminal that just opened; \(Brand.name) notices when it's there.",
                              button: "Waiting for Terminal…", cancel: true, ring: true)
             }
             return Words(title: "Setting up \(name)",
@@ -310,8 +310,8 @@ struct AgentsIntro: View {
             return Words(title: "Allow Gemini in Google", detail: "Opening Google's sign-in…",
                          button: "Show Sign-In", enabled: true, shows: true, cancel: true, ring: true)
         case .signingIn("gemini"):
-            let detail = geminiChoice?.email.map { "A tab in \(geminiChoice?.place ?? "Yab") is asking. You're signed in there as \($0), so it's one Allow." }
-                ?? "A private Yab tab is asking. Sign in to the Google account you want, then Allow."
+            let detail = geminiChoice?.email.map { "A tab in \(geminiChoice?.place ?? Brand.name) is asking. You're signed in there as \($0), so it's one Allow." }
+                ?? "A private \(Brand.name) tab is asking. Sign in to the Google account you want, then Allow."
             return Words(title: "Allow Gemini in Google", detail: detail,
                          button: "Show Sign-In", enabled: true, shows: true, cancel: true, ring: true)
         case .signingIn(let cli):
@@ -319,26 +319,26 @@ struct AgentsIntro: View {
             switch page {
             case .yab:
                 return Words(title: "Sign in to \(plan)",
-                             detail: "The sign-in is in a Yab tab. Yab closes it and carries on once you say yes there.",
+                             detail: "The sign-in is in a \(Brand.name) tab. \(Brand.name) closes it and carries on once you say yes there.",
                              button: "Show Sign-In", enabled: true, shows: true, cancel: true, ring: true)
             case .browser(let name):
                 let place = name ?? "your browser"
                 return Words(title: "Sign in to \(plan) in \(place)",
-                             detail: "\(AgentSetupModel.name(cli)) opened its sign-in in \(place). Say yes there, then come back; Yab carries on by itself.",
+                             detail: "\(AgentSetupModel.name(cli)) opened its sign-in in \(place). Say yes there, then come back; \(Brand.name) carries on by itself.",
                              button: "Open Sign-In Again", enabled: true, shows: true, cancel: true, ring: true)
             case .opening, nil:
                 return Words(title: "Sign in to \(plan)", detail: "Opening the sign-in…", button: "Opening Sign-In…", cancel: true, ring: true)
             }
         case .finishing(let clis):
             // Cursor gets no skill: only its sign-in is checked.
-            let detail = clis.contains(where: AgentSetupModel.skilled) ? "Signed in. Adding Yab's skill and tools…" : "Signed in. Checking your plan…"
+            let detail = clis.contains(where: AgentSetupModel.skilled) ? "Signed in. Adding \(Brand.name)'s skill and tools…" : "Signed in. Checking your plan…"
             return Words(title: "Connecting \(names(clis))", detail: detail, button: "Connecting…", ring: true)
         case .landed(let clis), .asking(let clis):
             let detail = clis == ["gemini"] ? [geminiIdentity?.email, geminiIdentity?.plan].compactMap { $0 }.joined(separator: " · ") : " "
             return Words(title: "\(names(clis)) \(clis.count > 1 ? "are" : "is") connected", detail: detail, tick: true)
         case .knowing, nil:
             let detail = !ready ? "Checking this Mac…"
-                : chosen == ["gemini"] ? geminiTasksGoTo.map { "Answers and chats on your Google plan. Gemini can\u{2019}t use Yab\u{2019}s tools yet, so tasks in your tabs run on \(AgentSetupModel.name($0))." }
+                : chosen == ["gemini"] ? geminiTasksGoTo.map { "Answers and chats on your Google plan. Gemini can\u{2019}t use \(Brand.name)\u{2019}s tools yet, so tasks in your tabs run on \(AgentSetupModel.name($0))." }
                     ?? (GeminiSupport.toolsProven ? "Chats and tasks in your tabs on your Google plan."
                         : "Answers and chats on your Google plan. Browser tasks aren't available with Gemini yet.")
                 : "Choose Claude, ChatGPT, Cursor or Gemini. Use the plan you already have."
@@ -385,21 +385,21 @@ struct AgentsIntro: View {
         // keeps its height.
         guard setup.ready else { return " " }
         guard !chosen.isEmpty else { return "Connect one provider on your own plan." }
-        guard anyInstalled else { return "Yab sets it up, then signs you in to your plan in a tab." }
+        guard anyInstalled else { return "\(Brand.name) sets it up, then signs you in to your plan in a tab." }
         let out = chosen.filter { setup.signedIn[$0] != true }.map(AgentSetupModel.plan)
         return out.isEmpty
             // Signed in already: someone who has the tool itself, and wants to
             // know whose settings Yab changes.
             ? footnoteSkilled
-            : "Signs in with your \(AgentSetupModel.list(out)) plan in a tab. Yab does the rest."
+            : "Signs in with your \(AgentSetupModel.list(out)) plan in a tab. \(Brand.name) does the rest."
     }
 
     /// Signed in already: whose settings Yab changes. Cursor gets no
     /// skill, so it is left out; with only Cursor, nothing changes outside.
     private var footnoteSkilled: String {
         let tools = chosen.filter(AgentSetupModel.skilled).map(AgentSetupModel.tool)
-        guard !tools.isEmpty else { return "Yab uses your \(Self.names(chosen)) plan. Disconnect stops that." }
-        return "Adds Yab's skill and tools to \(AgentSetupModel.list(tools)). Disconnect takes back only that."
+        guard !tools.isEmpty else { return "\(Brand.name) uses your \(Self.names(chosen)) plan. Disconnect stops that." }
+        return "Adds \(Brand.name)'s skill and tools to \(AgentSetupModel.list(tools)). Disconnect takes back only that."
     }
 
     private func go() {
@@ -522,7 +522,7 @@ struct AgentsTry: View {
                 .transition(.opacity)
             Text(setup.tried != nil
                  ? "That was its tab, beside yours. Its face on the tab shows what it's doing; click the page and it waits for you."
-                 : "Name Yab's skill, then say what you need. It works in tabs of its own, signed in as you.")
+                 : "Name \(Brand.name)'s skill, then say what you need. It works in tabs of its own, signed in as you.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -982,17 +982,17 @@ struct AgentDemo: View {
     private var steps: [(mark: String, text: String, dim: Bool)] {
         if inApp {
             return [("spark", "Using \(AgentSetup.skill)", true),
-                    ("globe", "open github.com/notifications, in Yab", true),
+                    ("globe", "open github.com/notifications, in \(Brand.name)", true),
                     ("", Self.answer, false)]
         }
         return cli == "codex"
             ? [("•", "Using skill \(AgentSetup.skill)", false),
                ("•", "Called \(AgentSetup.server).open({\"url\":\"github.com/notifications\"})", false),
-               ("  └", "Opened in Yab, a tab of its own", true),
+               ("  └", "Opened in \(Brand.name), a tab of its own", true),
                ("•", Self.answer, false)]
             : [("⏺", "Skill(\(AgentSetup.skill))", false),
                ("⏺", "\(AgentSetup.server) - open (MCP)(url: \"github.com/notifications\")", false),
-               ("  ⎿", "Opened in Yab, a tab of its own", true),
+               ("  ⎿", "Opened in \(Brand.name), a tab of its own", true),
                ("⏺", Self.answer, false)]
     }
 

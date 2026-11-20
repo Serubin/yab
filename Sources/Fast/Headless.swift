@@ -327,7 +327,7 @@ enum Headless {
         if up, item == nil {
             let made = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
             made.button?.image = Glyphs.image("agent.face", size: 14)
-            made.button?.toolTip = "Yab is working" // design: the menu bar's, drawn by the system, as the menu bar is
+            made.button?.toolTip = "\(Brand.name) is working" // design: the menu bar's, drawn by the system, as the menu bar is
             let list = NSMenu()
             list.delegate = menu
             made.menu = list
@@ -358,14 +358,14 @@ final class HeadlessMenu: NSObject, NSMenuDelegate {
             menu.addItem(row)
         }
         if !menu.items.isEmpty { menu.addItem(.separator()) }
-        let show = NSMenuItem(title: "Show Yab", action: #selector(open(_:)), keyEquivalent: "")
+        let show = NSMenuItem(title: "Show \(Brand.name)", action: #selector(open(_:)), keyEquivalent: "")
         show.target = self
         menu.addItem(show)
         let stop = NSMenuItem(title: "Stop All Tasks", action: #selector(stopAll), keyEquivalent: "")
         stop.target = self
         menu.addItem(stop)
         menu.addItem(.separator())
-        let quit = NSMenuItem(title: "Quit Yab", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        let quit = NSMenuItem(title: "Quit \(Brand.name)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         menu.addItem(quit)
     }
 

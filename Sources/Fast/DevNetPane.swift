@@ -299,7 +299,7 @@ struct DevNetPane: View {
     /// The bridge didn't come up in this inspector: WebKit's own Network.
     private var unavailable: some View {
         VStack(spacing: 8) {
-            Text("This Mac’s WebKit inspector isn’t one Yab’s Network knows")
+            Text("This Mac’s WebKit inspector isn’t one \(Brand.name)’s Network knows")
                 .font(.system(size: 12))
                 .foregroundStyle(Palette.muted)
             Button("Open WebKit’s Network") { browser.pickDevPane(.webkit(.requests)) }
@@ -1241,7 +1241,7 @@ extension Browser {
         panel.begin { [weak self] answer in
             guard answer == .OK, let url = panel.url, let data = try? Data(contentsOf: url) else { return }
             guard let resources = NetHAR.resources(from: data) else {
-                self?.announce("That file isn’t a HAR Yab can read", mark: "exclamationmark.triangle")
+                self?.announce("That file isn’t a HAR \(Brand.name) can read", mark: "exclamationmark.triangle")
                 return
             }
             tab.netLog.bring(resources)

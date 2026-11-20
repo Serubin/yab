@@ -42,15 +42,15 @@ struct FolderAskAbove: View {
     @ViewBuilder private var words: some View {
         switch ask.stage {
         case .closed, .checking:
-            Text(sentence(ask.reason) + " macOS keeps \(ask.place.name) closed to Yab, so turn it on for Yab.")
+            Text(sentence(ask.reason) + " macOS keeps \(ask.place.name) closed to \(Brand.name), so turn it on for \(Brand.name).")
                 .font(.system(size: 12))
                 .foregroundStyle(Palette.muted)
                 .fixedSize(horizontal: false, vertical: true)
         case .stillClosed:
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(ask.place.name) is still closed to Yab.")
+                Text("\(ask.place.name) is still closed to \(Brand.name).")
                     .foregroundStyle(ButtonCSS.danger)
-                Text("The switch is under Yab, the app with this icon.")
+                Text("The switch is under \(Brand.name), the app with this icon.")
                     .foregroundStyle(Palette.muted)
             }
             .font(.system(size: 12))
@@ -91,7 +91,7 @@ struct FolderAskAbove: View {
                 Image(nsImage: NSApp.applicationIconImage)
                     .resizable()
                     .frame(width: 16, height: 16)
-                Text("Yab").font(.system(size: 12, weight: .semibold))
+                Text("\(Brand.name)").font(.system(size: 12, weight: .semibold))
                 Spacer(minLength: 8)
                 Symbol("chevron.down", size: 9.5, weight: .semibold)
                     .foregroundStyle(Palette.muted)

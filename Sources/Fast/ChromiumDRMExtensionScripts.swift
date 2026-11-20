@@ -9,9 +9,9 @@ enum ChromiumDRMExtensionScripts {
       const nonce=crypto.randomUUID(),ports=new Map();let serial=0;
       const event=()=>{const listeners=new Set();return {addListener:f=>listeners.add(f),removeListener:f=>listeners.delete(f),hasListener:f=>listeners.has(f),hasListeners:()=>!!listeners.size,listeners}};
       const ready=handler.postMessage({op:'hello',nonce,epoch:config.epoch,url:location.href});
-      // An extension's messages and stored values reach Yab as plain data,
+      // An extension's messages and stored values reach \#(Brand.name) as plain data,
       // as Chromium's JSON-serialized messaging has them: a DOMRect posted
-      // whole crashed WebKit of macOS 15 in Yab's own JavaScript context
+      // whole crashed WebKit of macOS 15 in \#(Brand.name)'s own JavaScript context
       // (WebKitIPCBoundary.plainScript).
       const plain=\#(WebKitIPCBoundary.plainScript);
       const call=(op,args)=>ready.then(()=>handler.postMessage({op,args:plain(args),nonce,epoch:config.epoch,url:location.href}));

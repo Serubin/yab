@@ -19,7 +19,7 @@ extension ChromiumExtensions {
         let native = capabilities["nativeConsent"] == .bool(true) || capabilities["nativeConsent"] == .number(1)
         if !native || !held {
             guard await Questions.shared.ask(Question(title: "Remove “\(name)”?",
-                detail: "What it kept in Yab goes with it.", yes: "Remove", danger: true, place: place)) else { return false }
+                detail: "What it kept in \(Brand.name) goes with it.", yes: "Remove", danger: true, place: place)) else { return false }
         }
         if !held, #available(macOS 15.4, *) {
             oneList?.remove(id)
@@ -230,7 +230,7 @@ struct ChromiumStoreOffer: View {
                 try? await Task.sleep(for: .seconds(1.5))
                 guard !Task.isCancelled, wanted == id, browser.spaceID == space,
                       StoreOffer.offered.insert(id).inserted else { return }
-                browser.toaster.pop("Install in Yab", mark: "puzzlepiece.extension", undo: {
+                browser.toaster.pop("Install in \(Brand.name)", mark: "puzzlepiece.extension", undo: {
                     // A toast can outlive its page or space. Keep the offer's
                     // exact package and profile rather than a later address.
                     guard !tab.gone, !tab.shy, tab.delegate as? Browser === browser,
@@ -289,7 +289,7 @@ struct ChromiumExtensionsSettings: View {
                             Button("Reload") { list.reload(id) }.settingsButton()
                         }
                     }
-                    SettingsRow("Remove", detail: "Remove the extension and its saved data from Yab.") {
+                    SettingsRow("Remove", detail: "Remove the extension and its saved data from \(Brand.name).") {
                         Button("Remove…") {
                             extensions.perform {
                                 guard try await extensions.reviewRemoval(id, name: item.name, place: .settings) else { return }

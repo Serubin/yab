@@ -27,7 +27,7 @@ enum OneYab {
                 let pid = n > 0 ? String(decoding: said[0..<n], as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines) : "?"
                 LaunchJournal.record("browser.lock-held", child: pid_t(pid))
                 if handOff(to: pid) { exit(0) }
-                FileHandle.standardError.write(Data("Yab is already running on these files (pid \(pid)).\n".utf8))
+                FileHandle.standardError.write(Data("\(Brand.name) is already running on these files (pid \(pid)).\n".utf8))
                 exit(1)
             }
             usleep(100_000)
@@ -38,7 +38,7 @@ enum OneYab {
         held = fd
     }
 
-    private static let reopen = Notification.Name("dev.serafim.fast.reopen-owner")
+    private static let reopen = Notification.Name("net.serubin.pane.reopen-owner")
     @MainActor private static var reopenListener: NSObjectProtocol?
 
     /// Installed by the process that acquired the profile lock. A losing

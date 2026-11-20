@@ -337,7 +337,7 @@ extension Bench {
                     let out = (try? result.get()) as? [String: Any] ?? [:]
                     let step = out["password"] as? Bool == true ? "the password" : "the name"
                     c.answer(["ok": true, "manager": id,
-                              "said": "\(name) filled \(step) for \(entry.title) and Yab sent it. Take a snapshot: if a password page follows, call sign_in again; a code or captcha is a handoff."])
+                              "said": "\(name) filled \(step) for \(entry.title) and \(Brand.name) sent it. Take a snapshot: if a password page follows, call sign_in again; a code or captcha is a handoff."])
                 }
                 return
             }

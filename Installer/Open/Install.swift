@@ -12,19 +12,18 @@ import Security
 // the keychain, lives outside the bundle and isn't touched.
 
 final class Install: @unchecked Sendable {
-    // build.sh writes the payload's id here; the launcher's own signature seals it.
-    static let bundleID = Bundle.main.object(forInfoDictionaryKey: "YabPayloadID") as? String ?? "dev.serafim.fast"
-    static let name = "yab.app"
+    static let bundleID = "net.serubin.pane"
+    static let name = "Pane.app"
 
     enum Failure: LocalizedError {
         case invalidPayload, occupied, notWritable, canceled, busy
         var errorDescription: String? {
             switch self {
-            case .invalidPayload: "This copy of Yab couldn't be checked. Download it again and try once more."
-            case .occupied: "There's already something called Yab in Applications that isn't this one. Nothing was replaced."
+            case .invalidPayload: "This copy of Pane couldn't be checked. Download it again and try once more."
+            case .occupied: "There's already something called Pane in Applications that isn't this one. Nothing was replaced."
             case .notWritable: "Applications can't be written to from this account."
             case .canceled: "Canceled."
-            case .busy: "Yab is already being installed. Try again when that finishes."
+            case .busy: "Pane is already being installed. Try again when that finishes."
             }
         }
     }
@@ -157,7 +156,7 @@ final class Install: @unchecked Sendable {
         guard files.isWritableFile(atPath: folder.path) else { throw Failure.notWritable }
 
         // Beside the destination, so the last step is a rename on one volume.
-        let staging = folder.appendingPathComponent(".yab-install-\(UUID().uuidString)", isDirectory: true)
+        let staging = folder.appendingPathComponent(".pane-install-\(UUID().uuidString)", isDirectory: true)
         try files.createDirectory(at: staging, withIntermediateDirectories: false)
         defer { try? files.removeItem(at: staging) }
         let copy = staging.appendingPathComponent(Self.name, isDirectory: true)

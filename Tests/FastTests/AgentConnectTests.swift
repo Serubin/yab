@@ -120,18 +120,18 @@ struct AgentConnectTests {
         #expect(opening.button == "Opening Sign-In…" && !opening.enabled && opening.cancel && opening.ring)
 
         let inYab = AgentsIntro.words(flow: .signingIn("claude"), page: .yab)
-        #expect(inYab.detail == "The sign-in is in a Yab tab. Yab closes it and carries on once you say yes there.")
+        #expect(inYab.detail == "The sign-in is in a Pane tab. Pane closes it and carries on once you say yes there.")
         #expect(inYab.button == "Show Sign-In" && inYab.enabled && inYab.shows && inYab.cancel)
 
         let chrome = AgentsIntro.words(flow: .signingIn("codex"), page: .browser("Chrome"))
         #expect(chrome.title == "Sign in to ChatGPT in Chrome")
-        #expect(chrome.detail == "ChatGPT opened its sign-in in Chrome. Say yes there, then come back; Yab carries on by itself.")
+        #expect(chrome.detail == "ChatGPT opened its sign-in in Chrome. Say yes there, then come back; Pane carries on by itself.")
         #expect(chrome.button == "Open Sign-In Again" && chrome.enabled && chrome.shows && chrome.cancel)
         #expect(AgentsIntro.words(flow: .signingIn("codex"), page: .browser(nil)).title == "Sign in to ChatGPT in your browser")
 
         let finishing = AgentsIntro.words(flow: .finishing(["claude"]))
         #expect(finishing.title == "Connecting Claude")
-        #expect(finishing.detail == "Signed in. Adding Yab's skill and tools…")
+        #expect(finishing.detail == "Signed in. Adding Pane's skill and tools…")
         #expect(finishing.button == "Connecting…" && !finishing.enabled && !finishing.cancel && finishing.ring)
 
         let landed = AgentsIntro.words(flow: .landed(["claude"]))
@@ -150,13 +150,13 @@ struct AgentConnectTests {
         #expect(AgentsIntro.words(flow: nil, anyInstalled: false, chosen: [], trouble: trouble).button == "Choose a Provider")
         #expect(AgentSetupModel.gone("claude") == "Claude isn't set up on this Mac anymore.")
         #expect(AgentSetupModel.refused("codex") == "ChatGPT wasn't signed in.")
-        #expect(AgentSetupModel.untaken(["claude", "codex"]) == "Yab couldn't add its tools for Claude and ChatGPT.")
+        #expect(AgentSetupModel.untaken(["claude", "codex"]) == "Pane couldn't add its tools for Claude and ChatGPT.")
     }
 
     @MainActor @Test func aRenewSaysItsStepsInItsRow() {
         #expect(Renewal.of(.preparing(["claude"]), page: nil) == Renewal(detail: "Checking the sign-in…", wheel: true))
         #expect(Renewal.of(.signingIn("claude"), page: .opening) == Renewal(detail: "Opening the sign-in…", wheel: true, cancel: true))
-        #expect(Renewal.of(.signingIn("claude"), page: .yab) == Renewal(detail: "Sign in to Claude in the Yab tab", show: "Show", cancel: true))
+        #expect(Renewal.of(.signingIn("claude"), page: .yab) == Renewal(detail: "Sign in to Claude in the Pane tab", show: "Show", cancel: true))
         #expect(Renewal.of(.signingIn("codex"), page: .browser("Chrome"))
                 == Renewal(detail: "Sign in to ChatGPT in Chrome", show: "Open Again", cancel: true))
         #expect(Renewal.of(.finishing(["claude"]), page: nil) == Renewal(detail: "Signed in. Reconnecting…", wheel: true))
@@ -167,7 +167,7 @@ struct AgentConnectTests {
     @MainActor @Test func theSignInTabSaysWhoseItIs() {
         let connect = AgentDock.signInWords("claude", privately: false)
         #expect(connect.title == "Sign in to connect Claude")
-        #expect(connect.detail == "Say yes to Claude Code, which Yab runs for you. Yab then closes this tab.")
+        #expect(connect.detail == "Say yes to Claude Code, which Pane runs for you. Pane then closes this tab.")
         let another = AgentDock.signInWords("claude", privately: true)
         #expect(another.title == "Sign in to your other Claude account")
         #expect(another.detail == "A private tab, so your usual account doesn't answer")

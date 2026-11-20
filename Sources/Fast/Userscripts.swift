@@ -805,7 +805,7 @@ final class Userscripts: ObservableObject {
         case "xhr":
             return try await request(args, script: script, id: id, inPage: inPage, frame: frame, tab: tab)
         default:
-            throw Userscript.Invalid("Yab doesn't answer \(op).")
+            throw Userscript.Invalid("\(Brand.name) doesn't answer \(op).")
         }
     }
 

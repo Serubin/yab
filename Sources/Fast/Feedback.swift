@@ -335,7 +335,7 @@ enum FeedbackSheet {
         let tries: [String?] = snapshots + [nil]
         for (index, diagnostics) in tries.enumerated() {
             guard let (body, response) = try? await URLSession.shared.data(for: request(draft, site: site, diagnostics: diagnostics)) else {
-                return "Couldn't reach Yab's site. Check the connection and try again."
+                return "Couldn't reach \(Brand.name)'s site. Check the connection and try again."
             }
             let status = (response as? HTTPURLResponse)?.statusCode
             if index < tries.count - 1, status == 400, Self.refusesDiagnostics(body) { continue }
@@ -601,7 +601,7 @@ enum FeedbackKind: String, CaseIterable, Identifiable {
     var prompt: String {
         switch self {
         case .bug: return "What happened, and what did you expect?"
-        case .idea: return "What would make Yab better for you?"
+        case .idea: return "What would make \(Brand.name) better for you?"
         case .love: return "What do you like about it?"
         case .other: return "Tell us anything"
         }
@@ -826,7 +826,7 @@ private struct FeedbackForm: View {
     /// The version and macOS, and what is attached.
     private var footnote: String {
         let files = model.draft.files
-        let head = "Yab \(Updater.version) · macOS \(Updater.system)"
+        let head = "\(Brand.name) \(Updater.version) · macOS \(Updater.system)"
         guard !files.isEmpty else { return head }
         return head + " · " + (files.count == 1 ? "1 file" : "\(files.count) files") + " · " + FeedbackFile.bytes(model.weight)
     }

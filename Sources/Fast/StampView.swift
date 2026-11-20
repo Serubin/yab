@@ -416,7 +416,7 @@ struct StampView: View {
     private var spoken: String {
         let note = info.note.replacingOccurrences(of: "\n", with: " ")
         guard let since else { return note }
-        return "With Yab since \(Postmark.dateline(since)). \(note)"
+        return "With \(Brand.name) since \(Postmark.dateline(since)). \(note)"
     }
 
     var body: some View {
@@ -507,7 +507,7 @@ struct StampNoteRow: View {
     })
 
     var body: some View {
-        SettingsRow("On the back of their stamp", detail: "They read it in Yab.") {
+        SettingsRow("On the back of their stamp", detail: "They read it in \(Brand.name).") {
             // Remove the whole hand-drawn prompt on the first character,
             // including any ink above the baseline.
             TextField("On the back of their stamp", text: $stamp.outgoing, prompt: Text(""))

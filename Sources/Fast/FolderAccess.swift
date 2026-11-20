@@ -177,7 +177,7 @@ final class FolderAccess {
         let agents = Agents.shared
         if let outcome = outcomes.removeValue(forKey: Self.key(session.id, path)) {
             switch outcome {
-            case .opened: return ["text": "Yab can read \(path) now. Read it again and carry on."]
+            case .opened: return ["text": "\(Brand.name) can read \(path) now. Read it again and carry on."]
             case .chose(let copies):
                 return ["text": "The person chose a file instead of opening the folder: "
                         + copies.map(\.path).joined(separator: ", ")
@@ -191,7 +191,7 @@ final class FolderAccess {
         let file = exists ? !isDir.boolValue : !(path as NSString).pathExtension.isEmpty
         guard let place = ClosedPlace.of(path) else {
             switch await Self.read(path, file: file) {
-            case .open: return ["text": "Yab can read \(path). Read it again."]
+            case .open: return ["text": "\(Brand.name) can read \(path). Read it again."]
             case .closed(let said, _), .other(let said):
                 return ["error": "\(path) isn't in a place macOS keeps closed, so there is no switch for the person to turn on (\(said)). Don't ask them about it."]
             }
@@ -201,7 +201,7 @@ final class FolderAccess {
         }
         switch await Self.read(path, file: file) {
         case .open:
-            return ["text": "Yab can read \(path) now. Read it again and carry on."]
+            return ["text": "\(Brand.name) can read \(path) now. Read it again and carry on."]
         case .other(let said):
             return ["error": "\(path): \(said). That isn't something the person can open in Settings."]
         case .closed(let said, let folderOpens):

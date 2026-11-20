@@ -508,7 +508,7 @@ enum NetHAR {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev"
         return ["log": [
             "version": "1.2",
-            "creator": ["name": "Yab", "version": version],
+            "creator": ["name": Brand.name, "version": version],
             "pages": [["startedDateTime": date(origin), "id": "page_1", "title": page?.absoluteString ?? "", "pageTimings": pageTimings]],
             "entries": entries.map { var e = $0; e["pageref"] = "page_1"; return e },
         ] as [String: Any]]

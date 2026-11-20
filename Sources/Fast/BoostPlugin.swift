@@ -60,7 +60,7 @@ struct BoostPlugin: Equatable {
             throw BoostPackage.Invalid("Invalid plugin metadata.")
         }
         let permissions = value["permissions"] as? [String] ?? []
-        guard Set(permissions).isSubset(of: Self.permissions) else { throw BoostPackage.Invalid("Unknown Yab permission.") }
+        guard Set(permissions).isSubset(of: Self.permissions) else { throw BoostPackage.Invalid("Unknown \(Brand.name) permission.") }
         let siteActions = value["site_actions"] as? [String] ?? []
         guard Set(siteActions).isSubset(of: ["clicks"]), Set(siteActions).count == siteActions.count else {
             throw BoostPackage.Invalid("Site actions support clicks only, declared once.")

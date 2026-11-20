@@ -72,7 +72,7 @@ extension MailConsent {
     }
 
     static func terms(_ writer: String) -> String {
-        "Mail goes to \(company(writer)) only when \(writer) reads it, under your account’s terms. Yab keeps no copy. Both are off until you turn them on."
+        "Mail goes to \(company(writer)) only when \(writer) reads it, under your account’s terms. \(Brand.name) keeps no copy. Both are off until you turn them on."
     }
 }
 

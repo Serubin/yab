@@ -23,7 +23,6 @@ extension Bench {
         "agent-mail-account": { $0.handleAgentMailAccount($1) },
         "agent-mail-settings": { $0.handleAgentMailSettings($1) },
         "agent-mail-memory": { $0.handleAgentMailMemory($1) },
-        "agent-mail-reads": { $0.handleAgentMailReads($1) },
         "agent-mail-sendas": { $0.handleAgentMailSendas($1) },
         "agent-mail-sync": { $0.handleAgentMailSync($1) },
         "agent-mail-hold": { $0.handleAgentMailHold($1) },
@@ -392,53 +391,6 @@ extension Bench {
         // The mail memory (MailRecall): how far each account's is, and
         // on a --test run a go by hand, on, off, pause, disconnect.
         MailRecall.shared.bench(request, answer)
-    }
-
-    func handleAgentMailReads(_ c: AgentCall) {
-        let request = c.request
-        let answer = c.answer
-        // Read statuses in a test world (MailReads): turned on or off for
-        // an account (`on`), Block tracking pixels as its switch turns it
-        // (`pixels`), a key kept for mail of yours sent before, as a send
-        // keeps it (`keep`: its Message-ID, thread, and how long `ago`,
-        // for a list days have to pass for), the site asked now (`ask`, a
-        // `thread`'s alone or all); then each account's keys, their
-        // tokens, and what the site said of each, as the thread says it.
-        guard Store.testing else { answer(["error": "agent-mail-reads only works on a --test run"]); return }
-        let center = MailCenter.shared
-        let accounts = (request["account"] as? String).map { [$0] } ?? center.accounts
-        if let on = request["on"] as? Bool {
-            for account in accounts { center.engines[account].map { MailReads.set(on, in: $0.store) } }
-            center.touch()
-        }
-        if let pixels = request["pixels"] as? Bool { MailHTML.blocksPixels = pixels }
-        var made: [String: Any] = [:]
-        if let keep = request["keep"] as? [String: Any], let message = keep["message"] as? String,
-           let store = accounts.first.flatMap({ center.engines[$0]?.store }) {
-            let at = MailClock.now.addingTimeInterval(-((keep["ago"] as? Double) ?? 0))
-            let key = store.readKey(message: message, at: at) { MailReads.encoded(MailReads.newKey()) } ?? ""
-            store.readSent(message: message, thread: keep["thread"] as? String ?? "", at: at)
-            made = ["key": key, "token": MailReads.token(for: key) ?? ""]
-        }
-        Task {
-            var news = false
-            if request["ask"] as? Bool == true {
-                for account in accounts { news = await center.askReads(account, thread: request["thread"] as? String) || news }
-            }
-            var kept: [String: Any] = [:]
-            for account in accounts {
-                guard let store = center.engines[account]?.store else { continue }
-                let keys = store.readKeys(since: .distantPast)
-                let seen = MailReads.seen(keys.map(\.message), in: store)
-                kept[account] = ["on": MailReads.on(store), "base": MailReads.base.absoluteString,
-                                 "keys": keys.map { one -> [String: Any] in
-                                     ["message": one.message, "key": one.key, "token": MailReads.token(for: one.key) ?? "",
-                                      "thread": one.thread, "line": seen[one.message].map { MailReads.line($0) } ?? "",
-                                      "opens": seen[one.message].map { $0.sure + $0.maybe } ?? 0]
-                                 }]
-            }
-            answer(["accounts": kept, "news": news, "pixels": MailHTML.blocksPixels, "kept": made])
-        }
     }
 
     func handleAgentMailSendas(_ c: AgentCall) {

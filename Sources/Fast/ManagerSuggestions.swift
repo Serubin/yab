@@ -205,7 +205,7 @@ enum SuggestRows {
             }
             guard input.yabOn else { return [] }
             return [SuggestRow(kind: .generate(nil, password: password), title: "Use Strong Password",
-                               detail: " · saved in Yab passwords", quick: true, shown: password)]
+                               detail: " · saved in \(Brand.name) passwords", quick: true, shown: password)]
         }
         let connected = !input.managers.isEmpty
         // The site's passkeys first, one row each, a passkey and a password
@@ -234,8 +234,8 @@ enum SuggestRows {
             if users[key] != nil { continue }
             users[key] = rows.count
             rows.append(SuggestRow(kind: .yab(login), group: 0, title: login.user.isEmpty ? "No name" : login.user,
-                                   detail: connected ? "Yab" : login.host, used: login.used, host: login.host))
-            sources.append(["Yab"])
+                                   detail: connected ? "\(Brand.name)" : login.host, used: login.used, host: login.host))
+            sources.append(["\(Brand.name)"])
         }
         for (index, manager) in input.managers.enumerated() {
             let group = index + 1
@@ -291,9 +291,9 @@ enum SuggestRows {
             if users[key] != nil { continue }
             users[key] = rows.count
             rows.append(SuggestRow(kind: .yab(login), group: awayGroup, title: login.user.isEmpty ? "No name" : login.user,
-                                   detail: connected ? "Yab" : login.host, used: login.used, host: login.host,
+                                   detail: connected ? "\(Brand.name)" : login.host, used: login.used, host: login.host,
                                    away: away(login, here: input.here, spaces: input.spaces)))
-            sources.append(["Yab"])
+            sources.append(["\(Brand.name)"])
         }
         for index in rows.indices where !sources[index].isEmpty && connected {
             rows[index].detail = "Saved in " + words(sources[index])
@@ -346,7 +346,7 @@ enum SuggestRows {
         // Nothing anywhere: where it looked, and the way to the manager.
         if accounts.isEmpty, !waiting, !hybrid {
             guard connected else { return [] }
-            let looked = (input.yabOn ? ["Yab"] : []) + input.managers.map { name($0.provider) }
+            let looked = (input.yabOn ? ["\(Brand.name)"] : []) + input.managers.map { name($0.provider) }
             var out = [SuggestRow(kind: .nothing, title: "No logins for this site", detail: "Looked in " + words(looked))]
             if let first = input.managers.first?.provider {
                 out.append(SuggestRow(kind: .open(first), group: 1, title: "Open \(name(first))", detail: "Find it there, or add it"))
@@ -722,7 +722,7 @@ extension Browser {
             noteFilled(tab)
             pickedInto = tab.id
             tab.page.runInYab(Tab.generatedScript(password)) { [weak self] done in
-                if (done as? Bool) == true { self?.markFilled(tab, from: saver.map(PasswordManagers.name) ?? "Yab") }
+                if (done as? Bool) == true { self?.markFilled(tab, from: saver.map(PasswordManagers.name) ?? "\(Brand.name)") }
             }
             ManagerLists.shared.generated = [:]
         case .all:

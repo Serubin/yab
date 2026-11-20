@@ -4,7 +4,7 @@ import AppKit
 /// A double-click gets a new world before Store or SwiftUI reads any state.
 enum LaunchArrivalPreview {
     static var enabled: Bool {
-        Bundle.main.bundleIdentifier == "dev.serafim.fast.launcharrival.dev"
+        Bundle.main.bundleIdentifier == "net.serubin.pane.launcharrival.dev"
             && Bundle.main.object(forInfoDictionaryKey: "YabLaunchArrivalPreview") as? Bool == true
     }
 

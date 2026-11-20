@@ -569,7 +569,7 @@ enum Metrics {
     static let lightsCorner = CGSize(width: 72, height: Metrics.strip)
 }
 
-/// The blue glass wink, loaded from Icon/Mark.png without a backing tile.
+/// The mark, the bundle's Mark.png (Icon/PaneMark.png) without a backing tile.
 /// The same mark appears in the app icon and on the welcome screen.
 struct Logomark: View {
     /// The picture, read once.
@@ -583,7 +583,8 @@ struct Logomark: View {
     static func file(_ name: String) -> URL? {
         let repo = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        let places = [Bundle.main.resourceURL?.appendingPathComponent(name), repo.appendingPathComponent("Icon/\(name)")]
+        let inRepo = Bundle.main.bundleIdentifier == nil ? repo.appendingPathComponent("Icon/\(name)") : nil
+        let places = [Bundle.main.resourceURL?.appendingPathComponent(name), inRepo]
         return places.compactMap { $0 }.first { FileManager.default.fileExists(atPath: $0.path) }
     }
 

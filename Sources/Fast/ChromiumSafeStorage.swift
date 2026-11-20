@@ -6,8 +6,8 @@ import Darwin
 /// The outer, signed app owns Chromium's existing secret. No secret crosses
 /// argv, environment, a file, the page protocol or the original-caller stdin.
 enum ChromiumSafeStorage {
-    static let service = "Yab Safe Storage"
-    static let account = "Yab"
+    static let service = "\(Store.name) Safe Storage"
+    static let account = Store.name
     static let limit = 4096
 
     struct Failure: Error { let status: OSStatus }

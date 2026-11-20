@@ -1384,10 +1384,6 @@ private struct MailListRow: View {
                         if row.agentReady {
                             Text("Reply ready ·").font(.system(size: 12)).foregroundStyle(Color.accentColor).lineLimit(1)
                         }
-                        // Sent and Waiting: your mail in it opened, in a word or two (MailReads).
-                        if !row.opened.isEmpty {
-                            Text(row.opened + " ·").font(.system(size: 12).monospacedDigit()).foregroundStyle(Palette.muted).lineLimit(1)
-                        }
                         // A reminder if nobody answers, still waiting: when it comes back.
                         if !row.remind.isEmpty {
                             Text(row.remind + " ·").font(.system(size: 12).monospacedDigit()).foregroundStyle(Palette.muted).lineLimit(1)
@@ -2098,10 +2094,6 @@ private struct MailMessageView: View {
                 MailFileChips(message: message, desk: desk)
                     .padding(.top, 4)
             }
-            // Yours, gone with a read status: when it was opened, once it was.
-            if let reads = message.reads, !reads.isEmpty {
-                MailReadLine(seen: reads)
-            }
         }
         .padding(.vertical, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -2140,89 +2132,6 @@ private struct MailMessageView: View {
         let owner = copyTip
         KeyTip.shared.hover(owner, title: "Copied", shortcut: nil, side: .pointer, wait: 0)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { KeyTip.shared.leave(owner) }
-    }
-}
-
-/// Under a mail of yours that went with a read status (MailReads), in words
-/// as mail's statuses are: "Opened 3× · last 2h ago". Apple Mail's privacy's
-/// loads say maybe, and why under the pointer.
-private struct MailReadLine: View {
-    let seen: MailReads.Seen
-    /// The pointer on the line, or on its card: the card stays up.
-    @State private var over = false
-    @State private var overCard = false
-    @State private var card = false
-
-    var body: some View {
-        Text(MailReads.line(seen))
-            .font(.system(size: 12).monospacedDigit())
-            .foregroundStyle(Palette.muted)
-            .lineLimit(1)
-            .contentShape(Rectangle())
-            // Under the pointer a moment: every open, where and when.
-            .onHover { inside in
-                over = inside
-                settle()
-            }
-            .popover(isPresented: $card, arrowEdge: .bottom) {
-                MailOpensCard(seen: seen)
-                    .onHover { inside in
-                        overCard = inside
-                        settle()
-                    }
-            }
-    }
-
-    /// The card comes after a short rest on the line and goes a little
-    /// after the pointer has left both, so the way onto it doesn't close it.
-    private func settle() {
-        let wanted = over || overCard
-        DispatchQueue.main.asyncAfter(deadline: .now() + (wanted ? 0.35 : 0.25)) {
-            if (over || overCard) == wanted, card != wanted { card = wanted }
-        }
-    }
-}
-
-/// Every open of a mail of yours, newest first (MailReads.Seen.opens):
-/// where it was opened as the reader tells it (Gmail on any device, Apple
-/// Mail's privacy a maybe, elsewhere), the time, and how long ago. No
-/// names: one picture a mail can't tell who.
-private struct MailOpensCard: View {
-    let seen: MailReads.Seen
-    private static let shown = 12
-
-    var body: some View {
-        let opens = seen.opens
-        VStack(alignment: .leading, spacing: 0) {
-            Text(opens.count == 1 ? "Opened once" : "Opened \(opens.count) times")
-                .font(.system(size: 11.5))
-                .foregroundStyle(Palette.muted)
-                .padding(.bottom, 6)
-            ForEach(Array(opens.prefix(Self.shown).enumerated()), id: \.offset) { _, open in
-                HStack(spacing: 12) {
-                    Text(MailReads.place(open.kind))
-                        .foregroundStyle(open.kind == .apple ? Palette.muted : Palette.ink)
-                        .frame(width: 112, alignment: .leading)
-                    Text(MailPane.said(open.at))
-                        .monospacedDigit()
-                    Spacer(minLength: 16)
-                    Text(MailReads.ago(open.at))
-                        .monospacedDigit()
-                        .foregroundStyle(Palette.muted)
-                }
-                .font(.system(size: 12.5))
-                .lineLimit(1)
-                .frame(height: 24)
-            }
-            if opens.count > Self.shown {
-                Text("and \(opens.count - Self.shown) more")
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(Palette.muted)
-                    .padding(.top, 4)
-            }
-        }
-        .padding(12)
-        .frame(minWidth: 260, alignment: .leading)
     }
 }
 
@@ -2815,8 +2724,8 @@ private struct MailSignatureLines: View {
             // A picture by cid:, whose bytes Gmail gives a signature no way
             // to fetch: said, not drawn as a hole.
             if unshown > 0 {
-                Text(unshown == 1 ? "A picture in it isn’t shown: Gmail keeps it where Yab can’t fetch it."
-                     : "\(unshown) pictures in it aren’t shown: Gmail keeps them where Yab can’t fetch them.")
+                Text(unshown == 1 ? "A picture in it isn’t shown: Gmail keeps it where \(Brand.name) can’t fetch it."
+                     : "\(unshown) pictures in it aren’t shown: Gmail keeps them where \(Brand.name) can’t fetch them.")
                     .font(.system(size: 12))
                     .foregroundStyle(Palette.faint)
             }

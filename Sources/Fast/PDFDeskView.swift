@@ -123,7 +123,7 @@ struct PDFDeskModes: View {
     @ViewBuilder
     private var signatures: some View {
         ForEach(desk.kept, id: \.id) { kept in
-            Toggle(kept.id.replacingOccurrences(of: "Yab ", with: ""), isOn: Binding(get: { desk.signature?.id == kept.id }, set: { _ in
+            Toggle(kept.id.replacingOccurrences(of: "\(Brand.name) ", with: ""), isOn: Binding(get: { desk.signature?.id == kept.id }, set: { _ in
                 desk.use(kept)
                 desk.set(.sign)
             }))

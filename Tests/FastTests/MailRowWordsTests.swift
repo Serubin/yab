@@ -79,12 +79,4 @@ struct MailRowWordsTests {
         #expect(MailListView.heading(rows, at: 1, by: "when", now: now) == nil)
         #expect(MailListView.heading(rows, at: 2, by: "when", now: now) == "Yesterday · 1")
     }
-
-    @Test func theCardSaysWhereEachOpenWas() {
-        let at = Date(timeIntervalSince1970: 1_790_000_000)
-        let seen = MailReads.Seen([MailReads.Open(at: at, kind: .apple), MailReads.Open(at: at.addingTimeInterval(60), kind: .google)])
-        #expect(seen.opens.map(\.kind) == [.google, .apple])
-        #expect(MailReads.place(.google) == "In Gmail")
-        #expect(MailReads.place(.apple).contains("maybe"))
-    }
 }

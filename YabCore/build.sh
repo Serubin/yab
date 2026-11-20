@@ -74,7 +74,7 @@ path=Path('YabCore/cef-patches/candidate_parent_policy.py')
 spec=importlib.util.spec_from_file_location('build_parent_policy',path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 assert json.loads(Path(sys.argv[1]).read_text())==module.build_inputs(os.environ.get('YABCORE_PARENT_POLICY_PLAN'),os.environ.get('YABCORE_PARENT_POLICY_HEADER')), 'Precompile input changed during actual helper compilation'
 PYPOLICYAFTER
-APP="$WORK/build/Release/YabCore.app"
+APP="$WORK/build/Release/PaneCore.app"
 # Remove only the three known dangling links produced by the old CEF sample
 # macro. Never delete a directory or any valid framework resource.
 python3 - "$APP" <<'PYLINKS'

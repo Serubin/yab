@@ -247,12 +247,12 @@ struct BoostSiteBlock: View {
     private func shareToStore(_ record: BoostRecord) {
         Task {
             let question = Question(title: "Share \(record.name) to the Store?",
-                                    detail: "\(browser.chatName) writes the listing and opens a pull request to yab-plugins from your GitHub account. Yab takes the pictures and checks it before anyone merges.",
+                                    detail: "\(browser.chatName) writes the listing and opens a pull request to yab-plugins from your GitHub account. \(Brand.name) takes the pictures and checks it before anyone merges.",
                                     lines: [], yes: "Share", no: "Not Now", place: .plain)
             guard await Questions.shared.ask(question) else { return }
             let folder = boosts.library.folder(record.id).path
             ask("""
-            Share my boost "\(record.name)" (\(record.id)) to the Yab Store. Its files are in \(folder) (manifest.json, BOOST.md, style.css).
+            Share my boost "\(record.name)" (\(record.id)) to the Store. Its files are in \(folder) (manifest.json, BOOST.md, style.css).
             Follow docs/store.md "yab-plugins": with my GitHub account (gh), fork yetanotherbrowser/yab-plugins, add boosts/\(record.id)/ with manifest.json, BOOST.md (keep my words and its checks), page/style.css and listing.json {name, intent, host, by: my GitHub handle, preview}, run `npm run validate` there, and open a pull request titled "Add \(record.name) for \(record.sites.first.map(Browser.site) ?? "")". Do not change anything else. Post the pull request's link here.
             """)
         }

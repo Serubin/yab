@@ -82,11 +82,11 @@ enum Arrival {
         let here = Bundle.main.bundleURL
         LaunchJournal.record("arrival.relocate", target: destination)
         let staging = destination.deletingLastPathComponent()
-            .appendingPathComponent(".yab-move-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent(".pane-move-\(UUID().uuidString)", isDirectory: true)
         do {
             try files.createDirectory(at: staging, withIntermediateDirectories: false)
             defer { try? files.removeItem(at: staging) }
-            let copy = staging.appendingPathComponent("yab.app", isDirectory: true)
+            let copy = staging.appendingPathComponent("Pane.app", isDirectory: true)
             try files.copyItem(at: here, to: copy)
             // Something that turned up there meanwhile is never overwritten.
             guard renamex_np(copy.path, destination.path, UInt32(RENAME_EXCL)) == 0 else { return }
@@ -107,11 +107,11 @@ enum Arrival {
         exit(0)
     }()
 
-    /// /Applications/yab.app, when this copy should move there: the first
+    /// /Applications/Pane.app, when this copy should move there: the first
     /// run of a build signed for shipping, from outside any Applications
     /// folder, with nothing there already and a folder that takes it.
     private static var moveTarget: URL? {
-        guard !Store.testing, !welcomed, frame == nil else { return nil }
+        guard !Store.testing, !Store.development, !welcomed, frame == nil else { return nil }
         let here = Bundle.main.bundleURL.resolvingSymlinksInPath()
         let home = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications").path
         guard !here.path.hasPrefix("/Applications/"), !here.path.hasPrefix(home + "/") else { return nil }
@@ -119,7 +119,7 @@ enum Arrival {
         // it was built, and is never moved.
         guard isShipping(here) else { return nil }
         let folder = URL(fileURLWithPath: "/Applications", isDirectory: true)
-        let destination = folder.appendingPathComponent("yab.app", isDirectory: true)
+        let destination = folder.appendingPathComponent("Pane.app", isDirectory: true)
         guard !FileManager.default.fileExists(atPath: destination.path),
               FileManager.default.isWritableFile(atPath: folder.path) else { return nil }
         return destination

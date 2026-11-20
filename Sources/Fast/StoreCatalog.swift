@@ -114,7 +114,7 @@ final class StoreCatalog: ObservableObject {
         BoostCatalog.entries.map { entry in
             let host = bare(entry.site)
             return Item(id: entry.id, name: entry.name, intent: entry.intent, sites: [entry.site], host: host, rung: "Look",
-                        rights: "Change how \(host) looks. No code runs.", revision: nil, commit: nil, by: "Yab",
+                        rights: "Change how \(host) looks. No code runs.", revision: nil, commit: nil, by: "\(Brand.name)",
                         picks: picks.contains(entry.id), added: nil, fixed: nil, check: nil, kept: nil, pictures: nil, versions: nil, reviewed: nil)
         }
     }
@@ -441,7 +441,7 @@ final class StoreCatalog: ObservableObject {
         Task {
             guard await MailNotifySystem().permission() == .allowed else { return }
             let content = UNMutableNotificationContent()
-            content.title = "Yab Store"
+            content.title = "Store"
             content.body = words
             try? await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil))
         }

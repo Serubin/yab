@@ -20,7 +20,7 @@ class CoreBundleTests(unittest.TestCase):
         self.app = Path(self.tmp.name) / 'Yab.app'
         self.contents = self.app / 'Contents'
         (self.contents / 'MacOS').mkdir(parents=True)
-        self.legacy = self.contents / 'MacOS/YabCore'
+        self.legacy = self.contents / 'MacOS/PaneCore'
         self.legacy.write_bytes(b'first executable')
         self.parent = dict(CFBundleIdentifier='dev.serafim.fast', CFBundleVersion='202611091715',
                            CFBundleShortVersionString='0.47.6', LSMinimumSystemVersion='15.4',
@@ -30,7 +30,7 @@ class CoreBundleTests(unittest.TestCase):
         self.framework = self.contents / 'Frameworks/Chromium Embedded Framework.framework'
         self.framework.mkdir(parents=True)
         (self.framework / 'payload').write_bytes(b'untouched framework')
-        self.renderer = self.contents / 'Frameworks/YabCore Helper (Renderer).app'
+        self.renderer = self.contents / 'Frameworks/PaneCore Helper (Renderer).app'
         for name in module.PAYLOADS[1:]:
             (self.contents / 'Frameworks' / name).mkdir()
 
@@ -39,7 +39,7 @@ class CoreBundleTests(unittest.TestCase):
         info = plistlib.loads((bundle / 'Contents/Info.plist').read_bytes())
         self.assertEqual(info['CFBundleIdentifier'], 'dev.serafim.fast.core')
         self.assertTrue(info['LSUIElement'])
-        self.assertEqual(info['CFBundleExecutable'], 'YabCore')
+        self.assertEqual(info['CFBundleExecutable'], 'PaneCore')
         self.assertNotIn('NSAppleScriptEnabled', info)
         self.assertNotIn('OSAScriptingDefinition', info)
         self.assertEqual(plistlib.loads((self.contents / 'Info.plist').read_bytes()), self.parent)
@@ -62,15 +62,15 @@ class CoreBundleTests(unittest.TestCase):
         module.package(self.app)
         moved = self.app.with_name('Yab.app.old')
         self.app.rename(moved)
-        legacy = moved / 'Contents/MacOS/YabCore'
-        binary = moved / 'Contents/Frameworks/YabCore.app/Contents/MacOS/YabCore'
+        legacy = moved / 'Contents/MacOS/PaneCore'
+        binary = moved / 'Contents/Frameworks/PaneCore.app/Contents/MacOS/PaneCore'
         self.assertEqual(legacy.resolve(strict=True), binary.resolve(strict=True))
         self.assertEqual(binary.read_bytes(), b'first executable')
         framework = binary.parent.parent / 'Frameworks/Chromium Embedded Framework.framework/payload'
         self.assertEqual(framework.read_bytes(), b'untouched framework')
         self.assertFalse(framework.parent.is_symlink())
         self.assertFalse(framework.parent.parent.is_symlink())
-        self.assertTrue((binary.parent.parent / 'Frameworks/YabCore Helper (Renderer).app').is_dir())
+        self.assertTrue((binary.parent.parent / 'Frameworks/PaneCore Helper (Renderer).app').is_dir())
 
     def test_reembedding_replaces_only_owned_bundle(self):
         module.package(self.app)
@@ -97,7 +97,7 @@ class CoreBundleTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('receipts must be regenerated', result.stderr)
         self.assertEqual(self.legacy.read_bytes(), before)
-        self.assertFalse((self.contents / 'Frameworks/YabCore.app').exists())
+        self.assertFalse((self.contents / 'Frameworks/PaneCore.app').exists())
 
     def test_refuses_to_move_an_existing_alias(self):
         module.package(self.app)

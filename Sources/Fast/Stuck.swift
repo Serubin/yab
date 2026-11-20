@@ -84,7 +84,7 @@ final class StuckWatch {
     static var notices: [UUID: String] = [:]
     /// The persistent page overlay after the memory watcher stops a page.
     /// Agent tools check the same state before trying to read or reload it.
-    static let memoryStopped = "This page kept taking more memory, so Yab stopped it"
+    static let memoryStopped = "This page kept taking more memory, so \(Brand.name) stopped it"
     /// When an agent's page was last loaded again for its size: a page that
     /// grows straight back is left alone for ten minutes, not reloaded on
     /// every look.
@@ -393,10 +393,10 @@ extension Browser {
             let gb = String(format: "%.1f", Double(size) / Double(1 << 30))
             for tab in group {
                 if again {
-                    StuckWatch.notices[tab.id] = "The page grew to \(gb) GB of memory again after Yab loaded it again, so Yab stopped it. Don't open it again in this task; tell the user this page uses too much memory."
+                    StuckWatch.notices[tab.id] = "The page grew to \(gb) GB of memory again after \(Brand.name) loaded it again, so \(Brand.name) stopped it. Don't open it again in this task; tell the user this page uses too much memory."
                     stuck.outgrown.insert(tab.id)
                 } else {
-                    StuckWatch.notices[tab.id] = "The page grew to \(gb) GB of memory, so Yab loaded it again at the same address: what you did on it before is gone, read it again."
+                    StuckWatch.notices[tab.id] = "The page grew to \(gb) GB of memory, so \(Brand.name) loaded it again at the same address: what you did on it before is gone, read it again."
                     stuck.ending.insert(tab.id)
                     stuck.reloaded[tab.id] = Date()
                 }

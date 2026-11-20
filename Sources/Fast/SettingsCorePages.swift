@@ -30,7 +30,7 @@ struct GeneralPage: View {
                     .frame(width: 40, height: 40)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(updater.stage == .none ? "Yab \(Updater.version)" : versionTitle)
+                    Text(updater.stage == .none ? "\(Brand.name) \(Updater.version)" : versionTitle)
                         .font(.system(size: 13, weight: .semibold))
                     Text(updater.stage == .none ? SettingsWords.text("Up to date. ") + versionDetail : versionDetail)
                         .font(.callout)
@@ -51,7 +51,7 @@ struct GeneralPage: View {
             .onChange(of: nightly) { _, on in
                 if !on { Task { await offerStable() } }
             }
-            SettingsRow("Update automatically", detail: "Restart Yab to install updates while your Mac is idle.") {
+            SettingsRow("Update automatically", detail: "Restart \(Brand.name) to install updates while your Mac is idle.") {
                 Toggle("Update automatically", isOn: $automatic)
                     .labelsHidden()
                     .toggleStyle(.switch)
@@ -61,7 +61,7 @@ struct GeneralPage: View {
         }
         Section {
             EngineGeneralRows(model: model)
-            ShortcutActionRow(does: SettingsWords.text("Show Yab"), action: .showYab,
+            ShortcutActionRow(does: SettingsWords.text("Show Pane"), action: .showYab,
                               slot: Keymap.shared.slot(.showYab), pill: true)
                 .settingsAnchor("show-yab")
         }
@@ -124,26 +124,26 @@ struct GeneralPage: View {
         // Found, but its last try to go in place failed: Check Now tries
         // again (Updater.landing).
         case .none:
-            if let missed = updater.missed { return SettingsWords.format("Yab %@ is available", [missed.version]) }
-            return SettingsWords.text("Yab is up to date")
-        case .fetching(let next): return SettingsWords.format("Downloading Yab %@…", [next.version])
-        case .ready(let next): return SettingsWords.format("Yab %@ is downloaded", [next.version])
-        case .offered(let next): return SettingsWords.format("Yab %@ is available", [next.version])
+            if let missed = updater.missed { return SettingsWords.format("Pane %@ is available", [missed.version]) }
+            return SettingsWords.text("Pane is up to date")
+        case .fetching(let next): return SettingsWords.format("Downloading Pane %@…", [next.version])
+        case .ready(let next): return SettingsWords.format("Pane %@ is downloaded", [next.version])
+        case .offered(let next): return SettingsWords.format("Pane %@ is available", [next.version])
         }
     }
 
     private var versionDetail: String {
         switch updater.stage {
         case .none:
-            return updater.lastChecked.map { SettingsWords.format("Checked %@. Yab looks every hour", [$0.formatted(.relative(presentation: .named))]) }
-                ?? SettingsWords.text("Yab looks for a new version every hour")
+            return updater.lastChecked.map { SettingsWords.format("Checked %@. Pane looks every hour", [$0.formatted(.relative(presentation: .named))]) }
+                ?? SettingsWords.text("Pane looks for a new version every hour")
         // What's new is the card's to say after the restart, with the
         // changelog; a release's notes are a paragraph, not a row's line.
         case .fetching:
             return SettingsWords.text("In the background. Your settings stay as they are")
         // A critical one doesn't wait to be opened (Updater.Away).
         case .ready(let next):
-            return next.critical ? SettingsWords.text("A fix: Yab restarts for it once you are away") : SettingsWords.text("It takes over the next time Yab opens")
+            return next.critical ? SettingsWords.text("A fix: Pane restarts for it once you are away") : SettingsWords.text("It takes over the next time Pane opens")
         case .offered:
             return SettingsWords.text("Install it from the disk image, like the first time")
         }
@@ -155,7 +155,7 @@ struct GeneralPage: View {
         case .none:
             Button(SettingsWords.text(updater.checking ? "Checking…" : "Check Now")) {
                 updater.check { found in
-                    if found == nil { browser.announce("Yab is up to date", mark: "checkmark.circle", on: SettingsWindow.shared.toaster) }
+                    if found == nil { browser.announce("\(Brand.name) is up to date", mark: "checkmark.circle", on: SettingsWindow.shared.toaster) }
                 }
             }
             .settingsButton()
@@ -192,6 +192,7 @@ struct BringInPage: View {
             PasswordBringer(browser: browser, anchor: "import-passwords")
             WalletBringer(browser: browser, anchor: "import-cards")
             FirefoxBringer(browser: browser, anchor: "import-firefox")
+            YabBringer(browser: browser, anchor: "import-yab")
             // Exports, for a browser that isn't Chromium: Safari, Firefox.
             SettingsRow("Bring bookmarks in from a file", detail: "Import bookmarks from an HTML file.") {
                 Button(SettingsWords.text("Import…")) { browser.importBookmarksFile(on: SettingsWindow.shared.toaster) }.settingsButton()
@@ -510,7 +511,7 @@ struct TabsPage: View {
                     .controlSize(.small)
             }
             .settingsAnchor("meeting-folders")
-            SettingsRow("Picture in Picture automatically", detail: floatKey.keys.map { "Float videos when you leave the tab or Yab, and on calls. Use \($0.settingsHint) manually." } ?? "Float videos when you leave the tab or Yab, and on calls.") {
+            SettingsRow("Picture in Picture automatically", detail: floatKey.keys.map { "Float videos when you leave the tab or \(Brand.name), and on calls. Use \($0.settingsHint) manually." } ?? "Float videos when you leave the tab or \(Brand.name), and on calls.") {
                 Toggle(SettingsWords.text("Picture in Picture automatically"), isOn: $prefs.floatsOnLeave)
                     .labelsHidden()
                     .toggleStyle(.switch)
@@ -681,7 +682,7 @@ struct PasswordsPage: View {
         PasswordManagersSection(prefs: prefs, model: model, browser: browser)
         if prefs.usesYabPasswords {
             Section {
-                FeatureRow("Saved in Yab", icon: "key", tint: .systemGray,
+                FeatureRow("Saved in \(Brand.name)", icon: "key", tint: .systemGray,
                            detail: "View saved passwords.") {
                     Button(SettingsWords.text("Open")) { openPasswords() }.settingsButton()
                 }
@@ -705,8 +706,8 @@ struct PasswordsPage: View {
             }
         } else {
             Section {
-                FeatureRow("Saved in Yab", icon: "key", tint: .systemGray,
-                           detail: "Passwords remain in your keychain. Enable Yab passwords to fill them.") {
+                FeatureRow("Saved in \(Brand.name)", icon: "key", tint: .systemGray,
+                           detail: "Passwords remain in your keychain. Enable \(Brand.name) passwords to fill them.") {
                     Button(SettingsWords.text("Open")) { openPasswords() }.settingsButton()
                 }
                     .settingsAnchor("your-passwords")
@@ -717,7 +718,7 @@ struct PasswordsPage: View {
                 SettingsRow("Sites you turned down", detail: "Password saving is disabled for \(Vault.never.count) sites.") {
                     Button(SettingsWords.text("Forget")) {
                         Vault.never = []
-                        browser.announce("Yab offers on every site again", mark: "key", on: SettingsWindow.shared.toaster)
+                        browser.announce("\(Brand.name) offers on every site again", mark: "key", on: SettingsWindow.shared.toaster)
                     }
                     .settingsButton()
                 }
@@ -735,7 +736,7 @@ struct PasswordsPage: View {
             saving = "\(owner.name) fills and saves passwords on pages while its extension is on."
         }
         let passkeys = !prefs.passkeysPossible
-            ? "Passkeys are not yet available in Yab."
+            ? "Passkeys are not yet available in \(Brand.name)."
             : Passkeys.access == .denied
             ? "Allow passkeys in System Settings › Privacy & Security › Passkeys Access for Web Browsers."
             : "Passkeys use Touch ID, iCloud, a phone nearby or a security key."
@@ -929,7 +930,7 @@ struct PrivacyPage: View {
         if let chosen = shield.chosen {
             let name = Blockers.name(chosen)
             if shield.failed == chosen { return "\(name)'s rules didn't load. Built-in blocks meanwhile." }
-            if shield.source == .extension(chosen) { return "\(name) blocks ads and trackers. YouTube's ads are still taken out by Yab." }
+            if shield.source == .extension(chosen) { return "\(name) blocks ads and trackers. YouTube's ads are still taken out by \(Brand.name)." }
             return "Built-in blocks until \(name) is ready."
         }
         // What Built-in blocks with: "208,887 rules from 9 lists · updated 12 min ago".
@@ -1072,8 +1073,8 @@ struct SentToYabSettings: View {
 
     var body: some View {
         if Updater.site != nil {
-            Section(SettingsWords.text("Sent to Yab")) {
-                SettingsRow("Automatically send crash reports", detail: "Send crash and hang reports, Yab and macOS versions. No page content or typed text. When off, each new crash asks for approval.") {
+            Section(SettingsWords.text("Sent to Pane")) {
+                SettingsRow("Automatically send crash reports", detail: "Send crash and hang reports, \(Brand.name) and macOS versions. No page content or typed text. When off, each new crash asks for approval.") {
                     Toggle(SettingsWords.text("Automatically send crash reports"), isOn: $sendsCrashes)
                         .labelsHidden()
                         .toggleStyle(.switch)
@@ -1106,14 +1107,14 @@ struct CreditsPage: View {
         PageHero(page: .credits)
         Section {
             CreditRow(art: "Search", name: "Search", by: "Office Commun",
-                      thanks: "The open-source browser Yab grew from. Every page here started as theirs.",
+                      thanks: "The open-source browser \(Brand.name) grew from. Every page here started as theirs.",
                       site: "https://github.com/driceroland/Search")
                 .settingsAnchor("thanks")
             CreditRow(art: "Arc", name: "Arc", by: "The Browser Company",
-                      thanks: "Much of how Yab looks is inspired by Arc. Thank you for showing a browser can be calm, warm and a little playful.",
+                      thanks: "Much of how \(Brand.name) looks is inspired by Arc. Thank you for showing a browser can be calm, warm and a little playful.",
                       site: "https://arc.net")
             CreditRow(art: "Raycast", name: "Raycast", by: "Raycast",
-                      thanks: "Yab’s settings, commands and AI are inspired by Raycast. Thank you for showing how kind a Mac app can feel.",
+                      thanks: "\(Brand.name)’s settings, commands and AI are inspired by Raycast. Thank you for showing how kind a Mac app can feel.",
                       site: "https://www.raycast.com")
         }
         // What the licenses of code inside the app ask to be shown.
@@ -1122,7 +1123,7 @@ struct CreditsPage: View {
                 link("Acknowledgements") { NSWorkspace.shared.open(notices) }
                     .settingsAnchor("acknowledgements")
             } footer: {
-                SettingsNote("Licenses for open-source software used in Yab.")
+                SettingsNote("Licenses for open-source software used in \(Brand.name).")
             }
         }
     }

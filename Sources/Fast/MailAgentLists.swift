@@ -17,7 +17,7 @@ extension MailAgent {
     /// what each holds, in words for its description.
     static let otherLists: [(id: String, said: String)] = [
         ("kept", "Kept (drafts and sends set for later)"), ("reminders", "Reminders (your mail that comes back if nobody answers)"),
-        ("opened", "Opened (your mail opened, newest open first)"), ("starred", "Starred"), ("sent", "Sent"), ("done", "Done"),
+        ("starred", "Starred"), ("sent", "Sent"), ("done", "Done"),
         ("muted", "Muted"), ("spam", "Spam"), ("trash", "Trash"), ("all", "All Mail"), (MailSplits.skipped, "Archived Today"),
     ]
 
@@ -42,7 +42,7 @@ extension MailAgent {
     /// mail_list: with no list, every account and every list with how many
     /// threads it holds; with one, its threads as the page lists them, a
     /// line each with its id and what its row says (when it comes back or
-    /// goes, opened, a reminder).
+    /// goes, a reminder).
     static func list(_ center: MailCenter, _ request: [String: Any], now: Date = MailClock.now) -> [String: Any] {
         let said = (request["list"] as? String ?? "").trimmingCharacters(in: .whitespaces)
         let limit = max(1, min((request["limit"] as? Double).map { Int($0) } ?? request["limit"] as? Int ?? 20, 50))
@@ -58,7 +58,6 @@ extension MailAgent {
         let name = MailList.name(id)
         switch id {
         case "reminders": return ["text": reminders(engines, now: now, limit: limit)]
-        case "opened": return ["text": opened(only, engines: engines, now: now, limit: limit)]
         case "kept": return ["text": kept(engines, now: now, limit: limit)]
         default: break
         }
@@ -69,7 +68,6 @@ extension MailAgent {
             guard let engine = center.engines[row.account], let thread = engine.store.thread(row.thread) else { continue }
             var line = describe(thread, account: row.account, now: now, labels: labelNames(engine.store))
             if !row.when.isEmpty { line += " · " + row.when }
-            if !row.opened.isEmpty { line += " · " + row.opened }
             if let remind = engine.store.followup(row.thread), remind.fired == nil { line += " · back " + MailFollowups.said(remind.until, now: now) + " if no reply" }
             lines.append(line)
         }
@@ -133,25 +131,6 @@ extension MailAgent {
         }
         guard !lines.isEmpty else { return "Reminders: none. mail_act remind sets one on a thread whose last mail is the person's." }
         return "Reminders (\(lines.count)):\n" + lines.sorted { $0.0 < $1.0 }.prefix(limit).map { $0.1 }.joined(separator: "\n")
-    }
-
-    /// The person's own mail that was opened (read statuses), newest open
-    /// first, from Sent's newest hundred.
-    private static func opened(_ account: String, engines: [MailCenter.Engine], now: Date, limit: Int) -> String {
-        guard engines.contains(where: { MailReads.on($0.store) }) else {
-            return "Read statuses are off for \(engines.count == 1 ? engines[0].account : "these accounts"): nothing says when mail is opened. The person turns them on in Settings › Mail › Writing."
-        }
-        var lines: [(Date, String)] = []
-        for row in MailDesk.read(split: "sent", query: "", account: account, limit: 100).rows where !row.opened.isEmpty {
-            guard let engine = engines.first(where: { $0.account == row.account }), let thread = engine.store.thread(row.thread) else { continue }
-            let store = engine.store
-            let mine = Set(([store.me] + store.aliases).map { $0.lowercased() })
-            let ids = store.messages(thread: row.thread).filter { mine.contains($0.from.address.lowercased()) }.map(\.rfcID)
-            guard let seen = MailReads.seen(ids, in: store).values.max(by: { ($0.last ?? .distantPast) < ($1.last ?? .distantPast) }) else { continue }
-            lines.append((seen.last ?? thread.last, describe(thread, account: row.account, now: now, labels: labelNames(store)) + " · " + MailReads.line(seen, now: now)))
-        }
-        guard !lines.isEmpty else { return "Opened: none of the person's recent mail was opened yet." }
-        return "Opened (\(lines.count)):\n" + lines.sorted { $0.0 > $1.0 }.prefix(limit).map { $0.1 }.joined(separator: "\n")
     }
 
     /// An account as a request names it, or every one ("all") with none.
@@ -338,22 +317,22 @@ extension MailAgent {
         let address = (request["address"] as? String ?? "").trimmingCharacters(in: .whitespaces).lowercased()
         guard MailDesk.address(address) else { return ["error": "add needs the address to connect, as the user said it"] }
         if center.accounts.contains(address), center.status[address]?.signedOut != true {
-            return ["text": "\(address) is in Yab's mail already."]
+            return ["text": "\(address) is in \(Brand.name)'s mail already."]
         }
         let found: MailFinding.Found = center.accounts.contains(address) && MailCenter.kind(of: address) == .gmail
             ? .gmail : await MailFinding.find(address)
         switch found {
         case .gmail:
             if let problem = center.gmailConnectionProblem(expectedAccount: address) { return ["error": problem] }
-            guard MailClient.configured != nil else { return ["error": "this build of Yab has no Google client for Mail"] }
+            guard MailClient.configured != nil else { return ["error": "this build of \(Brand.name) has no Google client for Mail"] }
             guard !center.connecting else { return ["error": "another Gmail connection is under way: the person finishes or closes it first"] }
             browser.prefs.usesMail = true
             guard center.connect(in: browser, hint: address, outside: true, expectedAccount: address) else {
                 return ["error": "Gmail wasn’t connected"]
             }
-            return ["text": "Google's sign-in opened in the person's other browser for \(address): they choose the account and allow Yab there (you can't, and never type their password). It is in once they have; mail_accounts says so, and its mail keeps coming in after. Tell them in a line."]
+            return ["text": "Google's sign-in opened in the person's other browser for \(address): they choose the account and allow \(Brand.name) there (you can't, and never type their password). It is in once they have; mail_accounts says so, and its mail keeps coming in after. Tell them in a line."]
         case .microsoft:
-            return ["error": "Outlook and other Microsoft accounts can't be added to Yab yet; say so"]
+            return ["error": "Outlook and other Microsoft accounts can't be added to \(Brand.name) yet; say so"]
         case .none:
             return ["error": "\(address) isn't an address mail can be set up for"]
         case .imap(let setup, let provider):
@@ -368,7 +347,7 @@ extension MailAgent {
             }
             await MainActor.run { SettingsWindow.shared.show(.mail, for: browser) }
             let page = provider.map { $0.appPasswordPage.isEmpty ? "" : " Its app passwords are made at \($0.appPasswordPage)." } ?? ""
-            return ["text": "\(address) (\(provider?.name ?? setup.imapHost)) takes a password only the person types: Settings › Mail is open; they choose Add Account, then the provider, and put an app password in Yab's own field.\(page) Never ask for it in the chat."]
+            return ["text": "\(address) (\(provider?.name ?? setup.imapHost)) takes a password only the person types: Settings › Mail is open; they choose Add Account, then the provider, and put an app password in \(Brand.name)'s own field.\(page) Never ask for it in the chat."]
         }
     }
 
@@ -376,7 +355,7 @@ extension MailAgent {
     static func accountsSaid(_ center: MailCenter, now: Date = Date()) -> String {
         let accounts = center.accounts.sorted()
         guard !accounts.isEmpty else {
-            return "No mail account in Yab yet. mail_accounts add connects one the user names (Gmail and Google Workspace with an app password; iCloud, Zoho, Yahoo, Fastmail and other IMAP accounts while Settings › Experimental › Mail is on)."
+            return "No mail account in \(Brand.name) yet. mail_accounts add connects one the user names (Gmail and Google Workspace with an app password; iCloud, Zoho, Yahoo, Fastmail and other IMAP accounts while Settings › Experimental › Mail is on)."
         }
         let lines = accounts.map { account -> String in
             let kind = MailCenter.kind(of: account) == .gmail ? "Gmail" : MailServerSetup.kept(account, in: Store.settings).flatMap { MailKnownProviders.by(id: $0.provider)?.name } ?? "IMAP"

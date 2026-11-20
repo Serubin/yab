@@ -37,7 +37,7 @@ extension Browser {
             let hereIDs = Set(here.map(\.id))
             if let host, !here.isEmpty { out += here.map { row($0, "For " + StoreCatalog.bare(host)) } }
             let picks = catalog.items.filter { $0.picks == true && !hereIDs.contains($0.id) }
-            out += picks.map { row($0, "Yab Picks") }
+            out += picks.map { row($0, "\(Brand.name) Picks") }
             let shown = hereIDs.union(picks.map(\.id))
             out += catalog.items.filter { $0.plugin && !shown.contains($0.id) }.map { row($0, "Plugins") }
             out += catalog.items.filter { !$0.plugin && !shown.contains($0.id) }
@@ -217,8 +217,8 @@ struct StoreMakeHead: View {
                     .foregroundStyle(Palette.ink)
             }
             Text(kind == "arc"
-                 ? "The boosts you made in Arc, each for its site, on or off as they were there. Yab lists them before bringing them."
-                 : kind != "build" ? "Adds a request to the Store’s board, with your vote. When someone makes it, Yab tells you."
+                 ? "The boosts you made in Arc, each for its site, on or off as they were there. \(Brand.name) lists them before bringing them."
+                 : kind != "build" ? "Adds a request to the Store’s board, with your vote. When someone makes it, \(Brand.name) tells you."
                  : Agents.ready ? "\(name) writes the boost, checks it on your page and brings the Keep card. Nothing changes until you keep it."
                  : "Needs Claude or ChatGPT connected on your own plan. It writes the boost, checks it on your page and brings the Keep card.")
                 .font(.system(size: 13))

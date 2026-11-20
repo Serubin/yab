@@ -1631,7 +1631,7 @@ struct NetEventsTab: View {
             .padding(6)
             Rectangle().fill(Palette.ink.opacity(0.06)).frame(height: 1)
             if events.isEmpty {
-                NetNote(words: "No events yet. Yab hears an EventSource's events from the page while Network is open.")
+                NetNote(words: "No events yet. \(Brand.name) hears an EventSource's events from the page while Network is open.")
             }
             ThreadScrollView {
                 Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 3) {

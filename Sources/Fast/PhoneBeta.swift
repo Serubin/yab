@@ -51,7 +51,7 @@ enum YabPhone: Hashable {
 }
 
 enum PhoneBeta {
-    /// TestFlight's public link for Yab Browser (dev.serafim.fast.iphone).
+    /// TestFlight's public link for upstream Yab for iPhone.
     static let link = URL(string: "https://testflight.apple.com/join/EJY6AEHB")!
     /// The newest Android alpha's APK, kept current by the site's route.
     static let androidLink = URL(string: "https://yetanotherbrowser.com/android.apk")!
@@ -68,11 +68,8 @@ enum PhoneBeta {
         return false
     }
 
-    /// Something to say: no phone is in sync yet.
-    @MainActor static var waiting: Bool {
-        let sync = SyncCenter.shared
-        return !(sync.on && sync.devices.contains { SyncPhones.isPhone($0.model) || SyncPhones.isAndroid($0.model) })
-    }
+    /// Never: the phone apps are upstream Yab's, so Pane doesn't offer them.
+    @MainActor static var waiting: Bool { false }
 
     /// The row under Set up Yab, in the words of the rows beside it.
     static var hint: Hint {
@@ -188,7 +185,7 @@ struct PhoneBetaRow: View {
                 .frame(width: 28, height: 28) // design: DeviceWell's side, beside the devices
                 .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 3) { // design: SettingsRow's gap under a title
-                    Text("Yab for your phone")
+                    Text("\(Brand.name) for your phone")
                     Text("iPhone or Android. Your spaces and tabs, end-to-end encrypted.")
                         .font(.callout)
                         .foregroundStyle(.secondary)

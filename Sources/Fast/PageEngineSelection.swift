@@ -20,7 +20,7 @@ enum PageEngineSelection {
     static var bundledChromium: Bool {
         #if arch(arm64)
         let root = Bundle.main.bundleURL.appendingPathComponent("Contents")
-        return FileManager.default.isExecutableFile(atPath: root.appendingPathComponent("MacOS/YabCore").path)
+        return FileManager.default.isExecutableFile(atPath: root.appendingPathComponent("MacOS/PaneCore").path)
             && FileManager.default.fileExists(atPath: root.appendingPathComponent("Frameworks/Chromium Embedded Framework.framework").path)
         #else
         return false

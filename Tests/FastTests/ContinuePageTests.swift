@@ -40,7 +40,7 @@ struct ContinuePageTests {
     }
 
     @Test func whatArrivesIsTrustedNoFurtherThanAnyAddress() {
-        for text in ["javascript:alert(1)", "file:///etc/passwd", "yab-boost://abc", "data:text/html,hi",
+        for text in ["javascript:alert(1)", "file:///etc/passwd", "pane-boost://abc", "data:text/html,hi",
                      "https://user:pw@example.com/"] {
             #expect(ContinuePage.arrival(webpageURL: url(text), userInfo: nil) == nil, "\(text)")
         }

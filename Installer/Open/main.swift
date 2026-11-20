@@ -174,8 +174,8 @@ final class Installer: ObservableObject {
             if !ProcessInfo.processInfo.isOperatingSystemAtLeast(wanted) {
                 let have = ProcessInfo.processInfo.operatingSystemVersion
                 return .unsupported(
-                    title: "Yab needs macOS \(minimum) or later",
-                    detail: "This Mac has macOS \(have.majorVersion).\(have.minorVersion). Yab will open here once it's updated, from Software Update in System Settings."
+                    title: "Pane needs macOS \(minimum) or later",
+                    detail: "This Mac has macOS \(have.majorVersion).\(have.minorVersion). Pane will open here once it's updated, from Software Update in System Settings."
                 )
             }
         }
@@ -186,8 +186,8 @@ final class Installer: ObservableObject {
             let appleSilicon = machine.hasPrefix("arm64") || Self.translated
             if !appleSilicon, !executable.contains(NSBundleExecutableArchitectureX86_64) {
                 return .unsupported(
-                    title: "Yab needs a Mac with Apple silicon",
-                    detail: "This Mac has an Intel processor, and Yab is made only for Macs with M-series chips."
+                    title: "Pane needs a Mac with Apple silicon",
+                    detail: "This Mac has an Intel processor, and Pane is made only for Macs with M-series chips."
                 )
             }
         }
@@ -220,7 +220,7 @@ struct InstallerView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(height: 26)
                 }
-                Text("Yab").font(.system(size: 19, weight: .semibold, design: .rounded))
+                Text("Pane").font(.system(size: 19, weight: .semibold, design: .rounded))
             }
             .padding(.top, 34)
             VStack(spacing: 10) {
@@ -255,22 +255,22 @@ struct InstallerView: View {
 
     private var title: String {
         switch installer.scene {
-        case .copying, .done: return "Moving Yab into Applications…"
-        case .restart(let version): return version.isEmpty ? "The new Yab is ready" : "Yab \(version) is ready"
-        case .restarting: return "Restarting Yab…"
+        case .copying, .done: return "Moving Pane into Applications…"
+        case .restart(let version): return version.isEmpty ? "The new Pane is ready" : "Pane \(version) is ready"
+        case .restarting: return "Restarting Pane…"
         case .locked: return "Applications is locked"
         case .unsupported(let title, _): return title
-        case .failed: return "Yab couldn't be installed"
-        case .unopened: return "Yab is in Applications"
+        case .failed: return "Pane couldn't be installed"
+        case .unopened: return "Pane is in Applications"
         }
     }
 
     private var detail: String {
         switch installer.scene {
         case .copying, .done: return "It opens as soon as it's there."
-        case .restart: return "The Yab that's open is the one before. Restart it and your tabs come back just as they are."
+        case .restart: return "The Pane that's open is the one before. Restart it and your tabs come back just as they are."
         case .restarting: return "Your tabs come back with it."
-        case .locked: return "This account can't add apps there. Yab can go in your own Applications folder instead."
+        case .locked: return "This account can't add apps there. Pane can go in your own Applications folder instead."
         case .unsupported(_, let detail): return detail
         case .failed(let reason): return reason
         case .unopened(let reason): return "It didn't open: \(reason)"
@@ -283,7 +283,7 @@ struct InstallerView: View {
         case .copying:
             QuietButton(title: "Cancel") { installer.cancel() }
         case .restart:
-            PillButton(title: "Restart Yab") { installer.restart() }
+            PillButton(title: "Restart Pane") { installer.restart() }
             QuietButton(title: "Later") { installer.later() }
         case .locked:
             PillButton(title: "Install for Me") { installer.begin(personal: true) }
@@ -292,7 +292,7 @@ struct InstallerView: View {
             PillButton(title: "Try Again") { installer.begin() }
             QuietButton(title: "Close") { NSApp.terminate(nil) }
         case .unopened:
-            PillButton(title: "Open Yab") { installer.openInstalled() }
+            PillButton(title: "Open Pane") { installer.openInstalled() }
             QuietButton(title: "Close") { NSApp.terminate(nil) }
         case .unsupported:
             PillButton(title: "Close") { NSApp.terminate(nil) }
@@ -389,7 +389,7 @@ final class Delegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                 contentRect: NSRect(x: 0, y: 0, width: 520, height: 340),
                 styleMask: [.titled, .closable, .fullSizeContentView], backing: .buffered, defer: false
             )
-            window.title = "Install Yab"
+            window.title = "Install Pane"
             window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
             window.isMovableByWindowBackground = true

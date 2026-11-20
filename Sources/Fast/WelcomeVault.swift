@@ -99,7 +99,7 @@ enum WelcomeVault: WelcomeChapter {
         // In Yab already, not connected.
         for item in ManagerExtensions.shared.installed where PasswordManagers.isManager(item) {
             let id = PasswordManagers.canonical(item.id)
-            if offerable.contains(id) { add(id, "Extension in Yab", .coming) }
+            if offerable.contains(id) { add(id, "Extension in \(Brand.name)", .coming) }
         }
         // On this Mac: its app, or its extension in another browser.
         let here = PasswordManagers.Connections.shared.here
@@ -134,7 +134,7 @@ enum WelcomeVault: WelcomeChapter {
     static func words(_ moment: WelcomeMoment, _ stage: WelcomeStage) -> WelcomeWords {
         guard let offer = chosen(stage) else { return WelcomeWords(title: WelcomeYours.title) }
         let several = offers(stage).count > 1
-        let sub = several ? "Pick the one you use. Yab fills from it, and so does your agent."
+        let sub = several ? "Pick the one you use. \(Brand.name) fills from it, and so does your agent."
             : "Fill from \(offer.name) here, and let your agent sign in with it."
         if connected == offer.id { return WelcomeWords(title: WelcomeYours.title, sub: sub, primary: "Continue") }
         if connecting {
