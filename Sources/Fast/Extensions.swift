@@ -3616,6 +3616,14 @@ extension Extensions: WKWebExtensionControllerDelegate {
         return all
     }
 
+    /// The page of the `n`th popup window as `windows.getAll` lists them, if it is a small window's.
+    func popupTab(at n: Int, for context: WKWebExtensionContext) -> Tab? {
+        // WebKit's own list: windows.getAll's order is focus order, which ours isn't.
+        let popups = context.openWindows.filter { $0.windowType?(for: context) == .popup }
+        guard popups.indices.contains(n) else { return nil }
+        return (popups[n] as? ExtensionWindow)?.link?.tab
+    }
+
     /// The last focused, as Chrome's: a popout while it is the key window.
     func webExtensionController(_ controller: WKWebExtensionController, focusedWindowFor extensionContext: WKWebExtensionContext) -> (any WKWebExtensionWindow)? {
         if let popout = ExtensionPopout.owning(NSApp.keyWindow), popout.controller === controller { return popout.frame }
