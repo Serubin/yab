@@ -524,10 +524,6 @@ struct SettingsItem: Identifiable, Hashable {
         // About
         SettingsItem(id: "updates", page: .general, title: "Check for updates",
                      words: "update version new release download restart relaunch"),
-        SettingsItem(id: "feedback", page: .about, title: "Send feedback",
-                     words: "feedback bug report problem contact"),
-        SettingsItem(id: "community", page: .about, title: "Community",
-                     words: "community chat group x twitter people join talk"),
         SettingsItem(id: "credits", page: .about, title: "Credits",
                      words: "credits thanks search office commun arc raycast inspiration"),
         SettingsItem(id: "thanks", page: .credits, title: "Search, Arc and Raycast",

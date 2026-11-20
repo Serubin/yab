@@ -596,7 +596,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>NSDockTilePlugIn</key><string>YabDockTile.docktileplugin</string>
   <key>LSMinimumSystemVersion</key><string>$MINIMUM</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
-  <key>NSHumanReadableCopyright</key><string>© 2026 Serafim Korablev · Pane, a fork of Yab</string>
+  <key>NSHumanReadableCopyright</key><string>© 2026 Solomon Rubin · Pane, a fork of Yab © 2026 Serafim Korablev</string>
   <key>NSHighResolutionCapable</key><true/>
   <!-- Scriptable as Arc and Chrome are: windows, tabs, spaces
        (Resources/Yab.sdef, Scripting.swift). -->

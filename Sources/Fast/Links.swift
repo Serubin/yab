@@ -763,10 +763,14 @@ final class Links: NSObject, NSApplicationDelegate {
         NSApp.activate()
     }
 
+    /// Feedback and the community chat reach upstream Yab, so Pane offers neither.
+    static let offersFeedback = false
+
     /// The field, the Help menu, and the About page all come here: a sheet on the
     /// window you are in that already knows what build this is, and sends
     /// only when Send is pressed. A build with no site gets a draft in Mail.
     static func writeFeedback(on window: NSWindow? = nil) {
+        guard offersFeedback else { return }
         // A sheet here that sends straight to the site (Feedback.swift).
         if Updater.site != nil {
             MainActor.assumeIsolated { FeedbackSheet.show(on: window) }
