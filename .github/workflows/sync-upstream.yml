@@ -1,5 +1,5 @@
 # Hourly merge of upstream yetanotherbrowser/yab main into this fork's main and canary, and
-# half an hour later a release of canary when upstream bumped VERSION or the fork has changes since the last one.
+# half an hour later a release of canary when upstream shipped a new version or the fork has changes since the last one.
 
 name: Sync upstream
 
@@ -125,16 +125,18 @@ jobs:
           tag="$(gh release list -R "$REPO" --exclude-drafts --exclude-pre-releases --limit 50 \
             --json tagName,publishedAt \
             --jq '[.[] | select(.tagName | startswith("v"))] | sort_by(.publishedAt) | last | .tagName // ""')"
+          now="$(python3 -I scripts/fork/upstream-version.py)"
           reason=""
           if [ -z "$tag" ]; then
             reason="no release yet"
           else
             base="$(git rev-list -n 1 "refs/tags/$tag")"
-            if [ "$base" = "$head" ]; then say "release: $tag is canary's head"; exit 0; fi
-            was="$(git show "$base:VERSION" | tr -d '[:space:]')"
-            now="$(tr -d '[:space:]' < VERSION)"
+            if [[ "$tag" =~ ^v([0-9.]+)-r[0-9]+(-webkit)?$ ]]; then was="${BASH_REMATCH[1]}"
+            else was="$(git show "$base:VERSION" | tr -d '[:space:]')"; fi
             if [ "$was" != "$now" ]; then
               reason="upstream $was -> $now"
+            elif [ "$base" = "$head" ]; then
+              say "release: $tag is canary's head and upstream is still $now"; exit 0
             else
               # Fork commits that touch the app; docs and CI alone don't warrant a signed build.
               changed="$(git rev-list --no-merges --count "$base..HEAD" ^"upstream/$UPSTREAM_BRANCH" \
