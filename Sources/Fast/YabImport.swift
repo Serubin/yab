@@ -62,7 +62,7 @@ enum YabBrowser {
 
     static func holdsData(_ folder: URL) -> Bool {
         let files = FileManager.default
-        return [bookmarksFile, historyFile].contains { files.fileExists(atPath: folder.appendingPathComponent($0).path) }
+        return [bookmarksFile, historyFile, spacesFile, firstSessionFile].contains { files.fileExists(atPath: folder.appendingPathComponent($0).path) }
     }
 
     // MARK: - reading
