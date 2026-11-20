@@ -1881,7 +1881,9 @@ enum ExtensionShims {
         case "action.popup":
             let path = first as? String ?? ""
             let index = args.dropFirst().first as? Int ?? -1
-            if index >= 0, owner.visibleTabs.indices.contains(index) {
+            if let popup = args.dropFirst(2).first as? Int {
+                if let tab = owner.popupTab(at: popup, for: context) { owner.popupPaths[id, default: [:]][tab.id.uuidString] = path }
+            } else if index >= 0, owner.visibleTabs.indices.contains(index) {
                 owner.popupPaths[id, default: [:]][owner.visibleTabs[index].id.uuidString] = path
             } else {
                 owner.popupPaths[id, default: [:]]["*"] = path

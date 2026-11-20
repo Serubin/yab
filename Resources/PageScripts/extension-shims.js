@@ -3504,9 +3504,16 @@
     if (!a || typeof a.setPopup !== "function") continue;
     const setPopup = a.setPopup.bind(a);
     put(a, "setPopup", (details = {}, callback) => {
-      const tell = (index) => { try { return native("action.popup", [details.popup || "", index]).catch(() => {}); } catch (e) { return undefined; } };
+      const tell = (index, popup = null) => { try { return native("action.popup", [details.popup || "", index, popup]).catch(() => {}); } catch (e) { return undefined; } };
+      // A popup window's one tab is at 0 there, not in a row: named by that window's place among the popups.
+      const where = async (t) => {
+        const w = chrome.windows ? await chrome.windows.get(t.windowId).catch(() => null) : null;
+        if (!w || w.type !== "popup") return tell(t.index);
+        const popups = await chrome.windows.getAll({ windowTypes: ["popup"] }).catch(() => []);
+        return tell(t.index, popups.findIndex((p) => p.id === t.windowId));
+      };
       const told = typeof details.tabId === "number" && chrome.tabs
-        ? chrome.tabs.get(details.tabId).then((t) => tell(t.index), () => {}) : tell(-1);
+        ? chrome.tabs.get(details.tabId).then(where, () => {}) : tell(-1);
       // WebKit hears of a stand-in, so the page itself stays an
       // ordinary page (ExtensionShims.mendPopup), once the browser has
       // put the stand-in's file there.
