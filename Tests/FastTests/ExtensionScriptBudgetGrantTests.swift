@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import Testing
 import WebKit
+import YabCoreClient
 @testable import Fast
 
 /// The script budget held through the grant routes of a real loaded context:
@@ -16,7 +17,8 @@ struct ExtensionScriptBudgetGrantTests {
     @MainActor
     private final class Fixture {
         let signIn = UUID()
-        let id = "scriptbudget" + UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
+        // Shaped as Chrome's, so a Chromium row can name it.
+        let id = String((0..<32).map { _ in "abcdefghijklmnop".randomElement()! })
         let root: URL
         let owner: Extensions
         let savedPrivate: Any?
@@ -140,6 +142,45 @@ struct ExtensionScriptBudgetGrantTests {
         #expect(!fixture.owner.setAccess(fixture.id, .asked))
         #expect(fixture.owner.access(fixture.id) == .click)
         #expect(Self.granted(context) == before)
+    }
+
+    @Test func narrowingToChosenSitesPastTheBudgetStillApplies() async throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanUp() }
+        let context = try await fixture.load()
+        let count = try fixture.fit()
+        let chosen = Array(Self.hosts.prefix(count + 3))
+        fixture.owner.adopt(sites: chosen, for: fixture.id)
+
+        #expect(fixture.owner.setAccess(fixture.id, .sites))
+        #expect(fixture.owner.access(fixture.id) == .sites)
+        #expect(fixture.owner.allowed(fixture.id) == chosen)
+        #expect(context.hasAccess(to: Self.page(chosen[count - 1])))
+        #expect(!context.hasAccess(to: Self.page(chosen[count])))
+        #expect(fixture.owner.errors[fixture.id]?.contains { $0.hasPrefix("Not running on \(chosen[count])") } == true)
+    }
+
+    @available(macOS 15.4, *)
+    @Test func chromiumSitesPastTheBudgetAreKeptForChromium() async throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanUp() }
+        let context = try await fixture.load()
+        let chosen = Array(Self.hosts.prefix(try fixture.fit() + 3))
+        let held = JSONValue.object([
+            "hostAccess": .string("ON_SPECIFIC_SITES"),
+            "hosts": .array(chosen.map { .object(["host": .string("*://\($0)/*"), "granted": .bool(true)]) }),
+        ])
+        let row = try ChromiumExtensions.Item(.object([
+            "id": .string(fixture.id), "name": .string("Script budget"), "state": .string("ENABLED"), "access": held,
+        ]))
+        ChromiumExtensionGrants.adoptAccess([row], into: fixture.owner)
+
+        #expect(fixture.owner.access(fixture.id) == .sites)
+        #expect(fixture.owner.allowed(fixture.id) == chosen)
+        #expect(!context.hasAccess(to: Self.page(chosen.last!)))
+        let change = ChromiumExtensionGrants.accessChange(row, access: fixture.owner.access(fixture.id),
+                                                          allowed: fixture.owner.allowed(fixture.id))
+        #expect(change?.remove.isEmpty ?? true)
     }
 
     @Test func anOptionalSiteRequestPastTheBudgetIsRefusedUnasked() async throws {

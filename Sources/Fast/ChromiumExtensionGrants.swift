@@ -97,11 +97,8 @@ extension ChromiumExtensionGrants {
             case "ON_SPECIFIC_SITES":
                 list.setAccess(row.id, .sites)
                 if case .array(let hosts) = held["hosts"] {
-                    for host in hosts where host["granted"] == .bool(true) {
-                        if let name = host["host"].string.flatMap(Self.host(of:)), !list.allow(name, for: row.id) {
-                            NSLog("Chromium extensions: %@ was not given %@ under WebKit's script budget", row.id, name)
-                        }
-                    }
+                    let names = hosts.filter { $0["granted"] == .bool(true) }.compactMap { $0["host"].string.flatMap(Self.host(of:)) }
+                    list.adopt(sites: names, for: row.id)
                 }
             default: break
             }
