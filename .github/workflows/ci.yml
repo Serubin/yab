@@ -102,8 +102,8 @@ jobs:
         run: ./build.sh
       - name: Check the bundle
         run: |
-          codesign --verify --deep --strict "build/yab Dev.app"
-          codesign -dv "build/yab Dev.app" 2>&1 | grep -E 'Identifier|Signature'
+          codesign --verify --deep --strict "build/Pane Dev.app"
+          codesign -dv "build/Pane Dev.app" 2>&1 | grep -E 'Identifier|Signature'
       # The suites that cover what the branch changed (scripts/runs/tests_for.py
       # picks them by file name). The whole suite does not finish on a clean
       # Mac yet (see the full-suite job below), so it is not a required check.
@@ -161,7 +161,7 @@ jobs:
   # Chromium tabs against the self-built patched CEF SDK pinned in
   # scripts/cef/patched-sdk.json. Advisory until it has run clean for a while.
   chromium-patched:
-    name: Build Yab Dev with patched CEF (advisory)
+    name: Build Pane Dev with patched CEF (advisory)
     runs-on: macos-26
     timeout-minutes: 90
     continue-on-error: true
@@ -198,7 +198,7 @@ jobs:
           key: spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-${{ github.sha }}
           restore-keys: |
             spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.swift', 'Package.resolved') }}-
-      - name: Build YabCore
+      - name: Build PaneCore
         if: steps.pin.outputs.present == 'true'
         env:
           YAB_CEF_API_VERSION: "999999"
@@ -208,7 +208,7 @@ jobs:
           test -n "$YAB_CEF_DIR"
           mkdir -p "$YAB_FARM_OUT"
           bash YabCore/build.sh
-          helper="$(cat "$YAB_FARM_OUT/app-path.txt")/Contents/MacOS/YabCore"
+          helper="$(cat "$YAB_FARM_OUT/app-path.txt")/Contents/MacOS/PaneCore"
           test -x "$helper"
           echo "YAB_CEF_HELPER=$helper" >> "$GITHUB_ENV"
       - name: Build the app bundle with CEF (ad hoc signed)
@@ -221,4 +221,4 @@ jobs:
           ./build.sh
       - name: Check the bundle
         if: steps.pin.outputs.present == 'true'
-        run: codesign --verify --deep --strict "build/yab Dev.app"
+        run: codesign --verify --deep --strict "build/Pane Dev.app"

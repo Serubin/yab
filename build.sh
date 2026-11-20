@@ -291,7 +291,7 @@ PLIST
 # what the app weighed (6.5 MB of binary, 2.7 without them), and nothing the
 # app reads while it runs. They are kept beside the build instead, as a dSYM
 # that turns the addresses in a crash report back into names (Console, or
-# atos -arch arm64 -o build/yab.app.dSYM/Contents/Resources/DWARF/yab; the
+# atos -arch arm64 -o build/Pane.app.dSYM/Contents/Resources/DWARF/pane; the
 # universal app's dSYM holds both architectures).
 if [ "$CONFIG" = "release" ]; then
   rm -rf "$APP.dSYM"
