@@ -26,7 +26,7 @@ def run(args, *, env=None, capture=False, check=True, timeout=None):
 def package(out, result):
     os.chdir(ROOT)
     env = {**os.environ, 'YAB_CEF': '0'}
-    app = ROOT / 'build/yab Dev.app'
+    app = ROOT / 'build/Pane Dev.app'
 
     def build(label, values):
         started = time.monotonic()
