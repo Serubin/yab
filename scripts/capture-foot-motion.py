@@ -47,7 +47,7 @@ def record(name, action, window, seconds=1.5):
 
 subprocess.run(["defaults", "write", f"dev.serafim.fast.test.{world}", "bench", "-bool", "true"], check=True)
 env = dict(os.environ, YAB_PROBE=world, FAST_PROBE=world, HOME=str(scratch))
-binary = Path(os.environ.get("APP", "build/yab Dev.app")) / "Contents" / "MacOS" / "yab"
+binary = Path(os.environ.get("APP", "build/Pane Dev.app")) / "Contents" / "MacOS" / "pane"
 with (out / "app.log").open("w") as log:
     process = subprocess.Popen([str(binary)], cwd=scratch, env=env, stdout=log, stderr=subprocess.STDOUT)
     try:
