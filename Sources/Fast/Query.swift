@@ -787,6 +787,7 @@ enum Command: String, CaseIterable {
     /// there is no page under the field.
     @MainActor
     func available(in browser: Browser) -> Bool {
+        if self == .feedback, !Links.offersFeedback { return false }
         if let entry = MenuCommands.entries[self] {
             guard MenuCommands.everyone.contains(self) || browser.prefs.menuCommands else { return false }
             // These routes belong to the browser window. A field raised by a

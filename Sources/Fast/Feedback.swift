@@ -52,7 +52,7 @@ enum FeedbackSheet {
     /// search as a letter (feedback #385).
     private static var keys: Any?
     static func listen() {
-        guard keys == nil else { return }
+        guard keys == nil, Links.offersFeedback else { return }
         keys = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             guard !Keymap.shared.recording, Keymap.shared.matches(event, .sendFeedback) else { return event }
             if let window = event.window, let browser = BrowserWindows.shared.browser(for: window),

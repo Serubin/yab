@@ -1696,7 +1696,7 @@ private struct PageList: NSViewRepresentable {
         /// and Arc keep it, and the community's chat on X under it, scrolling
         /// with the rest rather than held at the foot. A search folds them
         /// away with the pages it doesn't name.
-        func numberOfRows(in tableView: NSTableView) -> Int { parent.rows.count + 2 }
+        func numberOfRows(in tableView: NSTableView) -> Int { parent.rows.count + (Links.offersFeedback ? 2 : 0) }
 
         /// Send Feedback or Community: a row that acts, not a page.
         func isFeedback(_ row: Int) -> Bool { row >= parent.rows.count }
