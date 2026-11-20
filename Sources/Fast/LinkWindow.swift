@@ -132,10 +132,13 @@ final class LinkWindow: NSObject, NSWindowDelegate {
     }
 
     /// The one in front: key, or under the key popover hung from it.
-    static var inFront: LinkWindow? {
-        var window = NSApp.keyWindow
+    static var inFront: LinkWindow? { inFront(key: NSApp.keyWindow) }
+
+    /// A kept one isn't, though it may stay key until the stage has its page.
+    static func inFront(key: NSWindow?) -> LinkWindow? {
+        var window = key
         while let current = window {
-            if let link = owning(current) { return link }
+            if let link = owning(current) { return link.kept ? nil : link }
             window = current.parent
         }
         return nil
