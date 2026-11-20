@@ -2877,7 +2877,9 @@ final class Extensions: NSObject, ObservableObject {
                 for pattern in Extensions.patterns(for: host) { context.setPermissionStatus(.unknown, for: pattern) }
             }
         }
-        guard admits(id, { reset($0); _ = Extensions.apply(plan, to: $0) }) else {
+        // Only all its sites can widen past the budget: chosen sites are cut to fit.
+        guard access != .asked || self.access(id) == .asked
+              || admits(id, { reset($0); _ = Extensions.apply(plan, to: $0) }) else {
             // The picker bound to it goes back to the access it still has.
             objectWillChange.send()
             return false
@@ -2889,7 +2891,18 @@ final class Extensions: NSObject, ObservableObject {
         guard let context = contexts[id] else { return true }
         reset(context)
         applyAccess(context)
+        noteIfOverBudget(id)
         return true
+    }
+
+    /// Sites chosen on another engine, kept whole: WebKit is given those that fit.
+    func adopt(sites hosts: [String], for id: String) {
+        var list = allowed(id)
+        for host in hosts where !list.contains(host) { list.append(host) }
+        Store.settings.set(list, forKey: "extensions.allowed.\(id)")
+        objectWillChange.send()
+        Extensions.listsChanged.send()
+        if let context = contexts[id] { applyAccess(context) }
     }
 
     func block(_ host: String, for id: String) {
@@ -2937,7 +2950,52 @@ final class Extensions: NSObject, ObservableObject {
     private func applyAccess(_ context: WKWebExtensionContext) {
         let id = context.uniqueIdentifier
         if ExtensionShims.portTrace { noteError("yab trace: applyAccess", for: id) }
-        take(Extensions.apply(accessPlan(id), to: context), from: id)
+        var plan = accessPlan(id)
+        let fit = sitesThatFit(plan, on: context)
+        let left = Array(plan.allowed.dropFirst(fit))
+        plan.allowed = Array(plan.allowed.prefix(fit))
+        for host in left {
+            for pattern in Extensions.patterns(for: host) { context.setPermissionStatus(.unknown, for: pattern) }
+        }
+        take(Extensions.apply(plan, to: context), from: id)
+        guard !left.isEmpty else { return }
+        let note = "Not running on \(left.joined(separator: ", ")): its content scripts would pass WebKit's limit for all extensions"
+        guard errors[id]?.contains(note) != true else { return }
+        NSLog("Extensions: %@ runs on %d of its chosen sites under WebKit's script budget", id, fit)
+        noteError(note, for: id, counted: false)
+    }
+
+    /// How many of `plan`'s chosen sites, in the order chosen, fit the
+    /// budget beside every other loaded extension. All of them when even
+    /// none would fit: that is over for another reason, `noteIfOverBudget`'s.
+    private func sitesThatFit(_ plan: AccessPlan, on live: WKWebExtensionContext) -> Int {
+        let id = live.uniqueIdentifier
+        guard plan.access == .sites, !plan.allowed.isEmpty,
+              let groups = try? WebKitIPCBoundary.catalogGroups(at: Extensions.folder(for: id)) else { return plan.allowed.count }
+        let others = contexts.filter { $0.key != id }.reduce(0) { total, other in
+            let theirs = (try? WebKitIPCBoundary.catalogGroups(at: Extensions.folder(for: other.key))) ?? []
+            return total + WebKitIPCBoundary.injectedScripts(theirs, grants: WebKitIPCBoundary.Grants(other.value))
+        }
+        let fileAccess = WebKitIPCBoundary.Grants.fileAccess(of: live)
+        func fits(_ count: Int) -> Bool {
+            var some = plan
+            some.allowed = Array(plan.allowed.prefix(count))
+            let trial = trial(of: live)
+            for host in plan.allowed.dropFirst(count) {
+                for pattern in Extensions.patterns(for: host) { trial.setPermissionStatus(.unknown, for: pattern) }
+            }
+            _ = Extensions.apply(some, to: trial)
+            let own = WebKitIPCBoundary.injectedScripts(groups, grants: WebKitIPCBoundary.Grants(trial, fileAccess: fileAccess))
+            return others + own <= WebKitIPCBoundary.scriptLimit
+        }
+        if fits(plan.allowed.count) || !fits(0) { return plan.allowed.count }
+        // Each site only adds scripts, so the ones that fit are a prefix.
+        var low = 0, high = plan.allowed.count - 1
+        while low < high {
+            let mid = (low + high + 1) / 2
+            if fits(mid) { low = mid } else { high = mid - 1 }
+        }
+        return low
     }
 
     /// `plan` set on `context`'s site grants; returns the keys it keeps from it.
