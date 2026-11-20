@@ -996,13 +996,13 @@ struct AboutPage: View {
                     .frame(width: 72, height: 72)
                     .padding(.bottom, 4)
                 // The name and the line the welcome says first.
-                Text("yet another browser.").font(.system(size: 20, weight: .semibold))
+                Text("\(Brand.name) browser.").font(.system(size: 20, weight: .semibold))
                 Text("Version \(Updater.version)").foregroundStyle(.secondary)
                 Text("A browser for your Mac.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .padding(.top, 6)
-                Text("© 2026 Serafim Korablev")
+                Text("© 2026 Solomon Rubin · Pane, a fork of Yab © 2026 Serafim Korablev")
                     .font(.callout)
                     .foregroundStyle(.tertiary)
             }
@@ -1013,10 +1013,6 @@ struct AboutPage: View {
         }
         StampAboutSection()
         Section {
-            link("Send feedback") { Links.writeFeedback() }
-                .settingsAnchor("feedback")
-            link("Join the community on X") { Links.openFromSettings(Links.community) }
-                .settingsAnchor("community")
             SettingsRow("Welcome") {
                 // Over the browser window, from the first frame: the
                 // settings step aside so the intro has the screen.

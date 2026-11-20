@@ -500,8 +500,10 @@ private struct HelpItems: View {
             selected.welcoming = true
             LaunchArrival.shared.replay(selected)
         }
-        Button("Send Feedback…") { Links.writeFeedback() }
-            .shortcut(.sendFeedback)
+        if Links.offersFeedback {
+            Button("Send Feedback…") { Links.writeFeedback() }
+                .shortcut(.sendFeedback)
+        }
         Divider()
         Button("Copy Diagnostics") { selected.copyMenuDiagnostics() }
     }
@@ -3137,7 +3139,9 @@ struct ContentView: View {
             return browser.openPlace(shortcut: action)
         case .settings: browser.tuning = true
         // On the window in front, as the Help menu's item (FeedbackSheet.show).
-        case .sendFeedback: Links.writeFeedback()
+        case .sendFeedback:
+            guard Links.offersFeedback else { return false }
+            Links.writeFeedback()
         // Mail's space and back, once an account is in (MailSpace).
         case .mail:
             guard MailCenter.shared.connected || browser.inMail else { return false }
