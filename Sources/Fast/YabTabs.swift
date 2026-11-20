@@ -28,6 +28,7 @@ extension YabBrowser {
         var id: UUID
         var name: String
         var icon: String?
+        var ownSignIns: Bool?
         var paint: Paint?
     }
 
@@ -46,7 +47,8 @@ extension YabBrowser {
     }
 
     /// Each of Yab's spaces as a place: its pins, its kept tabs in their folders and
-    /// its open tabs. The pins in every space go to the first. Nil when a file is refused
+    /// its open tabs. The pins in every space go to the first; a space signed in
+    /// on its own keeps its own pins, as it does in Yab. Nil when a file is refused
     /// or doesn't decode; empty when Yab has no tabs.
     static func tabPlaces(in source: Source) -> [TabImport.Place]? {
         let spaces: [SpaceRecord]?
@@ -57,7 +59,7 @@ extension YabBrowser {
         }
         let first = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
         // Without spaces.json, spaces were never turned on: one row, the first space's.
-        let order = spaces ?? [SpaceRecord(id: first, name: "", icon: nil, paint: nil)]
+        let order = spaces ?? [SpaceRecord(id: first, name: "", icon: nil, ownSignIns: nil, paint: nil)]
         var places: [TabImport.Place] = []
         for space in order {
             let file = space.id == first ? firstSessionFile : "session-\(space.id.uuidString).json"
@@ -69,7 +71,7 @@ extension YabBrowser {
             }
             var place = TabImport.Place(id: "Yab:\(space.id.uuidString)", name: space.name, emoji: space.icon,
                                         color: space.paint?.worn, grain: space.paint?.amount, colors: space.paint?.colors ?? [],
-                                        profile: "Default", shared: true, pinned: [], open: [])
+                                        profile: "Default", shared: space.ownSignIns != true, pinned: [], open: [])
             sort(row?.tabs ?? [], into: &place)
             places.append(place)
         }

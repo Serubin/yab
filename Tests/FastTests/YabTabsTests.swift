@@ -36,7 +36,8 @@ struct YabTabsTests {
             Session.Entry(url: "https://news.example.com/", title: "News"),
             Session.Entry(url: "about:blank", title: ""),
         ], to: "session.json", in: root)
-        try write([Session.Entry(url: "https://tracker.example.com/", title: "Tracker", name: "My tracker")],
+        try write([Session.Entry(url: "https://tracker.example.com/", title: "Tracker", name: "My tracker"),
+                   Session.Entry(url: "https://mail.example.com/work", title: "Work mail", pin: "W")],
                   to: "session-\(work.uuidString).json", in: root)
         try write([Session.Entry(url: "https://calendar.example.com/", title: "Calendar", pin: "cal")],
                   to: "session-00000000-0000-0000-0000-000000000A11.json", in: root)
@@ -51,7 +52,9 @@ struct YabTabsTests {
         #expect(places[0].emoji == "🏠")
         #expect(places[1].open.first?.name == "My tracker")
         #expect(places[1].color?.uppercased().hasSuffix("2463EB") == true && places[1].grain == 0.2)
-        #expect(places.allSatisfy { $0.shared && $0.id.hasPrefix("Yab:") })
+        #expect(places[1].pinned.map(\.title) == ["Work mail"])
+        #expect(places[0].shared && !places[1].shared)
+        #expect(places.allSatisfy { $0.id.hasPrefix("Yab:") })
     }
 
     @Test func withoutSpacesTheOneRowComesUnnamed() throws {
