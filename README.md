@@ -1,4 +1,6 @@
-# Yab
+# Pane
+
+Pane (Pane Browser) is a fork of [Yab](https://github.com/yetanotherbrowser/yab), rebranded so it installs and runs beside upstream Yab without sharing its data, keychain items or agent integration. It still uses upstream's sync worker and Store catalog; the Yab name and icon belong to upstream, see [TRADEMARKS.md](TRADEMARKS.md).
 
 Yet another browser. A small, quiet browser for the Mac, with an app for iPhone.
 

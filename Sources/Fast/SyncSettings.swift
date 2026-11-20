@@ -430,14 +430,14 @@ struct SyncArrival: View {
         Group {
             switch sync.arrival {
             case .nobody where !asking:
-                ArrivalPage(page: .sync, title: "Is This Your First Device?", blurb: "Yab didn’t find another device on this Apple ID.") {
+                ArrivalPage(page: .sync, title: "Is This Your First Device?", blurb: "\(Brand.name) didn’t find another device on this Apple ID.") {
                     Button("Start Syncing") { sync.startSyncing() }
                         .buttonStyle(.yab(.primary, .large))
                         .padding(.top, 20)
                     alreadySyncing.padding(.top, 8)
                 }
             case .offline where !asking:
-                ArrivalPage(page: .sync, title: "You’re Offline", blurb: "Yab needs a connection to look for your other devices.") {
+                ArrivalPage(page: .sync, title: "You’re Offline", blurb: "\(Brand.name) needs a connection to look for your other devices.") {
                     Button("Try Again") { sync.turnOn() }
                         .buttonStyle(.yab(.primary, .large))
                         .padding(.top, 20)
@@ -599,7 +599,7 @@ struct SyncArrival: View {
         Task {
             guard await Questions.shared.ask(Question(
                 title: "Use the Recovery Key",
-                detail: wrong ? "That isn't a Recovery Key. Check each group of four." : "The key Yab showed, or the one in Yab Recovery Key.pdf, from when sync was first turned on.",
+                detail: wrong ? "That isn't a Recovery Key. Check each group of four." : "The key \(Brand.name) showed, or the one in \(Brand.name) Recovery Key.pdf, from when sync was first turned on.",
                 glyph: "key", yes: "Join", place: .settings, field: field)) else { return }
             if sync.join(recovery: field.trimmed) { asking = false } else { useRecovery(true) }
         }
@@ -659,7 +659,7 @@ private struct RecoveryCard: View {
                 PenTileView(symbol: "key", tint: .systemGray).frame(width: 28, height: 28)
                 VStack(alignment: .leading, spacing: 3) { // design: SettingsRow's gap under a title
                     Text("Recovery Key")
-                    Text("Recover synced data if you lose all devices. Save this key now; Yab cannot show it again.")
+                    Text("Recover synced data if you lose all devices. Save this key now; \(Brand.name) cannot show it again.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -696,7 +696,7 @@ enum RecoveryKit {
     @MainActor
     static func save(_ key: String) -> URL? {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Yab Recovery Key.pdf"
+        panel.nameFieldStringValue = "\(Brand.name) Recovery Key.pdf"
         panel.allowedContentTypes = [.pdf]
         panel.directoryURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
         guard panel.runModal() == .OK, let url = panel.url else { return nil }
@@ -735,7 +735,7 @@ private struct RecoveryKitPage: View {
                     .resizable()
                     .frame(width: 44, height: 44)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Yab Recovery Key").font(.system(size: 22, weight: .bold))
+                    Text("\(Brand.name) Recovery Key").font(.system(size: 22, weight: .bold))
                     Text("For sync between your devices").font(.system(size: 13)).foregroundStyle(.secondary)
                 }
             }
@@ -753,7 +753,7 @@ private struct RecoveryKitPage: View {
             Text("Anyone with this key can read your synced spaces, tabs, bookmarks and chats. Print it or keep it in a password manager, away from your Mac.")
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
-            Text("Yab never sends this key anywhere.")
+            Text("\(Brand.name) never sends this key anywhere.")
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
         }

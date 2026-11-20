@@ -21,7 +21,7 @@ static bool FromAlertsHelper(const audit_token_t& token) {
       static_cast<pid_t>(info.pbi_ppid) != getpid()) return false;
   char path[PROC_PIDPATHINFO_MAXSIZE]{};
   if (proc_pidpath(pid, path, sizeof(path)) <= 0) return false;
-  return [@(path) hasSuffix:@"/Contents/Frameworks/YabCore Helper (Alerts).app/Contents/MacOS/YabCore Helper (Alerts)"];
+  return [@(path) hasSuffix:@"/Contents/Frameworks/PaneCore Helper (Alerts).app/Contents/MacOS/PaneCore Helper (Alerts)"];
 }
 static void ReadHelperNotice(mach_port_t port) {
   struct {
@@ -48,7 +48,7 @@ static void ReadHelperNotice(mach_port_t port) {
   SendNotice(change);
 }
 static void ListenForHelperNotices() {
-  NSString* base = NSBundle.mainBundle.bundleIdentifier ?: @"dev.serafim.fast";
+  NSString* base = NSBundle.mainBundle.bundleIdentifier ?: @"net.serubin.pane";
   NSString* name = [NSString stringWithFormat:@"%@.YabNotices.%d", base, getpid()];
   mach_port_t port = MACH_PORT_NULL;
   if (name.length >= sizeof(name_t) ||

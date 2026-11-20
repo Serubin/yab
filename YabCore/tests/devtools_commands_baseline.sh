@@ -14,4 +14,4 @@ export YAB_CEF_API_VERSION=999999
 cd "$YAB_FARM_OUT/baseline-source"
 bash YabCore/build.sh > "$YAB_FARM_OUT/core-app.txt"
 cd "$ROOT"
-python3 YabCore/tests/devtools_accelerator.py "$(cat "$YAB_FARM_OUT/core-app.txt")/Contents/MacOS/YabCore" --expect-crash
+python3 YabCore/tests/devtools_accelerator.py "$(cat "$YAB_FARM_OUT/core-app.txt")/Contents/MacOS/PaneCore" --expect-crash

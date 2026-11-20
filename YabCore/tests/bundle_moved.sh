@@ -11,7 +11,7 @@ export YAB_CEF_DIR="$YAB_FARM_OUT/sdk" YAB_CEF_API_VERSION=999999
 helper() { # tree variant -> helper path
   ( cd "$1" && YAB_FARM_OUT="$YAB_FARM_OUT/$2" YABCORE_BUILD_DIR="$YAB_FARM_OUT/build-$2" bash YabCore/build.sh ) \
     > "$YAB_FARM_OUT/$2-build.log" 2>&1 || { tail -20 "$YAB_FARM_OUT/$2-build.log" >&2; return 1; }
-  echo "$(cat "$YAB_FARM_OUT/$2/app-path.txt" 2>/dev/null || tail -1 "$YAB_FARM_OUT/$2-build.log")/Contents/MacOS/YabCore"
+  echo "$(cat "$YAB_FARM_OUT/$2/app-path.txt" 2>/dev/null || tail -1 "$YAB_FARM_OUT/$2-build.log")/Contents/MacOS/PaneCore"
 }
 mkdir -p "$YAB_FARM_OUT/base-tree" "$YAB_FARM_OUT/before" "$YAB_FARM_OUT/after"
 git archive "$BASE" YabCore scripts/cef | tar -x -C "$YAB_FARM_OUT/base-tree"

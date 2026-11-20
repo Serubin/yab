@@ -651,7 +651,7 @@ struct DevSettingsView: View {
             }
             .pickerStyle(.segmented)
             .frame(width: 260)
-            Text("Theme: as Yab’s").font(.system(size: 11.5)).foregroundStyle(Palette.muted)
+            Text("Theme: as \(Brand.name)’s").font(.system(size: 11.5)).foregroundStyle(Palette.muted)
         }
         section("Console") {
             box("Network messages", $console.networkMessages)

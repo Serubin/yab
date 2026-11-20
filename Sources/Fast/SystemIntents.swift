@@ -4,8 +4,8 @@ import Foundation
 /// Actions for the macOS Shortcuts app. The app's URL and window handoff
 /// already handles calls made before its first browser window exists.
 struct OpenPageIntent: AppIntent {
-    static let title: LocalizedStringResource = "Open Page in Yab"
-    static let description = IntentDescription("Open a web address in Yab.")
+    static let title: LocalizedStringResource = "Open Page in Pane"
+    static let description = IntentDescription("Open a web address in Pane.")
     static var openAppWhenRun: Bool { true }
 
     @Parameter(title: "Web Address") var address: URL
@@ -23,8 +23,8 @@ private enum OpenPageError: Error, LocalizedError {
 }
 
 struct NewTabIntent: AppIntent {
-    static let title: LocalizedStringResource = "New Tab in Yab"
-    static let description = IntentDescription("Open a new tab in Yab.")
+    static let title: LocalizedStringResource = "New Tab in Pane"
+    static let description = IntentDescription("Open a new tab in Pane.")
     static var openAppWhenRun: Bool { true }
 
     func perform() async throws -> some IntentResult {

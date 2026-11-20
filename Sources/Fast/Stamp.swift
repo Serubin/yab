@@ -111,7 +111,7 @@ final class MemberStamp: ObservableObject {
             note(since: (answer["since"] as? Double).flatMap(Self.day))
         }
         let next = Info(number: number, kind: answer["kind"] as? String ?? "self",
-                        from: answer["from"] as? String ?? "Yab", note: answer["note"] as? String ?? "",
+                        from: answer["from"] as? String ?? "\(Brand.name)", note: answer["note"] as? String ?? "",
                         at: info?.at ?? Date(), owner: answer["owner"] as? String ?? installation)
         guard next != info else { return }
         info = next

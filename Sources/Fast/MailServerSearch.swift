@@ -116,9 +116,9 @@ final class MailServerSearch: ObservableObject {
                 let got = try await engine.sync.search(query, take: 25, pages: view ? MailViews.pages : 1)
                 return .found(got.threads, more: got.more)
             } catch MailTrouble.limited {
-                return .failed("Gmail asked Yab to slow down. Try again in a minute.")
+                return .failed("Gmail asked \(Brand.name) to slow down. Try again in a minute.")
             } catch MailTrouble.signedOut {
-                return .failed("Google stopped letting Yab in.")
+                return .failed("Google stopped letting \(Brand.name) in.")
             } catch MailTrouble.offline {
                 return .failed("Gmail couldn’t be reached.")
             } catch {

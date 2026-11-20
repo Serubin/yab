@@ -11,20 +11,20 @@ enum Guide {
 
     /// Product facts travel with the binary, including answers that have no tools.
     static let productOverview = """
-    Yab product help. Answer questions about Yab from these facts; explaining a feature or where a
+    \(Brand.name) product help. Answer questions about \(Brand.name) from these facts; explaining a feature or where a
     setting lives needs no permissions. Give the menu path or shortcut. Do not claim a feature is
     missing just because you cannot operate the browser. If a detail is unknown, say so.
     Manual: https://yetanotherbrowser.com/manual (Appearance: /manual/appearance;
     zoom: /manual/page-basics; asking: /manual/ask; permissions: /manual/permissions).
     Mail is Gmail kept on this Mac, in a space of its own (⇧⌘I; Settings > Mail): /manual/mail; its keys
-    and triage: /manual/mail-triage; writing, files, signatures and read statuses: /manual/mail-writing;
+    and triage: /manual/mail-triage; writing, files and signatures: /manual/mail-writing;
     snippets: /manual/mail-snippets; reminders and send later: /manual/mail-reminders; search:
     /manual/mail-search; splits and labels: /manual/mail-splits; unsubscribe, blocking and Get Me To Zero:
     /manual/mail-cleanup; invitations and free slots: /manual/mail-calendar; notifications and the Dock
     badge: /manual/mail-notifications; ⌘J in mail: /manual/mail-ask. In mail, ? lists every key.
     An agent's mail tools read, search, list (mail_list: splits, Kept drafts, Reminders, Opened), draft
     and tidy the user's mail (mail_act: archive, snooze, unsubscribe, a reminder if nobody answers), and
-    mail_accounts connects an account the user names; a draft from mail_draft is only in Yab's mail
+    mail_accounts connects an account the user names; a draft from mail_draft is only in \(Brand.name)'s mail
     page, not in Gmail's Drafts. When the user asks for a mail to be sent, mail_send sends what is in
     the mail page (the reply ready under its thread, or a kept draft) after their yes on a card showing
     every address and the words, in every mode, Bypass included. It goes after Undo send's
@@ -45,15 +45,15 @@ enum Guide {
     and Bookmarks bar. Settings > Websites has Page size (three Aa)
     and Fonts, whose Customize… sheet holds Font size, the families and Minimum font size, Dark pages,
     and a row to Reading Mode's page.
-    There is no separate font-size preference for Yab's interface.
+    There is no separate font-size preference for \(Brand.name)'s interface.
     To make a website's text and content larger use Zoom In (⌘+), smaller Zoom Out (⌘-), reset Actual
-    Size (⌘0). Zoom is remembered per site; it does not resize Yab's interface or change only fonts.
+    Size (⌘0). Zoom is remembered per site; it does not resize \(Brand.name)'s interface or change only fonts.
     Site search: a site's alias (Settings > Field > Sites) then Tab searches that site from the field;
     Space does too while Sites' Keyboard shortcut is Space or Tab; site-search-space
     off makes it Tab alone.
     Cmd+T's Ask answers from supplied context; action requests can continue as a task with tools.
-    Neither needs Mac access to explain or change supported Yab controls. Native tools read and change
-    Yab itself: native_context gives current state, native_actions gives supported actions and schemas,
+    Neither needs Mac access to explain or change supported \(Brand.name) controls. Native tools read and change
+    \(Brand.name) itself: native_context gives current state, native_actions gives supported actions and schemas,
     native_apply executes, native_operation follows a pending process, native_undo reverses a change.
     Small Window and Air Traffic Control: settings.set.small-links turns small windows for links from
     other apps on or off. links.set_route keeps a site's links in a space ("open Linear in Work"), its
@@ -69,7 +69,7 @@ enum Guide {
     ("close my YouTube tabs", duplicates by a tab's duplicateOf, unused for a week by its lastUsed), in
     one call; pinned and kept tabs only when they named them (includePinned), which puts those to sleep in
     their places, as ⌘W does; up to 50 per call, never asked first.
-    Yab's corner Undo and ⌘Z bring every one back where it was. The answer is plain words: "Closed 9 YouTube tabs."
+    \(Brand.name)'s corner Undo and ⌘Z bring every one back where it was. The answer is plain words: "Closed 9 YouTube tabs."
     Live Folders (Settings > Live Folders) keep a folder of a site's items with the space's sign-ins:
     settings.set.live-folders turns them on or off, live.add adds a source (GitHub, Linear, Notion,
     Drive, Figma, YouTube or a feed), live.follow_repo follows a repository's pull requests, live.set
@@ -89,7 +89,7 @@ enum Guide {
     meeting and turns to Join; ⌃⌘J joins it, ⌃⌘M mutes a call from any tab, and a call left behind floats
     in a small window (/manual/calls-and-meetings). Free slots and invitations in mail: /manual/mail-calendar.
     Snippets (Settings > Snippets, /manual/mail-snippets): words kept to type again. In any box ; and the
-    name puts one in, ⌘; lists them; Yab offers to keep what is pasted often. `snippets` lists those that
+    name puts one in, ⌘; lists them; \(Brand.name) offers to keep what is pasted often. `snippets` lists those that
     work everywhere, mail_snippets mail's own, with people and files; snippet_save keeps either (to or a
     subject make a mail one) and snippet_delete takes one away.
     Bookmarks: `bookmarks` reads them, bookmark_add keeps a page (Bookmarks > Add This Page by hand, no key
@@ -109,11 +109,11 @@ enum Guide {
     Reply with Claude on X, Ask Claude about this on an Amazon order; each hands the agent that one thing.
     API keys for models: Settings > AI > Models, Add API Key…. Measure (⌥⌘U on a local page) puts rulers
     and guides over it. App icons: Settings > Appearance > App icon; friends who join unlock some (Invite
-    a Friend, in the About menu and Settings > Invite Friends), a post about Yab on X another, and Yab
-    Wrapped, the arcade recap of what Yab did and the time it saved, the Arcade icon; ⌘T offers Wrapped
+    a Friend, in the About menu and Settings > Invite Friends), a post about \(Brand.name) on X another, and \(Brand.name)
+    Wrapped, the arcade recap of what \(Brand.name) did and the time it saved, the Arcade icon; ⌘T offers Wrapped
     when one is due (the 100th day, or the year in December).
     Mail's settings in native_actions: settings.set.mail-* for the inbox, reading, writing, free slots and
-    the count; mail.set_notify and mail.set_read_statuses for one account (native_context's mailAccounts).
+    the count; mail.set_notify for one account (native_context's mailAccounts).
     Website tools still act on web pages. Only claim a native change after a verified result; OAuth
     requires the user's account choice and consent. Do not change your own permissions or policies.
     """
@@ -142,7 +142,7 @@ enum Guide {
     }
 
     static func text(_ topic: String?) -> String? {
-        let head = "Yab CLI \(version) · Skill version \(skillVersion)\n\n"
+        let head = "\(Brand.name) CLI \(version) · Skill version \(skillVersion)\n\n"
         switch topic?.lowercased() {
         case nil, "": return head + main
         case "mcp", "tools": return head + tools
@@ -154,27 +154,27 @@ enum Guide {
     static var command: String { AgentSetup.command }
 
     static var main: String { """
-    # Use Yab from a terminal or an agent
+    # Use \(Brand.name) from a terminal or an agent
 
-    Yab is a browser on this Mac. Use its signed-in websites without taking over the user's window.
-    Ask Yab's agent to do a whole task, or use MCP tools or `exec` to drive tabs yourself.
-    Tasks use the AI plan selected in Yab; MCP and exec do not start another model.
+    \(Brand.name) is a browser on this Mac. Use its signed-in websites without taking over the user's window.
+    Ask \(Brand.name)'s agent to do a whole task, or use MCP tools or `exec` to drive tabs yourself.
+    Tasks use the AI plan selected in \(Brand.name); MCP and exec do not start another model.
 
     ## Install
 
-    With Yab in /Applications, run this once, then open a new terminal:
+    With \(Brand.name) in /Applications, run this once, then open a new terminal:
 
     ```bash
-    /Applications/yab.app/Contents/MacOS/yab setup
+    /Applications/Pane.app/Contents/MacOS/pane setup
     ```
 
     This adds the command to PATH and installs the browser skill and MCP connection for Claude Code
     and Codex when their CLIs are installed. Use `\(command) setup command` for just the command. For other clients, see
-    `\(command) guide setup`. Connect an AI plan in Yab before delegating tasks.
+    `\(command) guide setup`. Connect an AI plan in \(Brand.name) before delegating tasks.
 
     ## Common tasks
 
-    1. Ask Yab to do a browser task:
+    1. Ask \(Brand.name) to do a browser task:
 
     ```bash
     \(command) "Find the unread message from Alex in Slack and summarize it" --access browser
@@ -182,7 +182,7 @@ enum Guide {
 
     It prints `session <id>`, progress, then its answer. Ctrl-C stops it. Use `--access browser`
     for website work. Request `--access full` only when the task needs this Mac's files or terminal;
-    name files by their full paths. Mac access may require approval in Yab.
+    name files by their full paths. Mac access may require approval in \(Brand.name).
 
     2. Choose the task's AI plan:
 
@@ -222,9 +222,9 @@ enum Guide {
     6. Use MCP from your own assistant:
 
     Configure a local stdio server with command `\(AgentSetup.executable)` and args `["mcp"]`.
-    Then call `open`, `snapshot`, `click` and `type` through that client's Yab tools.
+    Then call `open`, `snapshot`, `click` and `type` through that client's \(Brand.name) tools.
     `\(command) mcp` is a protocol server, not an interactive prompt. `\(command) guide mcp`
-    explains the tools. The MCP `task` tool delegates to Yab's agent, just like a CLI task.
+    explains the tools. The MCP `task` tool delegates to \(Brand.name)'s agent, just like a CLI task.
 
     7. Look up a site's instructions or relevant memory:
 
@@ -244,27 +244,27 @@ enum Guide {
     \(command) every list
     ```
 
-    Routines use this Mac's local time and run while Yab is open. If Yab was closed, a missed run
+    Routines use this Mac's local time and run while \(Brand.name) is open. If \(Brand.name) was closed, a missed run
     happens once when it next opens. With an id from the list, use `every pause ID`, `every resume ID`,
     `every run ID` or `every remove ID`. Other schedules include `daily 9:00,18:00`, `monthly 1 9:00`,
     `first monday 9:00`, `every 2 weeks mon 9:00` and `yearly oct 6 9:00`.
 
-    9. Keep Yab available in the background:
+    9. Keep \(Brand.name) available in the background:
 
     ```bash
     \(command) status
     \(command) serve
     ```
 
-    Tasks wake a closed Yab without bringing a window forward. It normally quits after 30 idle
-    minutes; serve keeps it running. `serve --no-person` refuses requests that need someone at Yab.
-    `serve --stop` stops Yab, including active tasks. Use it only when that is intended.
+    Tasks wake a closed \(Brand.name) without bringing a window forward. It normally quits after 30 idle
+    minutes; serve keeps it running. `serve --no-person` refuses requests that need someone at \(Brand.name).
+    `serve --stop` stops \(Brand.name), including active tasks. Use it only when that is intended.
 
-    ## When Yab needs the user
+    ## When \(Brand.name) needs the user
 
     Exit 3 means the task needs input. For a question, ask the user in your chat, then run
     `\(command) session resume SESSION_ID "their answer"`. Sign-ins, captchas, codes and approvals
-    may need the user in Yab. Tell them what is waiting. A caller normally gets control back after
+    may need the user in \(Brand.name). Tell them what is waiting. A caller normally gets control back after
     15 seconds (unless YAB_WAIT_PERSON overrides it); `--wait-person MIN` changes that wait,
     not the pending request's lifetime.
     `--no-person` refuses requests that need a person instead of waiting.
@@ -282,14 +282,14 @@ enum Guide {
       with `handoff`. Never solve a captcha. Stop on unusual-traffic or rate-limit warnings.
     - `open` and `fetch` choose a signed-in space when possible. Check `spaces(site)` before saying
       the user is signed out; choose a space explicitly when they need a different account.
-    - Use Yab's tools, not desktop keystrokes, Computer Use or AppleScript, to control its tabs.
+    - Use \(Brand.name)'s tools, not desktop keystrokes, Computer Use or AppleScript, to control its tabs.
     - If agents are disabled, ask the user to enable them in Settings › Developers.
 
     ## More commands
 
     `\(command) --help` lists commands and task options. `\(command) guide mcp` describes page tools;
     `\(command) guide setup` covers installation and removal. Tool schemas are the parameter reference.
-    Use `native_context` and `native_actions` to inspect Yab settings and tabs before `native_apply`.
+    Use `native_context` and `native_actions` to inspect \(Brand.name) settings and tabs before `native_apply`.
     `more_tools("help")` gives product help; `more_tools` also discovers mail, files and other tools.
 
     Files and mail commands use ids from their search results or tool output:
@@ -305,13 +305,13 @@ enum Guide {
     `--path` is given, extracted text. Mail file retrieves the numbered attachment.
     `\(command) https://example.com` opens a page in the user's window; use MCP open for agent work.
     `\(command) import` lists other browsers; the user can run `import chrome` to bring sign-ins over
-    after approving in Yab and macOS. An agent must not perform that import on their behalf.
+    after approving in \(Brand.name) and macOS. An agent must not perform that import on their behalf.
     """ }
 
     static var tools: String { """
-    # Yab's MCP tools
+    # \(Brand.name)'s MCP tools
 
-    MCP lets your current assistant drive Yab directly. Configure the local server as described in
+    MCP lets your current assistant drive \(Brand.name) directly. Configure the local server as described in
     `\(command) guide setup`. The calls below use tool notation, not shell commands. Read each
     tool's schema for exact argument names. Use `more_tools` to discover tools not yet listed.
 
@@ -362,13 +362,13 @@ enum Guide {
       `drag(tab, x, y, toX, toY)` for a pixel-only handle; verify with a fresh screenshot.
     - `handoff(tab, reason, detail?)` when the page needs the person, the snapshot says `needs:` when
       it does; `reason` is one line of at most 60 characters.
-    - Run from a terminal (not Yab's own chat), a call that needs the user in Yab (a yes, a sign-in,
-      a pick) says what Yab waits for at once in its progress line and keeps waiting where the
+    - Run from a terminal (not \(Brand.name)'s own chat), a call that needs the user in \(Brand.name) (a yes, a sign-in,
+      a pick) says what \(Brand.name) waits for at once in its progress line and keeps waiting where the
       client shows that line (Claude Code); otherwise it answers `status: needs_user` after 15
       seconds: tell your user in your reply right away, and make the call again once they answered.
-    - `ask(question, options)` to have the user pick; it waits and returns what they picked. With Yab
+    - `ask(question, options)` to have the user pick; it waits and returns what they picked. With \(Brand.name)
       running hidden it says so at once: ask your user in your own chat instead.
-    - `sign_in(tab)` fills a password Yab keeps, after the user's yes; you never see it.
+    - `sign_in(tab)` fills a password \(Brand.name) keeps, after the user's yes; you never see it.
     - `autofill(tab, what)`: `form` fills a whole form at once from the user's address, profile and
       earlier answers and says which boxes are left; `card` or `address` fill a checkout (a card
       waits for Touch ID, you never see its number). It never ticks consent and never submits.
@@ -379,7 +379,7 @@ enum Guide {
     - `lay_out_tabs(spaces)` gives the user tabs of their own, asleep, in spaces, favorites, pinned
       rows and folders: for recreating or moving their tabs, never `open` one by one.
     - `upload(tab, ref, files)` gives the page files from this Mac, after the user's yes: ref is the button,
-      drop zone or field that attaches a file (Add App Icon, a paperclip); Yab answers the page's picker
+      drop zone or field that attaches a file (Add App Icon, a paperclip); \(Brand.name) answers the page's picker
       itself, so never click it first and never ask the user to pick the file;
       `download(tab, ref | url)` and `pdf(tab)` save into the task's folder, ~/Downloads/yab/<task>.
     - `fetch(url)` reads a URL with the user's cookies, no tab needed: a feed, an export, a print
@@ -387,7 +387,7 @@ enum Guide {
       `tab`, it runs inside that page (same site only).
     - `messages_code(tab)`, `messages(chat?)` and `send_message(to, text)`, if the user turned
       Messages on: the latest code they were texted, their chats, a text sent after their yes.
-    - `watch(url, who)` after sending something the user waits to hear back on: Yab checks the
+    - `watch(url, who)` after sending something the user waits to hear back on: \(Brand.name) checks the
       thread every two hours and puts the reply on their new tab.
     - `memory_search`, `memory_read`, `remember`, what is known about the user.
     - `history` for where the user goes: with nothing, the sites they use, ranked by how regularly;
@@ -409,18 +409,18 @@ enum Guide {
     """ }
 
     static var setup: String { """
-    # Install Yab's CLI and MCP tools
+    # Install \(Brand.name)'s CLI and MCP tools
 
-    Install Yab in /Applications, then run:
+    Install \(Brand.name) in /Applications, then run:
 
     ```bash
-    /Applications/yab.app/Contents/MacOS/yab setup
+    /Applications/Pane.app/Contents/MacOS/pane setup
     ```
 
     Open a new terminal so PATH includes ~/.local/bin. This installs the command plus a browser
     skill and a local MCP server for installed Claude Code and Codex CLIs. It does not sign you in to
     an AI plan.
-    Connect your plan in Yab before asking Yab's agent to do tasks.
+    Connect your plan in \(Brand.name) before asking \(Brand.name)'s agent to do tasks.
 
     Install only one part:
 
@@ -431,8 +431,8 @@ enum Guide {
     \(command) setup cursor
     ```
 
-    Cursor setup connects its CLI as a plan in Yab. For an MCP client, configure the server below.
-    Settings › Developers also has the command and agent controls. Let agents use Yab must be on.
+    Cursor setup connects its CLI as a plan in \(Brand.name). For an MCP client, configure the server below.
+    Settings › Developers also has the command and agent controls. Let agents use \(Brand.name) must be on.
 
     ## Other local MCP clients
 
@@ -454,7 +454,7 @@ enum Guide {
 
     Setup writes the skill to ~/.claude/skills/\(AgentSetup.skill)/SKILL.md and
     ~/.agents/skills/\(AgentSetup.skill)/SKILL.md. The command is ~/.local/bin/\(command).
-    Development builds use yab-dev and yab-dev-browser so they can coexist with installed Yab.
+    Development builds use pane-dev and pane-dev-browser so they can coexist with installed Pane.
 
     ## Remove
 

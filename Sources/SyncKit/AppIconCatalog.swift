@@ -5,6 +5,11 @@ import Foundation
 public enum AppIconCatalog: String, CaseIterable, Identifiable, Sendable {
     case flat = "07-flat"
     case original
+    case paneSolo = "pane-solo"
+    case paneTwoPills = "pane-two-pills"
+    case paneInverse = "pane-inverse"
+    case paneMidnight = "pane-midnight"
+    case paneOldFriend = "pane-old-friend"
     case watercolorGlass = "08-watercolor-glass"
     case opal = "01-prismatic-frost"
     case chrome = "02-liquid-mercury"
@@ -28,6 +33,11 @@ public enum AppIconCatalog: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .flat: "Flat"
         case .original: "Default"
+        case .paneSolo: "Solo"
+        case .paneTwoPills: "Two Pills"
+        case .paneInverse: "Inverse"
+        case .paneMidnight: "Midnight"
+        case .paneOldFriend: "Old Friend"
         case .watercolorGlass: "Watercolor Glass"
         case .opal: "Opal"
         case .chrome: "Smoked Chrome"
@@ -52,6 +62,11 @@ public enum AppIconCatalog: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .flat: nil
         case .original: "YabOriginal"
+        case .paneSolo: "PaneSolo"
+        case .paneTwoPills: "PaneTwoPills"
+        case .paneInverse: "PaneInverse"
+        case .paneMidnight: "PaneMidnight"
+        case .paneOldFriend: "PaneOldFriend"
         case .watercolorGlass: "YabWatercolorGlass"
         case .opal: "YabOpal"
         case .chrome: "YabSmokedChrome"
@@ -75,6 +90,11 @@ public enum AppIconCatalog: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .flat: "AppIconPreview.flat"
         case .original: "AppIconPreview.original"
+        case .paneSolo: "AppIconPreview.solo"
+        case .paneTwoPills: "AppIconPreview.twoPills"
+        case .paneInverse: "AppIconPreview.inverse"
+        case .paneMidnight: "AppIconPreview.midnight"
+        case .paneOldFriend: "AppIconPreview.oldFriend"
         case .watercolorGlass: "AppIconPreview.watercolorGlass"
         case .opal: "AppIconPreview.opal"
         case .chrome: "AppIconPreview.smokedChrome"
@@ -98,7 +118,12 @@ public enum AppIconCatalog: String, CaseIterable, Identifiable, Sendable {
     /// Flat and First Edition's layer placement.
     public var artworkPath: String {
         switch self {
-        case .original: "Icon/yab.icon"
+        case .original: "Icon/pane.icon"
+        case .paneSolo: "Icon/PaneAlternates/pane-solo.icon"
+        case .paneTwoPills: "Icon/PaneAlternates/pane-two-pills.icon"
+        case .paneInverse: "Icon/PaneAlternates/pane-inverse.icon"
+        case .paneMidnight: "Icon/PaneAlternates/pane-midnight.icon"
+        case .paneOldFriend: "Icon/PaneAlternates/pane-old-friend.icon"
         case .flat: "Icon/Alternates/07-flat.icon"
         case .watercolorGlass: "Icon/Alternates/08-watercolor-glass.png"
         case .opal: "Icon/Alternates/01-prismatic-frost.png"

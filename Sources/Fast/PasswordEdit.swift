@@ -134,7 +134,7 @@ struct PasswordEditForm: View {
                 SiteMark(host: model.entry.host, size: 26)
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Edit Login").font(.system(size: 13.5, weight: .semibold))
-                    Text("Saved in Yab").font(.system(size: 12)).foregroundStyle(Palette.muted)
+                    Text("Saved in \(Brand.name)").font(.system(size: 12)).foregroundStyle(Palette.muted)
                 }
             }
             field("Website", focus: .website) {
@@ -163,7 +163,7 @@ struct PasswordEditForm: View {
             if let error = model.error {
                 Text(error).font(.system(size: 11.5)).foregroundStyle(Color.red)
             } else {
-                Text("Changes only what is saved in Yab, not the site.")
+                Text("Changes only what is saved in \(Brand.name), not the site.")
                     .font(.system(size: 11.5)).foregroundStyle(Palette.muted)
             }
         }

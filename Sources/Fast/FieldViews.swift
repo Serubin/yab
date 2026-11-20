@@ -1228,7 +1228,7 @@ struct FieldActionsPanel: View {
             return list.indices.contains(query.spot) ? list[query.spot].title : ""
         }
         if query.choosingModel { return "Answer Again On" }
-        if query.choosingAbout { return Updater.version.first?.isNumber == true ? "Yab v\(Updater.version)" : "Yab" }
+        if query.choosingAbout { return Updater.version.first?.isNumber == true ? "\(Brand.name) v\(Updater.version)" : "\(Brand.name)" }
         if query.answering { return "Answer" }
         if let place = query.place { return browser.placeItem?.title ?? place.title }
         guard let index = query.current, query.offers.indices.contains(index) else { return "" }

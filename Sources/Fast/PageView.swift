@@ -715,7 +715,7 @@ final class PageView: WKWebView, NSTextContent {
     /// The selection as WebKit writes it for a service, onto a pasteboard
     /// of its own: "" when there is none.
     static func webKitSelection(of web: WKWebView) -> String {
-        let board = NSPasteboard(name: NSPasteboard.Name("dev.serafim.fast.search-selection"))
+        let board = NSPasteboard(name: NSPasteboard.Name("net.serubin.pane.search-selection"))
         defer { board.releaseGlobally() }
         board.clearContents()
         // WKWebView answers Services so, though its header doesn't say.

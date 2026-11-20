@@ -256,7 +256,7 @@ final class PayFlow: ObservableObject, Identifiable {
             address.street = [form.street, form.apt].map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }.joined(separator: "\n")
             address.city = form.city.trimmingCharacters(in: .whitespaces)
             address.postal = form.zip.trimmingCharacters(in: .whitespaces)
-            address.source = "Yab"
+            address.source = "\(Brand.name)"
             PayWallet.save(address)
             withAnimation(Motion.reshape) { model.added(PaySheetModel.Place(address.tidied())) }
             fill(place: address.id)

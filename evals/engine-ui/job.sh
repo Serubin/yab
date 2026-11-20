@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 mkdir -p "$YAB_FARM_OUT/core"
 CORE_APP="$(YAB_FARM_OUT="$YAB_FARM_OUT/core" bash YabCore/build.sh)"
-YAB_CEF=1 YAB_UNIVERSAL=0 YAB_CEF_HELPER="$CORE_APP/Contents/MacOS/YabCore" ./build.sh
+YAB_CEF=1 YAB_UNIVERSAL=0 YAB_CEF_HELPER="$CORE_APP/Contents/MacOS/PaneCore" ./build.sh
 ARTIFACT="$YAB_FARM_OUT/$YAB_TASK_NAME.app"
 ditto 'build/yab Dev.app' "$ARTIFACT"
 test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' "$ARTIFACT/Contents/Info.plist")" = "$YAB_TASK_NAME"

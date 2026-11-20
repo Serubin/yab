@@ -53,7 +53,7 @@ extension ProcessLaunch {
 extension Process {
     public func runValidated() throws {
         try ProcessLaunch.validate(self)
-        let tracked = ["yab", "Fast", "YabCore", "YabUpdater"].contains(executableURL?.lastPathComponent ?? "")
+        let tracked = ["pane", "PaneCore", "PaneUpdater"].contains(executableURL?.lastPathComponent ?? "")
         if tracked { LaunchJournal.record("spawn.request", target: executableURL) }
         try run()
         if tracked { LaunchJournal.record("spawn.started", target: executableURL, child: processIdentifier) }

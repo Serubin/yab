@@ -161,7 +161,7 @@ enum WelcomeConnect: WelcomeChapter {
 
     static func words(_ moment: WelcomeMoment, _ stage: WelcomeStage) -> WelcomeWords {
         if moment.beat == .howto {
-            return WelcomeWords(title: title, sub: "Ask it in Yab, or from your terminal.")
+            return WelcomeWords(title: title, sub: "Ask it in \(Brand.name), or from your terminal.")
         }
         let name = AgentSetupModel.name(stage.agent)
         let now = state(stage)
@@ -176,7 +176,7 @@ enum WelcomeConnect: WelcomeChapter {
         case .just, .connected: return WelcomeWords(title: title, sub: sub, primary: "Continue")
         case .failInstall: return WelcomeWords(title: title, sub: sub, primary: "Connect \(name)", quiet: "Later", failure: "Couldn\u{2019}t set up \(name)")
         case .failSignIn: return WelcomeWords(title: title, sub: sub, primary: "Connect \(name)", quiet: "Later", failure: "The sign-in didn\u{2019}t finish")
-        case .failTools: return WelcomeWords(title: title, sub: sub, primary: "Connect \(name)", quiet: "Later", failure: "Yab couldn\u{2019}t set up its tools")
+        case .failTools: return WelcomeWords(title: title, sub: sub, primary: "Connect \(name)", quiet: "Later", failure: "\(Brand.name) couldn\u{2019}t set up its tools")
         }
     }
 
@@ -368,7 +368,7 @@ enum WelcomeConnect: WelcomeChapter {
             switch now {
             case .looking: return nil
             case .just, .connected: return "Connected"
-            case .notInstalled, .failInstall: return "Yab sets it up, then you sign in"
+            case .notInstalled, .failInstall: return "\(Brand.name) sets it up, then you sign in"
             case .installing: return "Setting up\u{2026}"
             case .codexTerminal: return "Paste in Terminal"
             case .signedOut, .failSignIn: return "Signed out"
@@ -377,7 +377,7 @@ enum WelcomeConnect: WelcomeChapter {
             // Codex opens its page in the default browser when that isn't Yab.
             case .signingIn:
                 if case .browser(let name) = AgentSetupModel.shared.page { return "Signing in, in \(name ?? "your browser")" }
-                return "Signing in, in a Yab tab"
+                return "Signing in, in a \(Brand.name) tab"
             }
         }
         if now == .looking { return nil }

@@ -259,7 +259,7 @@ struct DevApplicationPane: View {
                         ApplicationJSON(value: data[field]!)
                     }
                     heading("Installability")
-                    Text("Manifest validation is available. Installing a standalone PWA from this panel is not supported by Yab.").foregroundStyle(Palette.muted)
+                    Text("Manifest validation is available. Installing a standalone PWA from this panel is not supported by \(Brand.name).").foregroundStyle(Palette.muted)
                 } else if !app.busy { empty("Manifest", "Refresh to load the manifest.", "doc.text") }
             }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -433,7 +433,7 @@ struct DevApplicationPane: View {
             Divider()
             if [.reporting, .push, .notifications].contains(section) {
                 let events = app.events.filter { section == .reporting ? ["Report", "CSP violation"].contains($0["kind"] as? String ?? "") : $0["kind"] as? String == (section == .notifications ? "Notification" : "Push emulation") }
-                if events.isEmpty { empty(section.rawValue, section == .reporting ? "Record page reports and Content Security Policy violations. ReportingObserver availability depends on the page's engine." : section == .notifications ? "Record site notifications handled by Yab after allowing notifications for the site." : "Record Push emulation sent from Service workers. Incoming Web Push logs are not exposed by the current WebKit connection.", "clock.arrow.circlepath") }
+                if events.isEmpty { empty(section.rawValue, section == .reporting ? "Record page reports and Content Security Policy violations. ReportingObserver availability depends on the page's engine." : section == .notifications ? "Record site notifications handled by \(Brand.name) after allowing notifications for the site." : "Record Push emulation sent from Service workers. Incoming Web Push logs are not exposed by the current WebKit connection.", "clock.arrow.circlepath") }
                 else { ThreadScrollView { VStack(alignment: .leading, spacing: 8) { ForEach(Array(events.enumerated()), id: \.offset) { _, event in ApplicationJSON(value: event); Divider() } }.padding(8) } }
             } else {
                 empty(section.rawValue, [.shared, .privateTokens, .interestGroups, .speculative].contains(section) ? "This Chromium feature is not exposed by the current WebKit engine." : "The current WebKit connection does not expose browser-level events for this service.", section.symbol)

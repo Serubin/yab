@@ -10,7 +10,7 @@ import Foundation
 /// that field is for. This file holds what both ends agree on: which pages
 /// are offered, what is sent, and what is accepted from the other end.
 public enum ContinuePage {
-    public static let type = "dev.serafim.fast.page"
+    public static let type = "net.serubin.pane.page"
     /// Safari's type, which the Mac hands to the default browser: Yab takes
     /// it too (a Mac where Yab is the default browser) and reads it the same.
     public static let webType = "NSUserActivityTypeBrowsingWeb"

@@ -168,7 +168,7 @@ bool ParentFixedTopology(const std::string& bundle, const std::string& parent,
       [executable isEqual:@"."] || [executable isEqual:@".."] ||
       [executable rangeOfCharacterFromSet:[NSCharacterSet characterSetWithRange:NSMakeRange(0,1)]].location!=NSNotFound) return false;
   const std::string main=bundle+"/Contents/MacOS/"+std::string(executable.UTF8String ?: "");
-  return parent==main && helper==bundle+"/Contents/MacOS/YabCore" && parent!=helper;
+  return parent==main && helper==bundle+"/Contents/MacOS/PaneCore" && parent!=helper;
 }
 // Snapshot validation ONLY. No continuous filesystem/renderer/image lease or
 // native phase proof is returned. Policy Current() is absent, Ready stays closed.

@@ -52,7 +52,7 @@ enum MenuCommands {
                     SettingsWindow.shared.showExtension(ExtensionAdd.Step.arrival.rawValue, for: browser)
                 }
             }
-        add(.importExtensions, "Import Extensions", ["Import", "Import Yab Extensions", "import WebKit extensions"],
+        add(.importExtensions, "Import Extensions", ["Import", "Import \(Brand.name) Extensions", "import WebKit extensions"],
             symbol: "puzzlepiece.extension", opens: true, when: { browser in
                 guard PageEngineFactory.chromiumEnabled else { return false }
                 if #available(macOS 15.4, *) {

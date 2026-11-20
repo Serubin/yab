@@ -27,7 +27,7 @@ final class CrashReportWatch: @unchecked Sendable {
         for directory in [folder, folder.appendingPathComponent("Retired")] {
             paths += ((try? fm.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? [])
                 .filter {
-                    $0.pathExtension == "ips" && $0.lastPathComponent.lowercased().hasPrefix("yab") &&
+                    $0.pathExtension == "ips" && OwnProcess.report($0.lastPathComponent) &&
                     ((try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast) > after
                 }
         }

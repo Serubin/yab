@@ -71,8 +71,8 @@ enum FormModel {
 
     /// Why the Mac has no model to ask, in words; nil when it has one.
     static var why: String? {
-        guard AIUse.level() != .off else { return "AI is off in Yab" }
-        guard AppleModelAccess.enabled else { return "Apple Intelligence is disabled in Yab" }
+        guard AIUse.level() != .off else { return "AI is off in \(Brand.name)" }
+        guard AppleModelAccess.enabled else { return "Apple Intelligence is disabled in \(Brand.name)" }
         #if canImport(FoundationModels)
         if #available(macOS 26, *) {
             switch SystemLanguageModel.default.availability {

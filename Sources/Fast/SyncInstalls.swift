@@ -23,7 +23,7 @@ final class SyncInstalls: ObservableObject {
             case .downloading: return "Downloading…"
             case .failed: return "Couldn't download, trying again"
             case .refused: return "Couldn't install"
-            case .newer: return "Needs a newer Yab"
+            case .newer: return "Needs a newer \(Brand.name)"
             }
         }
     }

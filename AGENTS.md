@@ -16,16 +16,20 @@ contribution process does not apply here. Ignore:
 
 Pull requests go inside the fork (`--repo Serubin/yab --base canary`), never
 against upstream. The build, test, proof, design-system, command-field and
-settings rules still apply.
+settings rules still apply. `canary` is the fork; `main` is an exact mirror
+of upstream's `main` that the sync fast-forwards. Never commit to `main` or
+target it with a PR.
 
-Releases (`.github/workflows/release.yml`) build two flavors, WebKit with
-Chromium and WebKit only, each with its own feed on GitHub Pages. A release
+The fork ships as Pane. Releases (`.github/workflows/release.yml`) build two
+flavors, WebKit with Chromium and WebKit only, with feeds at `pane/` and
+`pane/webkit/` on GitHub Pages. The root and `webkit/` feeds serve the
+fork's earlier Yab-named builds and are only carried over. A release
 is versioned as upstream's newest release plus a fork revision,
 `0.50.2-r3`. Upstream doesn't bump `VERSION` in the public repo when it
 ships, so `scripts/fork/upstream-version.py` reads the latest build from
 yetanotherbrowser.com/changelog (or `VERSION`, if higher). The revision
 restarts at r1 when that changes. Don't edit `VERSION` by hand.
-`sync-upstream.yml` merges upstream on the hour and, at half past, starts a
+`sync-upstream.yml` syncs upstream on the hour and, at half past, starts a
 release of `canary` when upstream shipped a new version or `canary` has
 fork commits since the last release that touch more than Markdown, `docs/`
 or `.github/`. It

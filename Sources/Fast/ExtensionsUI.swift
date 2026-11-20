@@ -461,7 +461,7 @@ struct ExtensionDetail: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             if ExtensionDetail.replacedByYab(item) {
-                SettingsRow("Yab fills Apple Passwords itself", detail: "This extension isn't needed while Apple Passwords is connected.") {
+                SettingsRow("\(Brand.name) fills Apple Passwords itself", detail: "This extension isn't needed while Apple Passwords is connected.") {
                     Button("Passwords") { model.go(.passwords) }
                         .settingsButton()
                 }
@@ -475,7 +475,7 @@ struct ExtensionDetail: View {
             }
             if ExtensionDetail.unconnected(item, context, extensions) {
                 SettingsRow("Not connected to the 1Password app",
-                            detail: "In 1Password, unlocked: Settings › Browser › Add Browser, then choose Yab.") {
+                            detail: "In 1Password, unlocked: Settings › Browser › Add Browser, then choose \(Brand.name).") {
                     Button("Open 1Password") { Extensions.openOnePassword() }
                         .settingsButton()
                 }
@@ -503,7 +503,7 @@ struct ExtensionDetail: View {
                 } header: {
                     Text("Shortcuts")
                 } footer: {
-                    SettingsNote("Hotkeys work while Yab is active. Click to record a new hotkey.")
+                    SettingsNote("Hotkeys work while \(Brand.name) is active. Click to record a new hotkey.")
                 }
             }
             ExtensionWebsites(id: id, item: item, extensions: extensions,
@@ -522,7 +522,7 @@ struct ExtensionDetail: View {
         }
 
         Section {
-            SettingsRow("Remove", detail: "Remove the extension and its saved data from Yab.") {
+            SettingsRow("Remove", detail: "Remove the extension and its saved data from \(Brand.name).") {
                 Button("Remove…") {
                     Task {
                         guard await extensions.ask(Extensions.removal(id, name: item.name, place: .settings)) else { return }
@@ -659,23 +659,23 @@ struct ExtensionDetail: View {
         !item.enabled && Extensions.iCloudPasswords.contains(item.id) && PasswordManagers.appleNative
     }
 
-    static let replacedLine = "Not needed · Yab fills Apple Passwords"
+    static let replacedLine = "Not needed · \(Brand.name) fills Apple Passwords"
 
     /// Under its name in the popover its button opens instead of its popup
     /// while it waits on Apple (ExtensionWithheld); the note follows.
-    static let waitingTitle = "Can't connect in Yab yet"
+    static let waitingTitle = "Can't connect in \(Brand.name) yet"
 
     /// Two lines, each whole in the name's column.
     static func stoppedLine(_ id: String, waitsOnApple: Bool = waitsOnApple) -> String {
         iCloudWaiting(id, waitsOnApple: waitsOnApple)
-            ? "Can't connect in Yab yet.\nIts helper needs Apple's approval."
+            ? "Can't connect in \(Brand.name) yet.\nIts helper needs Apple's approval."
             : "macOS stopped the app it talks to."
     }
 
     static func stoppedNote(_ id: String, waitsOnApple: Bool = waitsOnApple) -> String {
         iCloudWaiting(id, waitsOnApple: waitsOnApple)
-            ? "macOS stops Apple's iCloud Passwords helper as soon as Yab starts it: it runs only in browsers Apple has approved. Yab has applied, as for passkeys, and an update turns it on. Until then your iCloud passwords are in Safari and the Passwords app."
-            : "macOS stopped the app on this Mac that this extension talks to as Yab started it. Yab tries again after a restart."
+            ? "macOS stops Apple's iCloud Passwords helper as soon as \(Brand.name) starts it: it runs only in browsers Apple has approved. \(Brand.name) has applied, as for passkeys, and an update turns it on. Until then your iCloud passwords are in Safari and the Passwords app."
+            : "macOS stopped the app on this Mac that this extension talks to as \(Brand.name) started it. \(Brand.name) tries again after a restart."
     }
 
     /// One from another Mac whose version here asks for more than it was
@@ -683,7 +683,7 @@ struct ExtensionDetail: View {
     static let wantsLine = "New version asks for more"
 
     /// Two lines, each whole in the name's column.
-    static let unconnectedLine = "Not connected to the 1Password app.\nAdd Yab in its Settings › Browser."
+    static let unconnectedLine = "Not connected to the 1Password app.\nAdd \(Brand.name) in its Settings › Browser."
 
     /// What is wrong with it, if anything, in a sentence.
     static func trouble(_ item: Installed, _ context: WKWebExtensionContext?, _ extensions: Extensions) -> String? {
@@ -1323,7 +1323,7 @@ struct StoreOffer: View {
                     // A moment for the page's own button to be put in.
                     try? await Task.sleep(for: .seconds(1.5))
                     guard !Task.isCancelled, wanted == id, StoreOffer.offered.insert(id).inserted else { return }
-                    browser.toaster.pop("Install in Yab", mark: "puzzlepiece.extension",
+                    browser.toaster.pop("Install in \(Brand.name)", mark: "puzzlepiece.extension",
                                         undo: { [extensions] in extensions.install(from: id) }, act: "Add")
                 }
         }

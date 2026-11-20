@@ -29,7 +29,7 @@ assert info['CFBundleName'] == info['CFBundleDisplayName'] == os.environ['YAB_TA
 subprocess.run(['codesign', '--verify', '--deep', '--strict', str(app)], check=True, timeout=60)
 source['app'] = str(app)
 source['sha256'] = {name: hashlib.sha256((app / 'Contents/MacOS' / name).read_bytes()).hexdigest()
-                    for name in (info['CFBundleExecutable'], 'YabCore')}
+                    for name in (info['CFBundleExecutable'], 'PaneCore')}
 (out / 'app-source.json').write_text(json.dumps(source, indent=2))
 env = dict(os.environ)
 if subprocess.run(['python3', '-c', 'from PIL import Image'], capture_output=True, timeout=20).returncode:

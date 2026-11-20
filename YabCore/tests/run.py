@@ -108,7 +108,7 @@ def main():
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
-    executable = args.app / 'Contents/MacOS/YabCore'
+    executable = args.app / 'Contents/MacOS/PaneCore'
     server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Fixture)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     helper = host = None

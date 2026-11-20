@@ -164,7 +164,7 @@ enum MailChat {
         switch ref.kind {
         case .thread(let account, let thread):
             let from = ref.detail.isEmpty ? "" : " from \(ref.detail)"
-            return "They are in Yab's mail, reading the email \"\(quoted(ref.title))\"\(from) (thread \(account)|\(thread)). "
+            return "They are in \(Brand.name)'s mail, reading the email \"\(quoted(ref.title))\"\(from) (thread \(account)|\(thread)). "
                 + "Read it with mail_read before anything else."
         case .list(_, let query, let who):
             let count = Int(ref.detail) ?? ref.rows.count
@@ -173,13 +173,13 @@ enum MailChat {
             if who != nil { what = "their mail with \(ref.title) (\(emails))" }
             else if !query.isEmpty { what = "their mail searched for \"\(quoted(query))\" (\(emails))" }
             else { what = "their list \"\(quoted(ref.title))\" (\(emails))" }
-            guard !ref.rows.isEmpty else { return "They are in Yab's mail, looking at \(what), empty for now." }
-            var said = "They are in Yab's mail, looking at \(what), one a line:\n" + ref.rows.joined(separator: "\n")
+            guard !ref.rows.isEmpty else { return "They are in \(Brand.name)'s mail, looking at \(what), empty for now." }
+            var said = "They are in \(Brand.name)'s mail, looking at \(what), one a line:\n" + ref.rows.joined(separator: "\n")
             if count > ref.rows.count { said += "\n(and \(count - ref.rows.count) more: find them with mail_search)" }
             return said + "\nRead any of them with mail_read."
         case .picked(let threads):
             let emails = threads.count == 1 ? "1 email" : "\(threads.count) emails"
-            var said = "They are in Yab's mail and picked \(emails) in their list, one a line:\n" + ref.rows.joined(separator: "\n")
+            var said = "They are in \(Brand.name)'s mail and picked \(emails) in their list, one a line:\n" + ref.rows.joined(separator: "\n")
             if threads.count > ref.rows.count { said += "\n(and \(threads.count - ref.rows.count) more picked, not said here)" }
             return said + "\nRead each with mail_read before anything else."
         }

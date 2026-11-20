@@ -6,4 +6,4 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 : "${YAB_FARM_OUT:?}"
 source YabCore/tests/release_core_app.sh || exit 1
-python3 -u YabCore/tests/snapshot_renderer_gone.py "$APP/Contents/MacOS/YabCore" --rounds "${YAB_SNAPSHOT_ROUNDS:-60}"
+python3 -u YabCore/tests/snapshot_renderer_gone.py "$APP/Contents/MacOS/PaneCore" --rounds "${YAB_SNAPSHOT_ROUNDS:-60}"

@@ -587,7 +587,7 @@ public actor MailFiles {
     /// Downloads and in the Finder (a drag) keep the mark.
     public nonisolated static func quarantine(_ url: URL) {
         var values = URLResourceValues()
-        values.quarantineProperties = [kLSQuarantineAgentNameKey as String: "Yab",
+        values.quarantineProperties = [kLSQuarantineAgentNameKey as String: "\(Brand.name)",
                                        kLSQuarantineTypeKey as String: kLSQuarantineTypeEmailAttachment as String]
         var marked = url
         try? marked.setResourceValues(values)

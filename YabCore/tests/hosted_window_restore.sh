@@ -13,7 +13,7 @@ export YABCORE_BUILD_DIR="$YAB_FARM_OUT/core-build"
 export YAB_CEF_API_VERSION=999999
 bash YabCore/build.sh 2>&1 | tee "$YAB_FARM_OUT/core-build.log" | tail -5 || exit 1
 APP="$(cat "$YAB_FARM_OUT/app-path.txt" 2>/dev/null || tail -1 "$YAB_FARM_OUT/core-build.log")"
-HELPER="$APP/Contents/MacOS/YabCore"
+HELPER="$APP/Contents/MacOS/PaneCore"
 test -x "$HELPER" || { echo "no helper at $HELPER" >&2; exit 1; }
 if [ "${YAB_RESTORE_EXPECT:-clean}" = crash ]; then
   python3 -u YabCore/tests/hosted_window_restore.py "$HELPER" --expect-crash

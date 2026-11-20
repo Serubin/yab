@@ -66,6 +66,9 @@ final class Bringing: ObservableObject {
     }
 
     @Published private(set) var sources: [Chromium.Source] = []
+    /// Upstream Yab installs here, found by their data folders alone.
+    @Published private(set) var yabSources: [YabBrowser.Source] = []
+    @Published private(set) var yabIcons: [String: NSImage] = [:]
     @Published var chosen: Chromium.Source? {
         didSet {
             guard chosen != oldValue else { return }
@@ -118,6 +121,8 @@ final class Bringing: ObservableObject {
         loading = true
         DispatchQueue.global(qos: .userInitiated).async {
             let found = Hangs.time("browsers.find") { Chromium.installed() }
+            let yabs = YabBrowser.installed()
+            let yabIcons = Dictionary(yabs.map { (Self.yabID($0), $0.icon) }, uniquingKeysWith: { first, _ in first })
             var icons: [String: NSImage] = [:]
             var used: [String: Date] = [:]
             for source in found {
@@ -127,6 +132,10 @@ final class Bringing: ObservableObject {
             let fallback = found.first(where: \.isDefault)?.id
             DispatchQueue.main.async {
                 self.loading = false
+                if self.yabSources != yabs {
+                    self.yabSources = yabs
+                    self.yabIcons = yabIcons.compactMapValues { $0 }
+                }
                 let fresh = BringCache.Found(sources: found, icons: icons, used: used, defaultID: fallback, at: .now)
                 BringCache.keep(fresh)
                 // The same browsers as shown already: nothing to draw again.
@@ -146,6 +155,40 @@ final class Bringing: ObservableObject {
         // Each one's counts, for the chapter that asks which: what
         // a browser holds is how the one in use is told apart.
         found.sources.forEach(count)
+    }
+
+    static func yabID(_ source: YabBrowser.Source) -> String { "Yab:\(source.name)" }
+
+    /// Yab's spaces and tabs laid out here, then its bookmarks and history, each from a
+    /// private copy of its files. `answer` is told once the tabs are in.
+    func bring(_ source: YabBrowser.Source, into browser: Browser, answer: @escaping (Answer) -> Bool) {
+        guard !busy else { return }
+        state = .bringing
+        let id = Self.yabID(source)
+        DispatchQueue.global(qos: .userInitiated).async {
+            let places = YabBrowser.tabPlaces(in: source)
+            DispatchQueue.main.async {
+                guard let places else {
+                    let words = "Couldn\u{2019}t read \(source.name)\u{2019}s tabs"
+                    self.state = .failed(words)
+                    _ = answer(.failed(words))
+                    return
+                }
+                var counted = Counts(withOpen: true)
+                counted.tabPlaces = places
+                self.counts[id] = counted
+                browser.layOut(places.filter { !$0.isEmpty })
+                self.brought.insert(id)
+                guard answer(.allowed) else { return }
+                browser.takeBookmarks(from: source, quiet: true) { marks in
+                    self.counts[id]?.bookmarks = marks
+                    browser.takePlaces(from: source) { visits in
+                        self.counts[id]?.places = visits
+                        self.state = .done("From \(source.name)")
+                    }
+                }
+            }
+        }
     }
 
     /// Browsers whose tabs shown are the kept ones: Bring reads them again.

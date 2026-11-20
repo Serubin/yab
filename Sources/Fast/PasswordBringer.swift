@@ -58,6 +58,7 @@ struct PasswordBringer: View {
                 // Firefox wraps its passwords with a key of its own: not
                 // read from its profile, only from its own export.
                 Button("Zen or Firefox…") { browser.importPasswords(message: FirefoxBringer.passwordsHow) }
+                Button("Yab…") { browser.importPasswords(message: YabBringer.passwordsHow) }
                 Button("CSV File…") { browser.importPasswords() }
             }
             .settingsButton()
@@ -67,12 +68,12 @@ struct PasswordBringer: View {
 
     private var detail: String {
         switch stage {
-        case .counting: return "From Chrome, Arc, Safari or a CSV file."
+        case .counting: return "From Chrome, Arc, Safari, Yab or a CSV file."
         case .bringing(let name): return "Opening \(name)’s passwords…"
         case .keeping(let name, let done, let all): return "Keeping \(done.formatted()) of \(all.formatted()) from \(name)…"
         case .said(let text): return text
         case .idle:
-            guard !logins.isEmpty else { return "From Chrome, Arc, Safari or a CSV file." }
+            guard !logins.isEmpty else { return "From Chrome, Arc, Safari, Yab or a CSV file." }
             return "Choose a browser to import from. Existing items are kept."
         }
     }

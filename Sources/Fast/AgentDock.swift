@@ -501,7 +501,7 @@ struct AgentDock: View {
     static func signInWords(_ cli: String, privately: Bool) -> (title: String, detail: String) {
         privately
             ? ("Sign in to your other \(AgentSetupModel.plan(cli)) account", "A private tab, so your usual account doesn't answer")
-            : ("Sign in to connect \(AgentSetupModel.name(cli))", "Say yes to \(AgentSetupModel.tool(cli)), which Yab runs for you. Yab then closes this tab.")
+            : ("Sign in to connect \(AgentSetupModel.name(cli))", "Say yes to \(AgentSetupModel.tool(cli)), which \(Brand.name) runs for you. \(Brand.name) then closes this tab.")
     }
 
     static func finishedWords(_ session: Agents.Session, stopped: Bool = false) -> String {

@@ -8,7 +8,7 @@ import Testing
 struct ChromiumNativeSwitchJournalTests {
     private func intent(id: UUID = UUID(), privacy: NativeSwitchJournal.Privacy = .persistentVerified) -> NativeSwitchJournal.Intent {
         .init(id: id, peer: .init(pid: 123, parent: 122, uid: getuid(), startSec: 1000, startUsec: 1,
-                executable: "/fixture/Task.app/Contents/MacOS/YabCore", argvSHA256: String(repeating: "a", count: 64),
+                executable: "/fixture/Task.app/Contents/MacOS/PaneCore", argvSHA256: String(repeating: "a", count: 64),
                 bootSession: "01234567-89AB-4CDE-8123-456789ABCDEF", auditSHA256: String(repeating: "b", count: 64),
                 codeIdentifier: "fixture.helper", codeUnique: String(repeating: "c", count: 40)),
               connection: "original-connection", members: [.init(tab: "original-tab", profile: "verified-profile", document: "original-native-doc", browser: 11)],

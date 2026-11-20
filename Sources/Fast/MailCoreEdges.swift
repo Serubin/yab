@@ -48,8 +48,8 @@ extension MailClient {
         guard underReview else { return nil }
         return Question(
             title: "Google will warn you first",
-            detail: "Google is still reviewing Yab Mail, so its page says it hasn't verified Yab. That's expected, and your mail stays on this Mac.",
-            lines: ["Press Advanced", "Then Go to Yab (unsafe)"],
+            detail: "Google is still reviewing \(Brand.name) Mail, so its page says it hasn't verified \(Brand.name). That's expected, and your mail stays on this Mac.",
+            lines: ["Press Advanced", "Then Go to \(Brand.name) (unsafe)"],
             lineGlyph: "arrow.right",
             glyph: "envelope", yes: "Continue to Google", place: place)
     }

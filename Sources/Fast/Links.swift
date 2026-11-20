@@ -219,7 +219,7 @@ final class Links: NSObject, NSApplicationDelegate {
     /// The name the bundle gives the app, what the Dock and the menu bar
     /// call it; a bare SwiftPM run has no bundle and is yab.
     static var appName: String {
-        (Bundle.main.infoDictionary?["CFBundleName"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? "Yab"
+        (Bundle.main.infoDictionary?["CFBundleName"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? "\(Brand.name)"
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -416,7 +416,7 @@ final class Links: NSObject, NSApplicationDelegate {
         guard let text = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue,
               let url = URL(string: text) else { return }
         // A Store link: the pinned revision on trial in a tab of its own.
-        if url.scheme == "yab-boost", let revision = url.host, BoostShare.validRevision(revision) {
+        if url.scheme == "pane-boost", let revision = url.host, BoostShare.validRevision(revision) {
             MainActor.assumeIsolated {
                 guard let browser = BrowserWindows.shared.browsers.first else { return }
                 Task {
@@ -777,7 +777,7 @@ final class Links: NSObject, NSApplicationDelegate {
         text.scheme = "mailto"
         text.path = "hello@serafimlabs.io"
         text.queryItems = [
-            URLQueryItem(name: "subject", value: "Yab \(Updater.version) (\(Updater.build)) feedback"),
+            URLQueryItem(name: "subject", value: "\(Brand.name) \(Updater.version) (\(Updater.build)) feedback"),
             URLQueryItem(name: "body", value: "\n\n–\nYab \(Updater.version) (\(Updater.build)) on macOS \(ProcessInfo.processInfo.operatingSystemVersionString)"),
         ]
         guard let url = text.url else { return }

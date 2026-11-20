@@ -460,9 +460,9 @@ enum UpdateInk {
     static func words(_ phase: UpdateNews.Phase, halloween: Bool = Halloween.isDay(), dressed: Bool = Halloween.dressed) -> Words? {
         switch phase {
         case .ready(let version):
-            return Words(first: "Yab \(version) is here!", mark: halloween ? .pumpkin : .heart, second: "restart to update", aside: "not now")
+            return Words(first: "\(Brand.name) \(version) is here!", mark: halloween ? .pumpkin : .heart, second: "restart to update", aside: "not now")
         case .offered(let version, _):
-            return Words(first: "Yab \(version) is here!", mark: halloween ? .pumpkin : .heart, second: "download it here", aside: "not now")
+            return Words(first: "\(Brand.name) \(version) is here!", mark: halloween ? .pumpkin : .heart, second: "download it here", aside: "not now")
         case .updated(let version, let link):
             return Words(first: "you're on \(version)!", mark: halloween ? .pumpkin : .tick,
                          second: link == nil ? "all fresh" : halloween && !dressed ? "dress it up" : "have a look", aside: link == nil ? nil : "got it")
@@ -502,7 +502,7 @@ enum UpdateInk {
     /// button, far enough left that the arrow from its second line runs a
     /// little way before it turns up to the loop, and never off the page.
     static func under(_ button: CGRect) -> CGPoint {
-        let words = Words(first: "Yab 1.20 is here!", mark: .heart, second: "restart to update", aside: nil)
+        let words = Words(first: "\(Brand.name) 1.20 is here!", mark: .heart, second: "restart to update", aside: nil)
         let turn = button.midX - loop(button).width / 2 * 0.35
         let top = width(words.first, first) + 28
         let next = width(words.second, second)
@@ -962,7 +962,7 @@ struct UpdateMenu: View {
             case .ready:
                 Button("Restart to Update") { updater.relaunch() }
             case .offered(let next):
-                Button("Download Yab \(next.version)…") { _ = browser().open(next.dmg, foreground: true) }
+                Button("Download \(Brand.name) \(next.version)…") { _ = browser().open(next.dmg, foreground: true) }
             }
         }
     }
@@ -971,11 +971,11 @@ struct UpdateMenu: View {
     static func answer(_ found: Updater.Release?) {
         let alert = NSAlert()
         if let found {
-            alert.messageText = "Yab \(found.version) is available"
-            alert.informativeText = "It’s downloading now. Restart to Update appears in the Yab menu when it’s ready."
+            alert.messageText = "\(Brand.name) \(found.version) is available"
+            alert.informativeText = "It’s downloading now. Restart to Update appears in the \(Brand.name) menu when it’s ready."
         } else {
             alert.messageText = "You’re up to date"
-            alert.informativeText = "Yab \(Updater.version) is the newest version available."
+            alert.informativeText = "\(Brand.name) \(Updater.version) is the newest version available."
         }
         alert.addButton(withTitle: "OK")
         NSApp.activate(ignoringOtherApps: true)

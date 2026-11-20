@@ -293,7 +293,7 @@ private struct ForeignAssistantApprovalView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(request.title).font(.headline)
-            Text("From Yab on \(mac)").font(.caption).foregroundStyle(.secondary)
+            Text("From \(Brand.name) on \(mac)").font(.caption).foregroundStyle(.secondary)
             ThreadScrollView {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(request.lines.indices, id: \.self) { index in Text(request.lines[index]).textSelection(.enabled) }

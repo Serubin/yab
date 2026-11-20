@@ -63,7 +63,7 @@ struct MailSettings: View {
                 .settingsAnchor("mail-pin")
                 // Only while it isn't: once it is, there is nothing to do.
                 if !mailDefault {
-                    SettingsRow("Default mail app", detail: "Open mail links in Yab.") {
+                    SettingsRow("Default mail app", detail: "Open mail links in \(Brand.name).") {
                         Button(SettingsWords.text("Make Default")) {
                             MailDefault.become { now in
                                 mailDefault = now
@@ -116,7 +116,7 @@ struct MailSettings: View {
     }
 
     private var notifyDetail: String {
-        guard notify.permission == .allowed else { return "Off for Yab in macOS" }
+        guard notify.permission == .allowed else { return "Off for \(Brand.name) in macOS" }
         let on = center.accounts.filter { notify.mode($0) != .off }.count
         let said = on == 0 ? "No new mail notifications"
             : center.accounts.count == 1 ? "New mail: " + notify.mode(center.accounts[0]).title
@@ -238,8 +238,8 @@ private struct MailReadingSettings: View {
                     .controlSize(.small)
             }
             .settingsAnchor("mail-pixels")
-            SettingsRow("Open PDFs from Mail in Yab", detail: "Press Return to open a PDF in a tab for filling and signing.") {
-                Toggle(SettingsWords.text("Open PDFs from Mail in Yab"), isOn: $pdfs)
+            SettingsRow("Open PDFs from Mail in \(Brand.name)", detail: "Press Return to open a PDF in a tab for filling and signing.") {
+                Toggle(SettingsWords.text("Open PDFs from Mail in Pane"), isOn: $pdfs)
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.small)
@@ -310,7 +310,6 @@ private struct MailWritingSettings: View {
                 .frame(width: 160)
             }
             .settingsAnchor("mail-undo")
-            MailReadsSettings()
         }
         .task { await agents.look() }
         // Once Gmail has said what the accounts send as (MailSendAs).
@@ -379,7 +378,7 @@ private struct MailAgentSettings: View {
                     .controlSize(.small)
             }
             .settingsAnchor("mail-ahead-consent")
-            SettingsRow("Mail tools in other apps", detail: "Allow connected MCP clients to read and organize mail with the same approval rules as Yab agents.") {
+            SettingsRow("Mail tools in other apps", detail: "Allow connected MCP clients to read and organize mail with the same approval rules as \(Brand.name) agents.") {
                 Toggle(SettingsWords.text("Mail tools in other apps"), isOn: $others)
                     .labelsHidden()
                     .toggleStyle(.switch)
@@ -498,35 +497,6 @@ private struct MailSortSettings: View {
     private var adsMode: String {
         guard let ads = list.ordered.first(where: { $0.id == MailSplits.ads }), ads.on else { return "off" }
         return ads.mode == .skip ? "skip" : "only"
-    }
-}
-
-/// Read statuses (MailReads), an account each, off until turned on (kept in
-/// its store, as `yab mail flush` sends too): how they work, under the
-/// first, and that the picture can send mail to spam.
-private struct MailReadsSettings: View {
-    @ObservedObject private var center = MailCenter.shared
-
-    static let detail = "Your mail ends with an invisible picture from Yab’s site, which notes when it loads. Addresses and words never leave this Mac.\n"
-        + "Mail with such a picture lands in spam more often: if yours stops arriving, turn this off."
-
-    var body: some View {
-        ForEach(center.accounts, id: \.self) { account in
-            if let store = center.engines[account]?.store {
-                SettingsRow(center.accounts.count > 1 ? "Read statuses for " + account : "Read statuses",
-                            detail: account == center.accounts.first ? MailReadsSettings.detail : "") {
-                    Toggle(SettingsWords.text("Read statuses"), isOn: Binding(get: { MailReads.on(store) }, set: { on in
-                        MailReads.set(on, in: store)
-                        center.touch()
-                    }))
-                    .labelsHidden()
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-                }
-                // The search finds the first; each row keeps an id of its own.
-                .settingsAnchor(account == center.accounts.first ? "mail-reads" : "mail-reads-" + account)
-            }
-        }
     }
 }
 
@@ -879,8 +849,8 @@ private struct MailAccountRow: View {
         Task {
             let yes = await Questions.shared.ask(Question(
                 title: "Disconnect \(account)?",
-                detail: imap ? "Yab forgets its password and deletes this account’s mail from this Mac. The server keeps all of it."
-                    : "Yab gives back its access at Google and deletes this account’s mail from this Mac. Gmail keeps all of it.",
+                detail: imap ? "\(Brand.name) forgets its password and deletes this account’s mail from this Mac. The server keeps all of it."
+                    : "\(Brand.name) gives back its access at Google and deletes this account’s mail from this Mac. Gmail keeps all of it.",
                 glyph: "envelope", yes: "Disconnect", danger: true, place: .settings))
             if yes { center.disconnect(account) }
         }
@@ -899,7 +869,7 @@ private struct OutlookAccountRow: View {
             MailFace(email: account, photo: nil, side: 28)
             VStack(alignment: .leading, spacing: 3) { // design: SettingsRow's own gap
                 Text(account).lineLimit(1).truncationMode(.middle)
-                Text(out ? "Microsoft stopped letting Yab in" : "Outlook calendar, read only")
+                Text(out ? "Microsoft stopped letting \(Brand.name) in" : "Outlook calendar, read only")
                     .font(.callout)
                     .foregroundStyle(out ? AnyShapeStyle(ButtonCSS.danger) : AnyShapeStyle(.secondary))
             }
@@ -921,7 +891,7 @@ private struct OutlookAccountRow: View {
         Task {
             let yes = await Questions.shared.ask(Question(
                 title: "Disconnect \(account)?",
-                detail: "Yab forgets this account’s sign-in, and its meetings leave your tabs. Outlook keeps all of it.",
+                detail: "\(Brand.name) forgets this account’s sign-in, and its meetings leave your tabs. Outlook keeps all of it.",
                 glyph: "calendar", yes: "Disconnect", danger: true, place: .settings))
             if yes { outlook.disconnect(account) }
         }
@@ -943,11 +913,11 @@ private struct MailAddAccount: View {
 
     var body: some View {
         if center.connecting {
-            SettingsRow("Waiting for Google", detail: "Allow Yab in the tab it opened.") {
+            SettingsRow("Waiting for Google", detail: "Allow \(Brand.name) in the tab it opened.") {
                 Button(SettingsWords.text("Cancel")) { center.cancelConnect(in: browser) }.settingsButton(.quiet)
             }
         } else if outlook.connecting {
-            SettingsRow("Waiting for Microsoft", detail: "Allow Yab in the tab it opened.") {
+            SettingsRow("Waiting for Microsoft", detail: "Allow \(Brand.name) in the tab it opened.") {
                 Button(SettingsWords.text("Cancel")) { outlook.cancel(in: browser) }.settingsButton(.quiet)
             }
         } else {
@@ -1073,8 +1043,8 @@ struct OneTimeCodes: View {
 
     private var textsDetail: String {
         switch (readable, prefs.textCodes) {
-        case (false, true): return "Yab can’t read Messages yet. Give it Full Disk Access, and texted codes show too."
-        case (false, false): return "Texted codes, from Messages on this Mac. They need Full Disk Access, which Yab doesn’t have."
+        case (false, true): return "\(Brand.name) can’t read Messages yet. Give it Full Disk Access, and texted codes show too."
+        case (false, false): return "Texted codes, from Messages on this Mac. They need Full Disk Access, which \(Brand.name) doesn’t have."
         default: return "Texted codes, read from Messages on this Mac while a box asks for one."
         }
     }

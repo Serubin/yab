@@ -1572,7 +1572,7 @@ private struct PageDrawing: View {
             paragraph("A link opens over the page you\u{2019}re on. Esc puts it away, and it can stay as a tab.")
             paragraph("Beside the page, it becomes Split View: two tabs, one window, each with its own history.")
         case .pullRequest:
-            crumb(.code, ["yab", "Pull requests"])
+            crumb(.code, ["pane", "Pull requests"])
             heading(Text("Sidebar width \(Text("#482").foregroundStyle(Palette.muted).fontWeight(.regular))"))
             chips(["Open", "4 files", "2 reviewers"])
             review

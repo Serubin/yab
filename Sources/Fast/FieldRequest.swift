@@ -22,7 +22,7 @@ struct FieldRequest {
         /// The row's end, as a row says what kind it is.
         var word: String {
             switch self {
-            case .yab: "Yab"
+            case .yab: "\(Brand.name)"
             case .api: "Mail"
             case .link: "Opens Filled In"
             case .agent: "Task"
@@ -33,7 +33,7 @@ struct FieldRequest {
         /// Under the preview: what happens after Return, and how long.
         var how: String {
             switch self {
-            case .yab: "Yab does it at once."
+            case .yab: "\(Brand.name) does it at once."
             case .api: "Through your mail or this Mac's calendar, about a second."
             case .link: "Opens the site’s own form filled in. Its last button is yours."
             case .agent: "A task in tabs of its own, a folder in Today. It asks you only to sign in, to pay, or if the words read two ways."

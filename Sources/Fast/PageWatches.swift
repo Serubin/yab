@@ -370,7 +370,7 @@ final class PageWatches: ObservableObject {
         guard Agents.installed else { return }
         let choice = ModelDefaults.shared.pick(.tasks)
         let prompt = """
-        Yab watches \(watch.url) for the user (\(watch.name): \(watch.until)) with a check you wrote, and the check \
+        \(Brand.name) watches \(watch.url) for the user (\(watch.name): \(watch.until)) with a check you wrote, and the check \
         has stopped reading the page: \(watch.trouble ?? "it found nothing"). Open the page, see where the thing is \
         now, and call `watch_page` with watch "\(watch.id)" and a new check (the body of a function of text, html, \
         url, json, number that returns { value, holds }). The check was:

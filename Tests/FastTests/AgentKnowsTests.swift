@@ -82,7 +82,7 @@ struct AgentKnowsTests {
         #expect(said.components(separatedBy: "Standup").count == 2)
         #expect(said.contains("10:00–10:30  Standup (not said yes to) · call: https://meet.google.com/abc-defg-hij"))
         #expect(said.contains("Nothing."))
-        #expect(AgentCalendar.describe(nil, from: day, days: 1, meetings: []).hasPrefix("No calendar Yab can read"))
+        #expect(AgentCalendar.describe(nil, from: day, days: 1, meetings: []).hasPrefix("No calendar Pane can read"))
     }
 
     @MainActor @Test func mailAndSyncSettingsAreActionsAndPrivateOnesAreNot() throws {
@@ -90,7 +90,7 @@ struct AgentKnowsTests {
         for id in ["mail-undo", "mail-hours", "mail-badge", "mail-ads", "sync-history", "app-icon", "snippets-semicolon", "search-suggest", "small-key"] {
             #expect(ids.contains("settings.set." + id), "\(id)")
         }
-        #expect(ids.contains("mail.set_notify") && ids.contains("mail.set_read_statuses"))
+        #expect(ids.contains("mail.set_notify") && !ids.contains("mail.set_read_statuses"))
         for id in ["mail-people", "sync-passwords", "mail-agents", "mail-memory"] { #expect(!ids.contains("settings.set." + id), "\(id)") }
         let undo = try #require(NativeActions.descriptors.first { $0["id"] as? String == "settings.set.mail-undo" })
         try NativeActions.validate(["value": .number(10)], descriptor: undo)

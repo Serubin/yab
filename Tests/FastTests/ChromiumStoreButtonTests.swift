@@ -75,7 +75,7 @@ struct ChromiumStoreButtonTests {
         #expect(try await web.evaluateJavaScript("getComputedStyle(document.getElementById('header')).display !== 'none'") as? Bool == true)
         #expect(try await web.evaluateJavaScript("document.querySelectorAll('button[data-yab=add]').length") as? Int == 1)
         _ = try await web.evaluateJavaScript("__yabStore.state({installed:['kmnmkpgmneeokldcmfcgjppgpcfecoed'],busy:null}); true")
-        #expect(try await web.evaluateJavaScript("document.querySelector('button[data-yab=add]').textContent") as? String == "Added to Yab")
+        #expect(try await web.evaluateJavaScript("document.querySelector('button[data-yab=add]').textContent") as? String == "Added to Pane")
         #expect(try await web.evaluateJavaScript("document.querySelector('button[data-yab=add]').disabled") as? Bool == true)
         #expect(try await web.evaluateJavaScript("getComputedStyle(document.querySelector('[role=dialog]')).display") as? String == "none")
     }
@@ -96,7 +96,7 @@ struct ChromiumStoreButtonTests {
         <section><h1>Dark Reader</h1><div id="action"><button id="install">\(label)</button></div></section>
         """)
         #expect(try await web.evaluateJavaScript("document.querySelectorAll('button[data-yab=add]').length") as? Int == 1)
-        #expect(try await web.evaluateJavaScript("document.querySelector('#action button[data-yab=add]')?.textContent") as? String == "Add to Yab")
+        #expect(try await web.evaluateJavaScript("document.querySelector('#action button[data-yab=add]')?.textContent") as? String == "Add to Pane")
         #expect(try await web.evaluateJavaScript("document.querySelector('#action button[data-yab=add]')?.disabled") as? Bool == false)
         #expect(try await web.evaluateJavaScript("document.getElementById('stale').dataset.yab || ''") as? String == "")
         #expect(try await web.evaluateJavaScript("document.getElementById('promo').dataset.yab || ''") as? String == "")
@@ -108,7 +108,7 @@ struct ChromiumStoreButtonTests {
         document.getElementById('action').replaceChildren(next);true;
         """)
         let repaired = try await Loaded.until(3, every: .milliseconds(50)) {
-            (try? await web.evaluateJavaScript("document.querySelector('#action button[data-yab=add]')?.textContent")) as? String == "Add to Yab"
+            (try? await web.evaluateJavaScript("document.querySelector('#action button[data-yab=add]')?.textContent")) as? String == "Add to Pane"
         }
         #expect(repaired)
         _ = try await web.evaluateJavaScript("document.querySelector('#action button[data-yab=add]').click();true")
@@ -141,7 +141,7 @@ struct ChromiumStoreButtonTests {
         """) as? String)
         let state = try #require(try JSONSerialization.jsonObject(with: Data(result.utf8)) as? [String: Any])
         #expect(state["count"] as? Int == 1)
-        #expect(state["label"] as? String == "Add to Yab")
+        #expect(state["label"] as? String == "Add to Pane")
         #expect(state["enabled"] as? Bool == true)
         #expect(state["placed"] as? String == "kmnmkpgmneeokldcmfcgjppgpcfecoed")
         #expect(state["promo"] is NSNull)

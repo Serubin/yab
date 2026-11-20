@@ -30,7 +30,7 @@ extension Mcp {
             }
             let limit = Date().addingTimeInterval(optional ? min(input["seconds"] as? Double ?? 15, 15) : input["seconds"] as? Double ?? personWait)
             while Date() < limit {
-                if outside, !optional { progress("Waiting for you in Yab: \(request["reason"] as? String ?? "")") }
+                if outside, !optional { progress("Waiting for you in \(Brand.name): \(request["reason"] as? String ?? "")") }
                 let heard = ask(["do": "handoff-wait", "id": id ?? "", "seconds": min(20, max(1, limit.timeIntervalSinceNow))])
                 if let error = heard["error"] as? String { return text(error, error: true) }
                 switch heard["state"] as? String {
@@ -46,7 +46,7 @@ extension Mcp {
                 return text("Left at the foot of the tab: the user can do it or skip it whenever. Carry on without it now. Before you finish, if you still want it, call handoff on this tab again (without optional) to wait for it.")
             }
             if outside {
-                return text("status: needs_user\nsays: Yab shows the user “\(request["reason"] as? String ?? "")” at the foot of the tab, and waits for them there.\nfix: Tell the user now, in your reply, what to do in Yab. Once they say it's done, call handoff again (or snapshot the tab).")
+                return text("status: needs_user\nsays: \(Brand.name) shows the user “\(request["reason"] as? String ?? "")” at the foot of the tab, and waits for them there.\nfix: Tell the user now, in your reply, what to do in \(Brand.name). Once they say it's done, call handoff again (or snapshot the tab).")
             }
             return text("The user has not finished yet. Call handoff again to keep waiting, or carry on without it.")
         },
@@ -67,7 +67,7 @@ extension Mcp {
             let where_ = got["id"] as? String ?? id ?? ""
             let limit = Date().addingTimeInterval(input["seconds"] as? Double ?? personWait)
             while Date() < limit {
-                if outside { progress("Waiting for you in Yab: \(request["question"] as? String ?? "")") }
+                if outside { progress("Waiting for you in \(Brand.name): \(request["question"] as? String ?? "")") }
                 let heard = ask(["do": "handoff-wait", "id": where_, "seconds": min(20, max(1, limit.timeIntervalSinceNow))])
                 if let error = heard["error"] as? String { return text(error, error: true) }
                 switch heard["state"] as? String {
@@ -80,12 +80,12 @@ extension Mcp {
                 }
             }
             if outside {
-                return text("status: needs_user\nsays: The question “\(request["question"] as? String ?? "")” waits for the user at the foot of a tab in Yab.\nfix: Tell the user now, or ask them in your own reply instead; don't call ask again for the same question.")
+                return text("status: needs_user\nsays: The question “\(request["question"] as? String ?? "")” waits for the user at the foot of a tab in \(Brand.name).\nfix: Tell the user now, or ask them in your own reply instead; don't call ask again for the same question.")
             }
             return text("No answer yet. Call ask again to keep waiting, or carry on without it.")
         },
         McpTool("sign_in", .change("Sign In", outside: true),
-                "Sign in on this tab's page with a password Yab has saved for the site (the user may be asked first). The password is filled by Yab and never shown to you. user picks the account when Yab keeps several (it says which). Call again for the next step (a password page after a name page). Without one in Yab, it looks for a connected password manager's menu on the page and says: its menu is open (pick the account in it), it is locked (call unlock_manager, or handoff when the person unlocks it), or there is none (call handoff).",
+                "Sign in on this tab's page with a password \(Brand.name) has saved for the site (the user may be asked first). The password is filled by \(Brand.name) and never shown to you. user picks the account when \(Brand.name) keeps several (it says which). Call again for the next step (a password page after a name page). Without one in \(Brand.name), it looks for a connected password manager's menu on the page and says: its menu is open (pick the account in it), it is locked (call unlock_manager, or handoff when the person unlocks it), or there is none (call handoff).",
                 ["tab": tab, "user": ["type": "string", "description": "The account's name or email, when there are several"]],
                 required: ["tab"],
                 acts: true, subs: false,
@@ -100,7 +100,7 @@ extension Mcp {
             }
         },
         McpTool("unlock_manager", .change("Unlock Password Manager", outside: true),
-                "Unlock a connected password manager when sign_in says it is locked and Yab has its unlock password. Yab types the password into the manager's own unlock page in a background tab and says whether it unlocked; you never see the password. On unlocked, call sign_in again and pick the account in the manager's menu. On not_unlocked, don't try again: call handoff. Never for a manager the person unlocks themselves.",
+                "Unlock a connected password manager when sign_in says it is locked and \(Brand.name) has its unlock password. \(Brand.name) types the password into the manager's own unlock page in a background tab and says whether it unlocked; you never see the password. On unlocked, call sign_in again and pick the account in the manager's menu. On not_unlocked, don't try again: call handoff. Never for a manager the person unlocks themselves.",
                 ["tab": tab, "provider": ["type": "string", "description": "As sign_in names it: 1password, bitwarden, nordpass, proton-pass, dashlane, lastpass"]],
                 required: ["provider"],
                 acts: true, subs: false,
@@ -111,7 +111,7 @@ extension Mcp {
             return done(got) { text(got["said"] as? String ?? "Unlocked. Call sign_in again.") }
         },
         McpTool("autofill", .change("Autofill", outside: true),
-                "Fill a form on this tab with what Yab keeps for the user. what: form fills a whole form (sign-up, event registration, application, contact) from the user's address, their profile (company, title, location, LinkedIn, X, GitHub, site, bio) and what they answered the same questions before, all at once and faster than typing, and says which boxes are left: questions only words answer (write those with type, from the profile it sends back), and ones that are the user's alone (money, bank details, ids, consent), which you leave or ask about. Never ticks consent and never submits. card or address fill a checkout: a card waits for the user's Touch ID and its number is never shown to you; its security code fills with it when the user paid with one before; if the page still asks for one, call handoff for the user to type it. An address is filled once the user says yes. With several cards, pass card (its last four digits) when the task says which; without it the user picks one.",
+                "Fill a form on this tab with what \(Brand.name) keeps for the user. what: form fills a whole form (sign-up, event registration, application, contact) from the user's address, their profile (company, title, location, LinkedIn, X, GitHub, site, bio) and what they answered the same questions before, all at once and faster than typing, and says which boxes are left: questions only words answer (write those with type, from the profile it sends back), and ones that are the user's alone (money, bank details, ids, consent), which you leave or ask about. Never ticks consent and never submits. card or address fill a checkout: a card waits for the user's Touch ID and its number is never shown to you; its security code fills with it when the user paid with one before; if the page still asks for one, call handoff for the user to type it. An address is filled once the user says yes. With several cards, pass card (its last four digits) when the task says which; without it the user picks one.",
                 ["tab": tab, "what": ["type": "string", "enum": ["form", "card", "address"]],
                   "card": ["type": "string", "description": "The last four digits of the card to use"]],
                 required: ["tab", "what"],
@@ -125,7 +125,7 @@ extension Mcp {
             // tab's foot, by the cards themselves, and that one is filled.
             if let cards = got["choose"] as? [String], !cards.isEmpty {
                 let asked = ask(["do": "agent-ask", "id": id ?? "", "question": "Which card on \(got["site"] as? String ?? "this site")?",
-                                 "detail": "Yab fills it after Touch ID; the agent never sees its number.", "options": Array(cards.prefix(4))])
+                                 "detail": "\(Brand.name) fills it after Touch ID; the agent never sees its number.", "options": Array(cards.prefix(4))])
                 if let error = asked["error"] as? String { return text(error, error: true) }
                 let limit = Date().addingTimeInterval(personWait)
                 var said: String?

@@ -12,7 +12,7 @@ if CommandLine.arguments.dropFirst().contains(where: { [Relaunch.flag, Relaunch.
 }
 
 // Updating Yab while it is closed. launchd starts this at login and every
-// four hours (Contents/Library/LaunchAgents/YabUpdater.plist, enrolled by
+// four hours (Contents/Library/LaunchAgents/PaneUpdater.plist, enrolled by
 // the app through SMAppService, Updater.Agent). It lives in Contents/MacOS,
 // so its main bundle is the app: the same feed, the same build number, the
 // same settings, and the swap puts the new bundle where the app is.

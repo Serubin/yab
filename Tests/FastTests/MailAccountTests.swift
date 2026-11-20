@@ -52,7 +52,7 @@ struct MailAccountTests {
     @Test func underReviewShowsTheWarning() throws {
         let question = try #require(MailClient.warning(underReview: true, place: .settings))
         #expect(question.title == "Google will warn you first")
-        #expect(question.lines == ["Press Advanced", "Then Go to Yab (unsafe)"])
+        #expect(question.lines == ["Press Advanced", "Then Go to Pane (unsafe)"])
         #expect(question.yes == "Continue to Google")
         #expect(question.place == .settings)
         // Approved: no warning, Connect goes straight to Google.

@@ -559,12 +559,12 @@ extension Browser {
             case .images: title = "No images copied"
             case .colors: title = "No colors copied"
             case .files: title = "No files copied"
-            case .fast, .all: title = "Nothing copied in Yab"
+            case .fast, .all: title = "Nothing copied in \(Brand.name)"
             }
             return PlaceEmpty(place: .clipboard, searching: true, title: title, detail: "", actions: [all])
         }
         return PlaceEmpty(place: .clipboard, searching: false, title: "Nothing copied yet",
-                          detail: "What you copy in any app while Yab is open comes here for a month, or for good once pinned, and goes back with Return. Passwords and private tabs are left out.")
+                          detail: "What you copy in any app while \(Brand.name) is open comes here for a month, or for good once pinned, and goes back with Return. Passwords and private tabs are left out.")
     }
 
     /// What Emoji says when the words find none, once it has looked by
@@ -887,7 +887,7 @@ extension Browser {
             // not yet played: the first 100 days, a December's year (Wrapped.swift).
             Wrapped.shared.refresh()
             let wrapped = Wrapped.shared.due
-            if let wrapped { nowRows.append(Suggestion(key: "Yab Wrapped", title: wrapped.title, url: nil, kind: .page("wrapped"))) }
+            if let wrapped { nowRows.append(Suggestion(key: "\(Brand.name) Wrapped", title: wrapped.title, url: nil, kind: .page("wrapped"))) }
             // Now: only what has a time, two at most with Wrapped among them.
             // More than that: Show All, its row saying how many more, opens
             // all of Now as a place. Nothing: no Now at all.
@@ -994,7 +994,7 @@ extension Browser {
             rows.append(Suggestion(key: connect.title, title: HintList.detail(connect, now: now), url: nil, kind: .hint(connect.id)))
         }
         if !steps.isEmpty {
-            rows.append(Suggestion(key: "Set up Yab", title: "\(steps.count) left", url: nil, kind: .page("setup")))
+            rows.append(Suggestion(key: "Set up \(Brand.name)", title: "\(steps.count) left", url: nil, kind: .page("setup")))
         }
         return rows
     }
@@ -1074,7 +1074,7 @@ extension Browser {
         case .page(let what) where what.hasPrefix("sel:"): return "Selection"
         case .hint(let id):
             let hint = Hints.shared.row(id)
-            if hint?.setup == true { return "Set up Yab" }
+            if hint?.setup == true { return "Set up \(Brand.name)" }
             return hint?.source == .habit ? "Frequent" : "Now"
         case .clip, .page("agent-now"), .page("wrapped"), .page("mail-now"), .place: return "Now"
         case .open: return "Recent Tabs"
@@ -1901,7 +1901,7 @@ extension Browser {
             Stop this subscription from renewing: \(hint.title) (\(hint.detail)). The user hasn't opened it lately. Open the \
             merchant's billing or subscription settings \(place.isEmpty ? "" : "(start at " + place + ")") in your own tab, signed in \
             as the user, and find where the plan is canceled or auto-renew turned off. Press up to the merchant's last button and stop \
-            there: Yab asks the user before it. Never pay, never change the plan to another, never type a card. Say what changes \
+            there: \(Brand.name) asks the user before it. Never pay, never change the plan to another, never type a card. Say what changes \
             and until when they keep it.
             """
         }
@@ -2128,7 +2128,7 @@ extension Browser {
             settings(.shortcuts, title: "Keyboard Shortcuts", group: 0),
         ]
         out += [Command.checkUpdates, .restartUpdate, .makeDefault].filter { $0.available(in: self) }.map { command($0, group: 1) }
-        out.append(settings(.about, title: "About Yab", group: 2))
+        out.append(settings(.about, title: "About \(Brand.name)", group: 2))
         // Where Settings opened last, as its menu item and ⌘, open it.
         out.append(FieldAction(id: "settings", title: Command.settings.title, keys: Command.settings.keys, symbol: Command.settings.symbol, group: 2) {
             self.close()

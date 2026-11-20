@@ -37,7 +37,7 @@ enum ChromiumExtensionImport {
                 pending.remove(item.id)
                 try journal(pending)
                 results.append(Result(id: item.id, name: item.name, state: .blocked,
-                                      detail: "Yab has Apple Passwords built in."))
+                                      detail: "\(Brand.name) has Apple Passwords built in."))
                 continue
             }
             if known.contains(item.id), !pending.contains(item.id) {
@@ -196,7 +196,7 @@ extension ChromiumExtensions {
             case .privateProfile: return "Extension import is unavailable in private profiles"
             case .invalidProfile: return "Extension import requires a valid Chromium profile"
             case .inProgress: return "An extension import is already running in this profile"
-            case .unreadableList: return "The saved Yab extension list could not be read"
+            case .unreadableList: return "The saved \(Brand.name) extension list could not be read"
             case .declined: return "Additional native permissions were not approved"
             }
         }

@@ -91,7 +91,7 @@ final class AskPresence: ObservableObject {
 /// notifications find it by name, and played from the same file in Yab.
 @MainActor
 enum AskSound {
-    static let name = "Yab Question.aiff"
+    static let name = "\(Brand.name) Question.aiff"
     private static var sound: SystemSoundID = 0
     private static var played: Set<String> = []
 

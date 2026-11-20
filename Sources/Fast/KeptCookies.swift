@@ -23,7 +23,7 @@ import WebKit
 // so a second crash before anything changes loses nothing either.
 @MainActor
 enum KeptCookies {
-    nonisolated private static let service = (Bundle.main.bundleIdentifier ?? "dev.serafim.yab") + ".session-cookies." + Store.name
+    nonisolated static let service = (Bundle.main.bundleIdentifier ?? Store.productionBundleID) + ".session-cookies." + Store.name
     nonisolated private static let account = "session"
     private static let lifetime: TimeInterval = 7 * 24 * 3600
     // Even a missing per-probe item can wait on the shared securityd.
@@ -160,7 +160,7 @@ enum KeptCookies {
         var item = query
         item[kSecValueData as String] = data
         item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        item[kSecAttrLabel as String] = "Yab session sign-ins"
+        item[kSecAttrLabel as String] = "\(Store.name) session sign-ins"
         Keychain.add(item as CFDictionary, nil)
     }
 

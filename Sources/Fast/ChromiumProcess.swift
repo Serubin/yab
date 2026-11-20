@@ -79,7 +79,7 @@ final class ChromiumProcess {
                                                    attributes: [.posixPermissions: 0o700])
             let socket = dir.appendingPathComponent("core.sock").path
             let child = Process()
-            child.executableURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Frameworks/YabCore.app/Contents/MacOS/YabCore")
+            child.executableURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Frameworks/PaneCore.app/Contents/MacOS/PaneCore")
             let exit = try configure(child, socket: socket)
             let peer = NativePeerIdentity.prepareLaunch(child)
             OpenTrace.mark("chromium.helper.run")
@@ -223,7 +223,7 @@ final class ChromiumProcess {
             // Tests point to the exact CEF app assembled in this farm job.
             let testApp = Store.unitTests ? ProcessInfo.processInfo.environment["YAB_TEST_CEF_APP"] : nil
             let app = testApp.map { URL(fileURLWithPath: $0) } ?? Bundle.main.bundleURL
-            let helper = app.appendingPathComponent("Contents/Frameworks/YabCore.app/Contents/MacOS/YabCore")
+            let helper = app.appendingPathComponent("Contents/Frameworks/PaneCore.app/Contents/MacOS/PaneCore")
             guard FileManager.default.isExecutableFile(atPath: helper.path) else {
                 throw YabCoreError.transport("This dev app has no YabCore helper. Build with YAB_CEF=1.")
             }

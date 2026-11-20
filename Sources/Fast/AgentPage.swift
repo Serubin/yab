@@ -217,7 +217,7 @@ enum AgentPage {
     /// once, and told.
     static var alerts: [ObjectIdentifier: [String]] = [:]
     /// Said when a page in an agent's tab opened its file picker on a click.
-    static let pickerClosed = "The page opened a file picker, which Yab closed: nobody sees it. To give the page a file, call upload with this tab, the ref you just clicked and the file's full path; Yab presses it and answers the picker itself. Don't ask the person to pick the file."
+    static let pickerClosed = "The page opened a file picker, which \(Brand.name) closed: nobody sees it. To give the page a file, call upload with this tab, the ref you just clicked and the file's full path; \(Brand.name) presses it and answers the picker itself. Don't ask the person to pick the file."
 
     /// Whether a page's question in this tab is the agent's to answer.
     static func answers(_ tab: Tab) -> Bool {

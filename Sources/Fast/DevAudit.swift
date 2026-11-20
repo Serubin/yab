@@ -70,7 +70,7 @@ struct DevAuditPane: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Audit this page").font(.system(size: 13.5, weight: .medium))
                     Text("Accessibility checks use the bundled axe-core engine. SEO and best-practice checks inspect the current document; performance measurements come from its navigation and a WebKit trace.").font(.system(size: 12)).foregroundStyle(Palette.muted)
-                    Text("Results identify checks that passed, failed, or need manual review. They are Yab audits, without a simulated Lighthouse score.").font(.system(size: 11.5)).foregroundStyle(Palette.muted)
+                    Text("Results identify checks that passed, failed, or need manual review. They are \(Brand.name) audits, without a simulated Lighthouse score.").font(.system(size: 11.5)).foregroundStyle(Palette.muted)
                 }.padding(16).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
                 ThreadScrollView { DevDataRows(rows: model.audit) }

@@ -23,7 +23,7 @@ enum ApplePasswordExtensionRoute {
         switch action {
         case .alreadyOn:
             let browser = browser ?? BrowserWindows.shared.activeBrowser ?? Extensions.shared.browser
-            browser?.announce("Apple Passwords is already on in Yab", mark: "key")
+            browser?.announce("Apple Passwords is already on in \(Brand.name)", mark: "key")
         case .connect:
             Task { _ = await pair() }
         }

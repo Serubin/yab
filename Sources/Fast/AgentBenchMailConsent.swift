@@ -45,7 +45,7 @@ extension Bench {
             let reads = ["agent-mail-triage", "agent-mail-search", "agent-mail-list", "agent-mail-recall", "agent-mail-read", "agent-mail-file",
                          "agent-files-search", "agent-files-read", "agent-purchases"]
             let what = reads.contains(c.verb) ? looking(c.verb, request) : "Works on your mail"
-            let terms = "\(root.planName) reads what it finds on your plan, under \(MailConsent.company(root.planName))’s terms. Yab keeps no copy."
+            let terms = "\(root.planName) reads what it finds on your plan, under \(MailConsent.company(root.planName))’s terms. \(Brand.name) keeps no copy."
             let permit = AgentPermit(kind: .mailRead, session: session, detail: what + ". " + terms)
             ApprovalDetails.shared.searching[ApprovalDetails.changeKey(session: session, permit: permit)] = what + "\n" + terms
             return ask(c, permit, session: session) {

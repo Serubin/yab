@@ -73,7 +73,7 @@ final class CursorServer {
                 guard method == "session/request_permission", let thread,
                       params["sessionId"] as? String == thread, busy, !loading else {
                     send(["jsonrpc": "2.0", "id": id,
-                          "error": ["code": -32601, "message": "Yab does not provide this client capability."]])
+                          "error": ["code": -32601, "message": "\(Brand.name) does not provide this client capability."]])
                     return []
                 }
                 let options = (params["options"] as? [[String: Any]] ?? []).compactMap { raw -> Option? in
@@ -121,12 +121,12 @@ final class CursorServer {
             return [.failed(words)]
         }
         guard let result = message["result"] as? [String: Any] else {
-            return [.failed("Cursor answered in a way Yab can't read. Try again.")]
+            return [.failed("Cursor answered in a way \(Brand.name) can't read. Try again.")]
         }
         switch what {
         case .initialize:
             guard result["protocolVersion"] as? Int == 1, let opening else {
-                return [.failed("This Cursor is too old for Yab. Update it, then try again.")]
+                return [.failed("This Cursor is too old for \(Brand.name). Update it, then try again.")]
             }
             var params: [String: Any] = ["cwd": opening.cwd, "mcpServers": opening.mcp]
             loading = opening.thread != nil

@@ -162,7 +162,7 @@ enum SignIns {
         let list = signed.joined(separator: ", ")
         return "signs in with: \(list), and this space is signed in to \(signed.count == 1 ? "it" : "them"): "
             + "click Continue with \(signed[0]) (or the like) and pick the user's account; that is signing in, not a handoff. "
-            + "With several accounts, the one used here before, else ask which. handoff only if it then wants a password Yab doesn't keep, "
+            + "With several accounts, the one used here before, else ask which. handoff only if it then wants a password \(Brand.name) doesn't keep, "
             + "a second factor, a captcha, or a new app's permission"
     }
 

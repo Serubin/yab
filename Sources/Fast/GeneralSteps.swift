@@ -65,7 +65,7 @@ struct GeneralSteps: View {
                 Self.icon(NSApplication.shared.applicationIconImage)
             }
             .accessibilityHidden(true)
-            Text(SettingsWords.text("Open links in Yab"))
+            Text(SettingsWords.text("Open links in Pane"))
                 .font(.system(size: 13, weight: .semibold))
             Text(current.map { SettingsWords.format("Links from Mail, Slack and other apps open here, not in %@.", [$0.name]) }
                  ?? SettingsWords.text("Links from Mail, Slack and other apps open here."))

@@ -55,7 +55,7 @@ final class PageCopy: ObservableObject {
     /// The clipboard: a test run's own, so trying this from the bench never
     /// takes what the person at the Mac had copied.
     static var board: NSPasteboard {
-        Store.testing ? NSPasteboard(name: NSPasteboard.Name("dev.serafim.fast.test.copy")) : .general
+        Store.testing ? NSPasteboard(name: NSPasteboard.Name("net.serubin.pane.test.copy")) : .general
     }
 
     func offer(tab: UUID, web: NSView, words: Int, canSave: Bool, transcript: Bool) {

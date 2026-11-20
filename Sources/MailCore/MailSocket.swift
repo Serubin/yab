@@ -70,7 +70,7 @@ public enum MailServerTrouble: Error, Equatable, Sendable {
         switch self {
         case .dnsNotFound: return "No server by that name"
         case .tcpRefused: return "The server didn’t take the connection"
-        case .tlsFailed: return "The server’s certificate isn’t one Yab can trust"
+        case .tlsFailed: return "The server’s certificate isn’t one \(Brand.name) can trust"
         case .authRejected: return "The server didn’t accept the password"
         case .appPasswordRequired: return "This account needs an app password"
         case .imapDisabled: return "IMAP is turned off for this mailbox"

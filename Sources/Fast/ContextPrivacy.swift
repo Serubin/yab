@@ -560,7 +560,7 @@ final class ContextPrivacy: @unchecked Sendable {
 
 @MainActor
 enum ContextConsent {
-    static let refusal = "Choose Allow in Yab's context permission before starting this read."
+    static let refusal = "Choose Allow in \(Brand.name)'s context permission before starting this read."
     static var disclosure: String {
         "Reads your browsing history and the sites you're signed in to. Page text goes to \(AgentSetupModel.name(Agents.preferred)), the AI you connected. About ten minutes. Nothing is sent or posted to those sites. Inspect or clear what it keeps in AI › Memory."
     }

@@ -131,10 +131,10 @@ struct PreparedUpdateTests {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let app = root.appendingPathComponent("Yab.app", isDirectory: true)
-        try FileManager.default.createDirectory(at: app.appendingPathComponent("Contents/Frameworks/YabCore.app/Contents/Frameworks/YabCore Helper.app"), withIntermediateDirectories: true)
-        #expect(Relaunch.containsApplication([app], app.appendingPathComponent("Contents/Frameworks/YabCore.app")))
-        #expect(Relaunch.containsApplication([app], app.appendingPathComponent("Contents/Frameworks/YabCore.app/Contents/Frameworks/YabCore Helper.app")))
-        #expect(!Relaunch.containsApplication([app], root.appendingPathComponent("Yab.app.other/Contents/Frameworks/YabCore.app")))
+        try FileManager.default.createDirectory(at: app.appendingPathComponent("Contents/Frameworks/PaneCore.app/Contents/Frameworks/PaneCore Helper.app"), withIntermediateDirectories: true)
+        #expect(Relaunch.containsApplication([app], app.appendingPathComponent("Contents/Frameworks/PaneCore.app")))
+        #expect(Relaunch.containsApplication([app], app.appendingPathComponent("Contents/Frameworks/PaneCore.app/Contents/Frameworks/PaneCore Helper.app")))
+        #expect(!Relaunch.containsApplication([app], root.appendingPathComponent("Yab.app.other/Contents/Frameworks/PaneCore.app")))
         #expect(!Relaunch.containsApplication([app], root.appendingPathComponent("Other Yab.app")))
     }
 }

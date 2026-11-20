@@ -404,7 +404,7 @@ final class YabSmallWindowCommand: NSScriptCommand {
         MainActor.assumeIsolated {
             let given = (directParameter as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             guard let browser = Links.browser else {
-                YabScriptWindow.scriptError(YabScriptWindow.cantAssign, "Yab has no window yet.")
+                YabScriptWindow.scriptError(YabScriptWindow.cantAssign, "\(Brand.name) has no window yet.")
                 return nil
             }
             guard !given.isEmpty else {

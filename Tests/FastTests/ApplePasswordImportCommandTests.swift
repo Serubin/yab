@@ -202,7 +202,7 @@ struct ApplePasswordImportCommandTests {
         let world = try #require(Store.world)
         _ = NSApplication.shared
         Session.settle()
-        let domain = world == "test" ? "dev.serafim.fast.test" : "dev.serafim.fast.test.\(world)"
+        let domain = world == "test" ? "net.serubin.pane.test" : "net.serubin.pane.test.\(world)"
         let settings = Store.settings.persistentDomain(forName: domain)
         let field = FieldUnder.shared
         let oldField = (field.commands, field.pages, field.rows, field.firstRow)

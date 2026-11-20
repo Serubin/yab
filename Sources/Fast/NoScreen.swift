@@ -18,8 +18,8 @@ enum NoScreen {
     }
 
     static func leave() -> Never {
-        let line = "yab: the browser can't open here, there is no screen to draw on (a sandbox or an ssh login).\n"
-            + "Ask Yab from here with `yab \"task\"`, give an agent its tools with `yab mcp`, or see `yab help`.\n"
+        let line = "\(AgentSetup.command): the browser can't open here, there is no screen to draw on (a sandbox or an ssh login).\n"
+            + "Ask \(Brand.name) from here with `\(AgentSetup.command) \"task\"`, give an agent its tools with `\(AgentSetup.command) mcp`, or see `\(AgentSetup.command) help`.\n"
         fputs(line, stderr)
         exit(69)  // EX_UNAVAILABLE
     }

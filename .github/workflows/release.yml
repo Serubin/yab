@@ -1,4 +1,4 @@
-# Signed, notarized release of this fork in two flavors: Yab with WebKit and Chromium
+# Signed, notarized release of Pane, this fork, in two flavors: WebKit with Chromium
 # (stock CEF), and WebKit only. Each flavor has its own feed, so an install stays on its own.
 #
 # Versions: upstream's newest release (scripts/fork/upstream-version.py: its site's latest
@@ -50,7 +50,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  YAB_BUNDLE_ID: net.serubin.yab
+  PANE_BUNDLE_ID: net.serubin.pane
   # Pinned in docs/cef-packaging.md; fetch.sh only checks the CDN's own index.
   CEF_SHA1: 7359a9d293dd5c480bec3f18b762731b483b0e13
 
@@ -104,8 +104,8 @@ jobs:
             || { echo "::error::version $version (upstream $upstream) isn't one build.sh accepts"; exit 1; }
           owner="$(tr '[:upper:]' '[:lower:]' <<<"$OWNER")"
           site="https://$owner.github.io/${REPO#*/}"
-          chromium='{"flavor":"chromium","feed_dir":".","suffix":""}'
-          webkit='{"flavor":"webkit","feed_dir":"webkit","suffix":"-webkit"}'
+          chromium='{"flavor":"chromium","feed_dir":"pane","suffix":""}'
+          webkit='{"flavor":"webkit","feed_dir":"pane/webkit","suffix":"-webkit"}'
           case "$ENGINES" in
             all) include="[$chromium,$webkit]" ;;
             chromium) include="[$chromium]" ;;
@@ -120,7 +120,7 @@ jobs:
             echo "site=$site"
             echo "matrix={\"include\":$include}"
           } >> "$GITHUB_OUTPUT"
-          echo "Yab $version (upstream $upstream), build $build, flavors $ENGINES, publish: $publish" \
+          echo "Pane $version (upstream $upstream), build $build, flavors $ENGINES, publish: $publish" \
             | tee -a "$GITHUB_STEP_SUMMARY"
 
   build:
@@ -173,7 +173,7 @@ jobs:
             echo "YAB_DOWNLOAD_URL=$SITE/${FEED_DIR#.}"
             echo "YAB_CHANGELOG_URL=https://github.com/$REPO/releases/tag/$TAG"
           } >> "$GITHUB_ENV"
-          echo "Yab $VERSION ($FLAVOR), build $BUILD, tag $TAG, feed $SITE/${FEED_DIR#.}"
+          echo "Pane $VERSION ($FLAVOR), build $BUILD, tag $TAG, feed $SITE/${FEED_DIR#.}"
 
       # build.sh reuses a working .build/dmgbuild rather than pip-installing unpinned.
       - name: dmgbuild, pinned by hash
@@ -198,13 +198,13 @@ jobs:
             || { echo "::error::CEF archive isn't the pinned $CEF_SHA1"; exit 1; }
           echo "YAB_CEF_DIR=$cef" >> "$GITHUB_ENV"
 
-      - name: Build YabCore
+      - name: Build PaneCore
         if: matrix.flavor == 'chromium'
         run: |
           set -euo pipefail
           helper_app="$(bash YabCore/build.sh | tail -1)"
-          test -x "$helper_app/Contents/MacOS/YabCore"
-          echo "YAB_CEF_HELPER=$helper_app/Contents/MacOS/YabCore" >> "$GITHUB_ENV"
+          test -x "$helper_app/Contents/MacOS/PaneCore"
+          echo "YAB_CEF_HELPER=$helper_app/Contents/MacOS/PaneCore" >> "$GITHUB_ENV"
 
       - name: Signing keychain
         env:
@@ -256,7 +256,7 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "signing as: $identities"
 
-      - name: Build, sign and notarize Yab
+      - name: Build, sign and notarize Pane
         env:
           YAB_CEF: ${{ matrix.flavor == 'chromium' && '1' || '0' }}
         run: ./build.sh release ship
@@ -264,27 +264,27 @@ jobs:
       - name: Check what was built
         run: |
           set -euo pipefail
-          app="build/yab.app"
+          app="build/Pane.app"
           plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$app/Contents/Info.plist"; }
-          [ "$(plist CFBundleIdentifier)" = "$YAB_BUNDLE_ID" ] || { echo "::error::bundle id is $(plist CFBundleIdentifier)"; exit 1; }
+          [ "$(plist CFBundleIdentifier)" = "$PANE_BUNDLE_ID" ] || { echo "::error::bundle id is $(plist CFBundleIdentifier)"; exit 1; }
           [ "$(plist CFBundleVersion)" = "$BUILD" ] || { echo "::error::build is $(plist CFBundleVersion)"; exit 1; }
           [ "$(plist CFBundleShortVersionString)" = "$VERSION" ] \
             || { echo "::error::version is $(plist CFBundleShortVersionString)"; exit 1; }
           cef="$app/Contents/Frameworks/Chromium Embedded Framework.framework"
           if [ "$FLAVOR" = chromium ]; then
-            test -x "$app/Contents/MacOS/YabCore"
+            test -x "$app/Contents/MacOS/PaneCore"
             test -d "$cef"
           else
-            [ ! -e "$app/Contents/MacOS/YabCore" ] && [ ! -e "$cef" ] \
+            [ ! -e "$app/Contents/MacOS/PaneCore" ] && [ ! -e "$cef" ] \
               || { echo "::error::a WebKit-only build carries Chromium"; exit 1; }
           fi
           [ "$(plist YabFeed)" = "${YAB_DOWNLOAD_URL%/}/appcast.json" ] || { echo "::error::YabFeed is $(plist YabFeed)"; exit 1; }
-          lipo -archs "$app/Contents/MacOS/yab" | grep -qw x86_64
+          lipo -archs "$app/Contents/MacOS/pane" | grep -qw x86_64
           codesign --verify --deep --strict "$app"
           spctl --assess --type execute -vv "$app"
           xcrun stapler validate "$app"
-          xcrun stapler validate build/yab.dmg
-          spctl --assess --type open --context context:primary-signature -vv build/yab.dmg
+          xcrun stapler validate build/pane.dmg
+          spctl --assess --type open --context context:primary-signature -vv build/pane.dmg
 
       - name: Point the appcast at this release's files
         env:
@@ -295,12 +295,12 @@ jobs:
           import json, sys
           path, base = sys.argv[1], sys.argv[2]
           cast = json.load(open(path))
-          cast['url'] = base + '/yab.zip'
-          cast['dmg'] = base + '/yab.dmg'
+          cast['url'] = base + '/pane.zip'
+          cast['dmg'] = base + '/pane.dmg'
           json.dump(cast, open(path, 'w'), indent=2)
           print(json.dumps(cast, indent=2))
           PY
-          [ ! -d build/yab.app.dSYM ] || ditto -c -k --keepParent build/yab.app.dSYM build/yab.app.dSYM.zip
+          [ ! -d build/Pane.app.dSYM ] || ditto -c -k --keepParent build/Pane.app.dSYM build/Pane.app.dSYM.zip
 
       - name: GitHub release
         env:
@@ -314,14 +314,14 @@ jobs:
             channel=(--latest)
             [ "$FLAVOR" = webkit ] && channel=(--latest=false)
           fi
-          title="Yab $VERSION"
+          title="Pane $VERSION"
           engines="Chromium tabs use stock CEF."
           if [ "$FLAVOR" = webkit ]; then
-            title="Yab $VERSION (WebKit only)"
+            title="Pane $VERSION (WebKit only)"
             engines="WebKit only."
           fi
-          files=(build/yab.dmg build/yab.zip build/appcast.json)
-          [ ! -f build/yab.app.dSYM.zip ] || files+=(build/yab.app.dSYM.zip)
+          files=(build/pane.dmg build/pane.zip build/appcast.json)
+          [ ! -f build/Pane.app.dSYM.zip ] || files+=(build/Pane.app.dSYM.zip)
           gh release create "$TAG" --repo "$REPO" --target "$GITHUB_SHA" "${channel[@]}" \
             --title "$title" \
             --notes "Upstream Yab $UPSTREAM, build $BUILD. Built from \`$REF_NAME\` at $GITHUB_SHA. Signed and notarized. $engines" \
@@ -368,8 +368,9 @@ jobs:
         run: |
           set -euo pipefail
           shipped=0
-          # A Pages deploy replaces the whole site, so a flavor this run didn't ship keeps its live feed.
-          for pair in chromium:. webkit:webkit; do
+          # A Pages deploy replaces the whole site, so a feed this run didn't ship keeps its live copy.
+          # The root and webkit/ feeds belong to the fork's earlier Yab-named builds and are only carried over.
+          for pair in chromium:pane webkit:pane/webkit -:. -:webkit; do
             flavor="${pair%%:*}" dir="${pair#*:}"
             mkdir -p "feed/$dir"
             if [ -f "built/feed-$flavor/appcast.json" ]; then

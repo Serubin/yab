@@ -233,14 +233,14 @@ private struct PostSection: View {
     private var line: (title: String, detail: String) {
         if reward.allWon { return ("All three are yours", "Find them in Appearance › App Icon.") }
         if reward.waiting {
-            return ("Post it on X", reward.waitedLong ? "Didn't see it yet. If it's up, paste its link." : "Yab counts it once X shows your post.")
+            return ("Post it on X", reward.waitedLong ? "Didn't see it yet. If it's up, paste its link." : "\(Brand.name) counts it once X shows your post.")
         }
         if let opens = reward.live?.opens { return ("Your post is up", "The surprise opens \(PostReward.words(until: opens)).") }
         let next = reward.after.map { " The next one with a post after \($0.formatted(.dateTime.month(.wide).day()))." } ?? ""
         if let fresh = reward.fresh { return ("\(fresh.title) is yours", "\(reward.count) of 3." + next) }
         if let after = reward.after, after > Date() { return ("Next icon after \(after.formatted(.dateTime.month(.wide).day()))", "One post a week counts.") }
         if reward.lastGone { return ("The post is gone", "So it didn't count. Post again any time.") }
-        return ("Post About Yab", "Unlock one of three icons by posting about Yab. One post per week counts.")
+        return ("Post About \(Brand.name)", "Unlock one of three icons by posting about \(Brand.name). One post per week counts.")
     }
 
     @ViewBuilder private var trailing: some View {
@@ -398,7 +398,7 @@ struct InviteFriendsPage: View {
             .settingsAnchor("invite-icons")
         } footer: {
             if let next = invites.next {
-                SettingsNote("\(next.more) more \(next.more == 1 ? "friend" : "friends") to \(next.style.title). A friend counts once they open Yab. Best Friends comes from one friend, any time.")
+                SettingsNote("\(next.more) more \(next.more == 1 ? "friend" : "friends") to \(next.style.title). A friend counts once they open \(Brand.name). Best Friends comes from one friend, any time.")
             }
         }
         PostSection()
@@ -425,15 +425,15 @@ struct InviteFriendsPage: View {
 
     private var bestLine: String {
         guard let best = invites.best else { return "One friend. You each get half of a charm." }
-        guard best.joined else { return "\(best.name) hasn't opened Yab yet." }
-        return invites.bestHere ? "\(best.name) · in Yab now, your halves are joined" : "\(best.name) · away"
+        guard best.joined else { return "\(best.name) hasn't opened \(Brand.name) yet." }
+        return invites.bestHere ? "\(best.name) · in \(Brand.name) now, your halves are joined" : "\(best.name) · away"
     }
 
     private func state(_ friend: Invites.Friend) -> String {
         let prefix = friend.best ? "Best friend · " : ""
         switch friend.state {
         case "joined":
-            return prefix + "Opened Yab" + (friend.at.map { " on " + $0.formatted(.dateTime.month(.abbreviated).day()) } ?? "")
+            return prefix + "Opened \(Brand.name)" + (friend.at.map { " on " + $0.formatted(.dateTime.month(.abbreviated).day()) } ?? "")
         case "opened": return prefix + "Opened the page, hasn't installed"
         default: return prefix + "Link copied"
         }
@@ -491,10 +491,10 @@ struct BestFriendPage: View {
         }
         if let best = invites.best {
             Section {
-                SettingsRow(verbatim: best.name, detail: best.joined ? (invites.bestHere ? "In Yab now. Your halves are joined." : "Away right now.") : "Hasn't opened Yab yet.") {
+                SettingsRow(verbatim: best.name, detail: best.joined ? (invites.bestHere ? "In \(Brand.name) now. Your halves are joined." : "Away right now.") : "Hasn't opened \(Brand.name) yet.") {
                     CharmPicture(side: 36)
                 }
-                SettingsSwitch("Let \(best.name) see when I'm in Yab", isOn: $invites.shares)
+                SettingsSwitch("Let \(best.name) see when I'm in \(Brand.name)", isOn: $invites.shares)
                     .settingsAnchor("best-shares")
                 SettingsSwitch("Show it in the icon", isOn: $invites.showsAway)
                     .settingsAnchor("best-icon")
@@ -503,7 +503,7 @@ struct BestFriendPage: View {
                         .buttonStyle(.yab(.secondary, .regular))
                 }
             } footer: {
-                SettingsNote("Share only whether Yab is open with \(best.name). Show it in the icon separates the halves while either person is away.")
+                SettingsNote("Share only whether \(Brand.name) is open with \(best.name). Show it in the icon separates the halves while either person is away.")
             }
             .confirmationDialog("Pick a new best friend?", isPresented: $changing) {
                 Button("Change Best Friend", role: .destructive) { Task { await invites.changeBest() } }
@@ -512,10 +512,10 @@ struct BestFriendPage: View {
             }
         } else if let received = invites.received, received.best {
             Section {
-                SettingsRow(received.from, detail: invites.bestHere ? "In Yab now. Your halves are joined." : "Away right now.") {
+                SettingsRow(received.from, detail: invites.bestHere ? "In \(Brand.name) now. Your halves are joined." : "Away right now.") {
                     CharmPicture(side: 36)
                 }
-                SettingsSwitch("Let \(received.from) see when I'm in Yab", isOn: $invites.shares)
+                SettingsSwitch("Let \(received.from) see when I'm in \(Brand.name)", isOn: $invites.shares)
                 SettingsSwitch("Show it in the icon", isOn: $invites.showsAway)
             }
         } else {
@@ -535,8 +535,8 @@ struct BestFriendPage: View {
     }
 
     private var blurb: String {
-        if let best = invites.best { return "You and \(best.name) each have half. While you're both in Yab, it joins in both Docks." }
-        return "One friend, one charm. You keep half, they get the other. While you're both in Yab, it joins in both Docks."
+        if let best = invites.best { return "You and \(best.name) each have half. While you're both in \(Brand.name), it joins in both Docks." }
+        return "One friend, one charm. You keep half, they get the other. While you're both in \(Brand.name), it joins in both Docks."
     }
 
     private var theirLine: String {

@@ -791,7 +791,7 @@ enum Shortcut {
             Item(.newSmallWindow, "Open a small window from any app", "opens a small window", k("n", [.option, .command])),
             // No key out of the box: every good pair is some app's already
             // (⌥Space ChatGPT's, ⌃Space the input source's).
-            Item(.showYab, "Bring Yab to the front from any app", "brings Yab to the front", nil),
+            Item(.showYab, "Bring \(Brand.name) to the front from any app", "brings \(Brand.name) to the front", nil),
             Item(.smallSpace, "Open a small window in another space", "opens another space", k("o", [.option, .command])),
             Item(.sidebarTabs, "Tabs in a sidebar", "puts the tabs in a sidebar", k("s", [.shift, .command])),
             Item(.column, "Show or hide the sidebar or the tab bar", "shows or hides the sidebar or the tab bar", k("s")),
@@ -824,7 +824,7 @@ enum Shortcut {
             Item(.settings, "Settings", "opens Settings", k(",")),
             // Chrome's Help › Report an Issue… key, and in every place of
             // Yab's: a page, the field, the chat, Settings (feedback #385).
-            Item(.sendFeedback, "Send feedback, from anywhere in Yab", "opens Send Feedback", k("i", [.option, .shift])),
+            Item(.sendFeedback, "Send feedback, from anywhere in \(Brand.name)", "opens Send Feedback", k("i", [.option, .shift])),
             Item(.nextSpace, "Next space", "goes to the next space", k("→", [.control, .command])),
             Item(.previousSpace, "Previous space", "goes to the previous space", k("←", [.control, .command])),
         ] + (1...9).map { n in Item(numbered("space", n)!, "Go to space \(n)", "goes to space \(n)", Hotkey(String(n), .control)) }
@@ -1132,7 +1132,7 @@ enum Shortcut {
     @MainActor static var menuHeld: [String: Hotkey] {
         let appMenu = NSApp?.mainMenu?.items.first?.submenu
         let hide = appMenu?.items.first { $0.action == #selector(NSApplication.hide(_:)) }?.title
-            ?? "Hide " + (Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Yab")
+            ?? "Hide " + (Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "\(Brand.name)")
         return [hide: k("h")]
     }
 

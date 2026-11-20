@@ -24,7 +24,7 @@ struct Image {
                   let mount = mounted[0]["mount-point"] as? String,
                   let device = mounted[0]["dev-entry"] as? String else { continue }
             let root = URL(fileURLWithPath: mount).resolvingSymlinksInPath()
-            let launcher = root.appendingPathComponent("Open yab.app/Contents/Info.plist")
+            let launcher = root.appendingPathComponent("Open Pane.app/Contents/Info.plist")
             guard NSDictionary(contentsOf: launcher)?["YabImageStamp"] as? String == stamp,
                   let uuid = (try? root.resourceValues(forKeys: [.volumeUUIDStringKey]))?.volumeUUIDString
             else { continue }

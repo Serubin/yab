@@ -184,7 +184,7 @@ struct MailArrival: View {
                         .padding(.top, 8)
                 }
                 if center.connectFailed {
-                    Text("Google didn’t give Yab access. Nothing was read.")
+                    Text("Google didn’t give \(Brand.name) access. Nothing was read.")
                         .font(.callout)
                         .foregroundStyle(ButtonCSS.danger)
                         .frame(maxWidth: 340)
@@ -210,19 +210,19 @@ struct MailArrival: View {
         return .person(pick.email, pick.photo)
     }
 
-    private var title: String { center.connecting ? "Allow Yab in Google" : "Bring your mail into Yab" }
+    private var title: String { center.connecting ? "Allow \(Brand.name) in Google" : "Bring your mail into \(Brand.name)" }
 
     private var detail: String {
         guard center.connecting else {
             return "Gmail in a space of its own: sorted by what each mail wants, with replies written before you open it."
         }
-        guard let pick = found.pick else { return "A tab in Yab is asking. Sign in to the account you want there, then Allow." }
+        guard let pick = found.pick else { return "A tab in \(Brand.name) is asking. Sign in to the account you want there, then Allow." }
         return "A tab in \(place(of: pick)) is asking. You’re signed in there as \(pick.email), so it’s one Allow."
     }
 
     private var footnote: String {
         if !ready { return "This build has no Google client for Mail yet, so Gmail can’t be connected here." }
-        if center.connecting { return "If Google says it hasn’t checked Yab yet, choose Advanced, then Go to Yab." }
+        if center.connecting { return "If Google says it hasn’t checked \(Brand.name) yet, choose Advanced, then Go to \(Brand.name)." }
         return "Gmail connects with an app password. Your mail stays on this Mac, and Disconnect deletes it."
     }
 
@@ -233,7 +233,7 @@ struct MailArrival: View {
 
     /// "💼 Work", or "Yab" where there is only the one place to be signed in.
     private func place(of account: MailFound.Account) -> String {
-        guard splits, let space = browser.spaces.first(where: { $0.id == account.space }) else { return "Yab" }
+        guard splits, let space = browser.spaces.first(where: { $0.id == account.space }) else { return "\(Brand.name)" }
         return space.marked()
     }
 
@@ -276,7 +276,7 @@ struct MailArrival: View {
                     MailFace(email: account.email, photo: account.photo, side: 28)
                 } words: {
                     Text(account.email).lineLimit(1).truncationMode(.middle)
-                    Text(splits ? "Signed in in \(place(of: account))" : account.name.isEmpty ? "Signed in in Yab" : account.name)
+                    Text(splits ? "Signed in in \(place(of: account))" : account.name.isEmpty ? "Signed in in \(Brand.name)" : account.name)
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)

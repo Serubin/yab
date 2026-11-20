@@ -28,7 +28,7 @@ swift build 2>&1 | grep -E "error:|Compiling|Build complete" | grep -v "^Compili
 
 # The same wipe as ./fresh.sh, for this world: a first launch every time.
 rm -rf "$HOME/Library/Application Support/Yab ($WORLD)"
-defaults delete "dev.serafim.fast.test.$WORLD" 2>/dev/null || true
+defaults delete "net.serubin.pane.test.$WORLD" 2>/dev/null || true
 
 DIR="$HOME/Library/Application Support/Yab ($WORLD)"
 LOG="$DIR/hangs.log"

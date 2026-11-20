@@ -5,4 +5,4 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 source YabCore/tests/release_core_app.sh || exit 1
-python3 -u YabCore/tests/focus_emulation_swap.py "$APP/Contents/MacOS/YabCore"
+python3 -u YabCore/tests/focus_emulation_swap.py "$APP/Contents/MacOS/PaneCore"

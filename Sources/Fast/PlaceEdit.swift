@@ -575,7 +575,7 @@ extension Browser {
         switch stock.safari {
         case .waiting:
             return PlaceEmpty(place: place, searching: false, title: "Waiting for Safari’s export",
-                              detail: "Safari is open. Choose File › Export Browsing Data, keep \(place == .bookmarks ? "Bookmarks" : "Passwords and Credit Cards") ticked, and save it in Downloads. Yab brings it in the moment it lands.",
+                              detail: "Safari is open. Choose File › Export Browsing Data, keep \(place == .bookmarks ? "Bookmarks" : "Passwords and Credit Cards") ticked, and save it in Downloads. \(Brand.name) brings it in the moment it lands.",
                               footnote: place == .bookmarks ? nil : "Safari keeps its passwords where no other app can read them: its own export is the one way in.",
                               actions: [FieldAction(id: "file", title: "Choose File…", symbol: "yab.folder.search") { self.waitForSafari("safariFile") },
                                         FieldAction(id: "back", title: "Cancel", symbol: "yab.x") { _ = self.leaveMore() }])

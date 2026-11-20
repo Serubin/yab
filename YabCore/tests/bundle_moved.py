@@ -40,7 +40,7 @@ def scenario(case):
         moved = False
         if case == 'aside':
             app.rename(aside); moved = True
-        executable = (aside if moved else app) / 'Contents/MacOS/YabCore'
+        executable = (aside if moved else app) / 'Contents/MacOS/PaneCore'
         with log_path.open('w') as log:
             process = subprocess.Popen([str(executable), '--socket=' + str(endpoint),
                 '--data-root=' + temporary + '/data', '--use-mock-keychain'] + (['--no-sandbox'] if unsandboxed else []),

@@ -180,7 +180,7 @@ public enum SHA256Digest {
 /// Items an older Yab left in the login keychain move over once at launch
 /// (`moveToThisDevice`).
 public enum MailKeychain {
-    public static let service = Store.world.map { "Fast Mail (\($0))" } ?? "Fast Mail"
+    public static let service = "\(Store.name) Mail"
 
     /// Which keychain an item is asked in.
     public enum Place: Sendable { case thisDevice, login }
@@ -551,7 +551,7 @@ public final class MailSignIn {
             let page = """
             <!doctype html><meta charset="utf-8"><meta name="color-scheme" content="light dark"><title>yab</title>
             <body style="font:15px -apple-system;display:grid;place-items:center;height:90vh">
-            <p>Return to Yab to see the result of this sign-in. You can close this tab.</p>
+            <p>Return to \(Brand.name) to see the result of this sign-in. You can close this tab.</p>
             """
             let reply = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\nContent-Length: \(page.utf8.count)\r\n\r\n" + page
             connection.send(content: Data(reply.utf8), completion: .contentProcessed { _ in connection.cancel() })

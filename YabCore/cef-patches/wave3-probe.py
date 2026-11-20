@@ -92,7 +92,7 @@ def main():
             directory = Path(temporary)
             os.chmod(directory, 0o700)
             endpoint = directory / 'core.sock'
-            process = subprocess.Popen([str(args.app / 'Contents/MacOS/YabCore'),
+            process = subprocess.Popen([str(args.app / 'Contents/MacOS/PaneCore'),
                 f'--socket={endpoint}', f'--data-root={directory / "data"}',
                 '--no-sandbox', '--use-mock-keychain', '--no-default-browser-check',
                 '--autoplay-policy=no-user-gesture-required'],

@@ -554,7 +554,7 @@ final class ChromiumExtensions: ObservableObject {
                 throw YabCoreError.remote("A Chrome extension ID is required")
             }
             guard params["userApproved"] == .bool(true) else {
-                throw YabCoreError.remote("Confirm removal in Yab first")
+                throw YabCoreError.remote("Confirm removal in \(Brand.name) first")
             }
         }
         let previous = tail

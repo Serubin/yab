@@ -484,9 +484,9 @@ struct ExtensionAdd: View {
             switch adding.way {
             case .browser(let name):
                 let count = adding.fresh[name]?.count ?? 0
-                return count == 1 ? "\(name) has one that isn't in Yab yet." : "\(name) has \(count) that aren't in Yab yet."
+                return count == 1 ? "\(name) has one that isn't in \(Brand.name) yet." : "\(name) has \(count) that aren't in \(Brand.name) yet."
             case .store:
-                return adding.linkIsGood ? "There's a link to one on the clipboard." : "In the store, press Add to Yab on an extension's page. Or paste its link here."
+                return adding.linkIsGood ? "There's a link to one on the clipboard." : "In the store, press Add to \(Brand.name) on an extension's page. Or paste its link here."
             case .folder:
                 return "An unpacked extension: your own, or one exported from another browser."
             }
@@ -656,7 +656,7 @@ struct ExtensionAdd: View {
                         }
                         Spacer(minLength: 8)
                         if item.keptOnly {
-                            Text("can't run in Yab").font(.callout).foregroundStyle(.tertiary)
+                            Text("can't run in \(Brand.name)").font(.callout).foregroundStyle(.tertiary)
                         } else if !item.enabled {
                             Text("off in \(from ?? "")").font(.callout).foregroundStyle(.tertiary)
                         } else if !item.fromStore {
@@ -683,7 +683,7 @@ struct ExtensionAdd: View {
         guard let kept = item.kept, !kept.isEmpty else { return nil }
         guard item.keptOnly else { return kept.line }
         let rules = kept.blocking == 0 ? "" : kept.blocking == 1 ? " Its 1 blocking rule stays in \(browserName)." : " Its \(kept.blocking) blocking rules stay in \(browserName)."
-        return "Its \(BlockerWords.brought(kept.sites.count, kept.hiding.count)) go to Yab's built-in blocker, which uses the same lists.\(rules)"
+        return "Its \(BlockerWords.brought(kept.sites.count, kept.hiding.count)) go to \(Brand.name)'s built-in blocker, which uses the same lists.\(rules)"
     }
 
     /// What it may do, in words, before the yes.

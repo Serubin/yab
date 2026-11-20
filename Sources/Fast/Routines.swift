@@ -567,7 +567,7 @@ final class Routines: ObservableObject {
             if seconds.truncatingRemainder(dividingBy: 3600) == 0 { return "Every \(Int(seconds / 3600)) hours" }
             return "Every \(Int(seconds / 60)) minutes"
         case .opens:
-            return "When Yab opens"
+            return "When \(Brand.name) opens"
         case .mail(let split):
             return "When mail comes to " + (MailSplits.builtIns.first { $0.id == split }?.title ?? "its split")
         case .days(let days, let at):

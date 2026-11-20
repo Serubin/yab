@@ -34,7 +34,7 @@ struct FloatTeardownLifetimeTests {
             _ = NSApplication.shared
             try #require(!NSScreen.screens.isEmpty)
             stage = NSView(frame: NSRect(x: 0, y: 0, width: 640, height: 360))
-            domain = "dev.serafim.fast.test.\(expected)"
+            domain = "net.serubin.pane.test.\(expected)"
             saved = Store.settings.persistentDomain(forName: domain)
             Store.settings.removeObject(forKey: "float.frame")
             Store.settings.set(false, forKey: "float.snapToEdges")

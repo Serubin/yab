@@ -98,7 +98,7 @@ struct GeminiArrival: View {
         case .space(let id):
             if browser.prefs.usesSpaces, browser.spaces.contains(where: \.ownSignIns),
                let space = browser.spaces.first(where: { $0.id == id }) { return "Signed in in " + space.marked() }
-            return choice.name.isEmpty ? "Signed in in Yab" : choice.name
+            return choice.name.isEmpty ? "Signed in in \(Brand.name)" : choice.name
         }
     }
 }

@@ -83,7 +83,7 @@ struct ShortcutsPage: View {
         for (item, short, commands) in extensions {
             part(short, commands.map { ("key:ext." + $0.id, .extensionCommand($0, item)) })
         }
-        if !extensions.isEmpty { lines.append(.note("Aliases run commands from ⌘T. Hotkeys work while Yab is active.")) }
+        if !extensions.isEmpty { lines.append(.note("Aliases run commands from ⌘T. Hotkeys work while \(Brand.name) is active.")) }
         core(groups.filter { $0.title.hasPrefix("Mail") })
         if none { lines.append(.row(id: "none", .nothing, first: true, last: true)) }
         return lines

@@ -90,7 +90,7 @@ struct RoutineWordsTests {
         #expect(RoutineWhen.join("on open", 540, []) == "on open")
         #expect(RoutineWhen.join("daily", 9 * 60 + 5, []) == "daily 9:05")
         #expect(Routines.schedule("on open") == .opens)
-        #expect(Routines.say("on open") == "When Yab opens")
+        #expect(Routines.say("on open") == "When Pane opens")
     }
 
     @Test func aRowsWords() {

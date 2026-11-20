@@ -328,7 +328,7 @@ final class WrappedModel: ObservableObject {
         guard let story else { return link }
         let me = story.character
         let name = me.type.name.capitalized
-        var text = "I'm \(name) in Yab Wrapped: \(me.line.lowercased())."
+        var text = "I'm \(name) in \(Brand.name) Wrapped: \(me.line.lowercased())."
         if showHours, story.minutes >= 60 { text += " About \(story.minutes / 60) hours back." }
         return text + " " + link
     }
@@ -512,7 +512,7 @@ struct WrappedShareSheet: View {
     private func save() {
         guard let data = png() else { return }
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Yab Wrapped.png"
+        panel.nameFieldStringValue = "\(Brand.name) Wrapped.png"
         panel.allowedContentTypes = [.png]
         guard panel.runModal() == .OK, let url = panel.url else { return }
         try? data.write(to: url)

@@ -10,16 +10,16 @@ for variant in before after; do
     JOB=60109d5317674c65; COPY=cef-zip-app
   fi
   APP="/Users/m1/.local/state/yab-farm/work/fast-apps/farm-$JOB/out/DevTools crash guard.app"
-  if [ ! -x "$APP/Contents/MacOS/YabCore" ]; then
+  if [ ! -x "$APP/Contents/MacOS/PaneCore" ]; then
     APP="$YAB_FARM_OUT/$variant.app"
     mkdir -p "$APP"
     rsync -a -e 'ssh -o BatchMode=yes -o ConnectTimeout=20' "m4:/tmp/$COPY/" "$APP/"
   fi
   mkdir -p "$YAB_FARM_OUT/$variant"
-  shasum -a 256 "$APP/Contents/MacOS/YabCore" > "$YAB_FARM_OUT/$variant/helper-sha256.txt"
+  shasum -a 256 "$APP/Contents/MacOS/PaneCore" > "$YAB_FARM_OUT/$variant/helper-sha256.txt"
   if [ "$variant" = before ]; then
-    YAB_FARM_OUT="$YAB_FARM_OUT/$variant" python3 YabCore/tests/devtools_accelerator.py "$APP/Contents/MacOS/YabCore" --expect-crash
+    YAB_FARM_OUT="$YAB_FARM_OUT/$variant" python3 YabCore/tests/devtools_accelerator.py "$APP/Contents/MacOS/PaneCore" --expect-crash
   else
-    YAB_FARM_OUT="$YAB_FARM_OUT/$variant" python3 YabCore/tests/devtools_accelerator.py "$APP/Contents/MacOS/YabCore"
+    YAB_FARM_OUT="$YAB_FARM_OUT/$variant" python3 YabCore/tests/devtools_accelerator.py "$APP/Contents/MacOS/PaneCore"
   fi
 done

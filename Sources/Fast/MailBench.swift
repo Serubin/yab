@@ -764,10 +764,6 @@ extension Bench {
             state["saved"] = desk.saved?.path ?? ""
             state["served"] = MailCid.served
             state["loot"] = browser.loot.kept.first?.path ?? ""
-            // Read statuses (MailReads): the line under each mail of the
-            // open thread ("" for none), and each row's that says one.
-            state["reads"] = desk.messages.map { $0.reads.map { MailReads.line($0) } ?? "" }
-            state["rowReads"] = desk.rows.filter { !$0.opened.isEmpty }.map { $0.subject + ": " + $0.opened }
             answer(state)
         }
     }

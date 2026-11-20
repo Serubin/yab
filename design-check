@@ -8,7 +8,9 @@
     ./design-check --base REF   what this branch adds since it left REF (CI)
 
 Only lines a change adds are judged, so what was there before doesn't stop
-anything, and nothing new can add to it. A line that has to break a rule
+anything, and nothing new can add to it. A rule the line it replaced
+already broke, in the same hunk, isn't counted: rewording old code isn't
+new drift. A line that has to break a rule
 says why on itself: `// design: <reason>`. A file that is a drawing of
 other things at their own sizes (yab in miniature, macOS, a site) says so
 once, on a line of its own near the top: `// design: file, <reason>`.
@@ -37,6 +39,7 @@ The rules, all from Sources/YabDesign (Design.swift, Buttons.swift):
 """
 
 import re
+from collections import Counter
 import subprocess
 import sys
 from pathlib import Path
@@ -98,14 +101,15 @@ def scope(whole, at):
     return whole[first:last]
 
 
-def judge(path, lines):
-    """lines: [(line number, text)] of what was added, in order."""
+def judge(path, lines, whole=None):
+    """lines: [(line number, text)] of what was added, in order. whole: the file they are in, [] for none."""
     found = []
     edges = []  # (line number, edge, value) of consecutive padding lines
-    try:
-        whole = (ROOT / path).read_text().splitlines()
-    except OSError:
-        whole = []
+    if whole is None:
+        try:
+            whole = (ROOT / path).read_text().splitlines()
+        except OSError:
+            whole = []
 
     def say(at, what):
         found.append(f"{path}:{at}: {what}")
@@ -157,21 +161,43 @@ def git(*args):
     return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True).stdout
 
 
-def added(diff):
-    """{path: [(line number, text)]} of the added lines in a unified diff."""
-    out, path, at = {}, None, 0
+def hunks(diff):
+    """{path: [(added, removed)]}, each a [(line number, text)] of one hunk of a unified diff."""
+    out, path, new, old = {}, None, 0, 0
     for line in diff.splitlines():
         if line.startswith("+++ "):
             name = line[4:]
             path = name[2:] if name.startswith("b/") else None
+        elif line.startswith("--- "):
+            continue
         elif line.startswith("@@"):
-            at = int(re.search(r"\+(\d+)", line).group(1))
+            old, new = (int(n) for n in re.search(r"-(\d+)(?:,\d+)? \+(\d+)", line).groups())
+            if path:
+                out.setdefault(path, []).append(([], []))
         elif path and line.startswith("+"):
-            out.setdefault(path, []).append((at, line[1:]))
-            at += 1
-        elif path and not line.startswith("-"):
-            at += 1
+            out[path][-1][0].append((new, line[1:]))
+            new += 1
+        elif path and line.startswith("-"):
+            out[path][-1][1].append((old, line[1:]))
+            old += 1
+        elif path:
+            new += 1
+            old += 1
     return out
+
+
+def fresh(path, changes):
+    """What the added lines break that the lines they replaced didn't already."""
+    found = []
+    for add, gone in changes:
+        before = Counter(problem.split(": ", 1)[1] for problem in judge(path, gone, whole=[]))
+        for problem in judge(path, add):
+            rule = problem.split(": ", 1)[1]
+            if before[rule]:
+                before[rule] -= 1
+            else:
+                found.append(problem)
+    return found
 
 
 DRAWING = re.compile(r"^//\s*design:\s*file\b")
@@ -195,7 +221,7 @@ def main(argv):
         changes = {}
         for file in sorted((ROOT / "Sources").rglob("*.swift")):
             rel = str(file.relative_to(ROOT))
-            changes[rel] = list(enumerate(file.read_text().splitlines(), 1))
+            changes[rel] = [(list(enumerate(file.read_text().splitlines(), 1)), [])]
     elif "--file" in argv:
         target = Path(argv[argv.index("--file") + 1]).resolve()
         try:
@@ -204,22 +230,23 @@ def main(argv):
             return 0
         tracked = git("ls-files", "--", rel).strip()
         diff = git("diff", "-U0", "HEAD", "--", rel) if tracked else ""
-        changes = added(diff) if tracked else {rel: list(enumerate(target.read_text().splitlines(), 1))} if target.exists() else {}
+        whole = {rel: [(list(enumerate(target.read_text().splitlines(), 1)), [])]} if target.exists() else {}
+        changes = hunks(diff) if tracked else whole
     elif "--base" in argv:
         base = argv[argv.index("--base") + 1]
         if not git("rev-parse", "--verify", "--quiet", base + "^{commit}").strip():
             print(f"design-check: no commit {base}", file=sys.stderr)
             return 2
-        changes = added(git("diff", "-U0", base + "...HEAD"))
+        changes = hunks(git("diff", "-U0", base + "...HEAD"))
     elif "--head" in argv:
-        changes = added(git("diff", "-U0", "HEAD"))
+        changes = hunks(git("diff", "-U0", "HEAD"))
     else:
-        changes = added(git("diff", "-U0", "--cached"))
+        changes = hunks(git("diff", "-U0", "--cached"))
 
     problems = []
-    for path, lines in changes.items():
+    for path, found in changes.items():
         if wanted(path):
-            problems += judge(path, lines)
+            problems += fresh(path, found)
     if not problems:
         return 0
     print("Design system: these added lines drift from Design.swift.", file=sys.stderr)

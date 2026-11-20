@@ -60,7 +60,7 @@ final class Meetings: ObservableObject {
     /// look at the permission (measured), more with a full calendar, and a
     /// sync lands as a burst of changes. None of it on the main thread,
     /// which only takes the finished list.
-    private let queue = DispatchQueue(label: "dev.serafim.fast.meetings", qos: .utility)
+    private let queue = DispatchQueue(label: "net.serubin.pane.meetings", qos: .utility)
     /// A read under way, and whether another was asked for meanwhile.
     private var reading = false
     private var again = false
@@ -463,7 +463,7 @@ extension Browser {
     func joinNextMeeting() {
         let meetings = Meetings.shared
         guard meetings.allowed else {
-            guard meetings.undecided else { return announce("Yab can’t see your calendar", mark: "calendar") }
+            guard meetings.undecided else { return announce("\(Brand.name) can’t see your calendar", mark: "calendar") }
             Task { @MainActor in
                 if await meetings.ask() { self.joinNextMeeting() }
             }
@@ -504,7 +504,7 @@ extension Browser {
         Task { @MainActor in
             let yes = await Questions.shared.ask(Question(
                 title: "Show your next meeting here?",
-                detail: "A countdown on this pin, and Join when it starts. Yab reads your Mac’s calendars for it, and nothing leaves this Mac.",
+                detail: "A countdown on this pin, and Join when it starts. \(Brand.name) reads your Mac’s calendars for it, and nothing leaves this Mac.",
                 glyph: "calendar", yes: "Show", no: "Not Now"
             ))
             if yes { _ = await meetings.ask() } else { meetings.wanted = false }

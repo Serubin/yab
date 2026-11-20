@@ -8,7 +8,7 @@ import Testing
 struct ChromiumNativePeerIdentityTests {
     private func sample() -> NativePeerIdentity.Sample {
         .init(pid: 123, parent: 122, uid: getuid(), startSec: 1000, startUsec: 1,
-              executable: "/owned/Task.app/Contents/MacOS/YabCore", argvSHA256: String(repeating: "a", count: 64),
+              executable: "/owned/Task.app/Contents/MacOS/PaneCore", argvSHA256: String(repeating: "a", count: 64),
               bootSession: "01234567-89AB-4CDE-8123-456789ABCDEF", codeIdentifier: "owned.helper", codeUnique: String(repeating: "b", count: 40),
               audit: Data(repeating: 7, count: MemoryLayout<audit_token_t>.size))
     }

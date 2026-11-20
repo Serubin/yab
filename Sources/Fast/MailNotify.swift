@@ -643,7 +643,7 @@ struct MailNotifySettings: View {
     var body: some View {
         Section {
             if notify.permission != .allowed {
-                SettingsRow("Notifications are off for Yab", detail: notify.permission == .denied
+                SettingsRow("Notifications are off for \(Brand.name)", detail: notify.permission == .denied
                             ? "Enable notifications in System Settings."
                             : "Press Allow to request notification access.") {
                     Button("Allow…") { Task { await notify.allow() } }

@@ -771,11 +771,11 @@ struct PlacePreview: View {
         if profile.isEmpty, browser.knowingSession == nil {
             VStack(spacing: 0) {
                 FeatureTile(icon: "person.text.rectangle", tint: FieldPlace.autofill.tint, side: 56)
-                Text("Yab doesn’t know you yet")
+                Text("\(Brand.name) doesn’t know you yet")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(Palette.ink)
                     .padding(.top, 16)
-                Text("Your name, work and links, so any form fills as you. Yab reads your own pages and keeps where each line came from.")
+                Text("Your name, work and links, so any form fills as you. \(Brand.name) reads your own pages and keeps where each line came from.")
                     .font(.system(size: 13))
                     .foregroundStyle(Palette.muted)
                     .multilineTextAlignment(.center)

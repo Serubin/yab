@@ -258,7 +258,7 @@ public enum MailLater {
 
     // MARK: - with yab closed
 
-    static var agentLabel: String { (Bundle.main.bundleIdentifier ?? "dev.serafim.fast") + ".mail-later" }
+    static var agentLabel: String { (Bundle.main.bundleIdentifier ?? Store.productionBundleID) + ".mail-later" }
     static var agentFile: URL {
         FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/LaunchAgents/\(agentLabel).plist")
     }

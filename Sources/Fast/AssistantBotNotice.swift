@@ -32,7 +32,7 @@ struct AssistantBotNotice: View {
         Group {
             if let bot = visible {
                 HStack(spacing: 10) {
-                    Text("\(bot) can browse in Yab")
+                    Text("\(bot) can browse in \(Brand.name)")
                         .font(.callout.weight(.medium))
                     Button("Not Now") {
                         Store.settings.set(true, forKey: "assistant.banner.dismissed.\(bot)")

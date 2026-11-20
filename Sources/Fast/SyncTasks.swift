@@ -75,7 +75,7 @@ extension SyncCenter {
                 do {
                     try reader.register(mapping)
                 } catch {
-                    session.result = "Yab on your Mac couldn't start this task."
+                    session.result = "\(Brand.name) on your Mac couldn't start this task."
                     session.state = .failed
                     try failTask(mapping, request: request, reason: session.result)
                     continue
@@ -89,7 +89,7 @@ extension SyncCenter {
 
     /// Why a reserved task can't run here, or nil.
     nonisolated static func taskRefusal(_ request: TaskRecords.Request, epoch: String, hasSpace: Bool, now: Date = Date()) -> String? {
-        if epoch != taskEpoch { return "Yab on your Mac restarted before it took this task. Send it again." }
+        if epoch != taskEpoch { return "\(Brand.name) on your Mac restarted before it took this task. Send it again." }
         if now.timeIntervalSince1970 - request.created > taskLifetime { return "This task reached your Mac too late. Send it again." }
         if !hasSpace { return "That space isn't on your Mac." }
         return nil
@@ -109,8 +109,8 @@ extension SyncCenter {
         guard revision > 0, let failed = try? TaskRecords.Observation(
             request: request, revision: revision, session: mapping.session, status: .failed,
             title: previous?.title ?? Chat.title(from: request.words),
-            progress: previous == nil ? "Yab on your Mac quit before this task started. Send it again."
-                                      : "Yab on your Mac quit before this task finished.") else { return }
+            progress: previous == nil ? "\(Brand.name) on your Mac quit before this task started. Send it again."
+                                      : "\(Brand.name) on your Mac quit before this task finished.") else { return }
         _ = try? TaskObservation.checkpoint(failed, mapping: mapping, client: client, knownPhones: devices)
     }
 
