@@ -315,3 +315,167 @@ extension LinkWindowHandoffTests {
         #expect(LinkWindow.inFront(key: link.window) == nil)
     }
 }
+
+/// An extension sets its popup for a small window's page by the tab's id:
+/// the popup is that page's, never the row's tab at the same index.
+extension LinkWindowHandoffTests {
+    @Test func aPopupSetForASmallWindowsPageIsThatPages() async throws {
+        _ = NSApplication.shared
+        try #require(!NSScreen.screens.isEmpty)
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("yab-link-popup-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        try #"{"manifest_version":3,"name":"Small popup","version":"1.0","permissions":["tabs"],"action":{"default_popup":"popup.html"}}"#
+            .write(to: folder.appendingPathComponent("manifest.json"), atomically: true, encoding: .utf8)
+        for name in ["popup", "other", "probe"] {
+            try "<!doctype html><title>\(name)</title>".write(to: folder.appendingPathComponent("\(name).html"), atomically: true, encoding: .utf8)
+        }
+        try ExtensionShims.prepare(folder, fresh: true)
+
+        let owner = Extensions.shared
+        let context = WKWebExtensionContext(for: try await WKWebExtension(resourceBaseURL: folder))
+        context.baseURL = try #require(URL(string: "\(Extensions.scheme)://smallpopup\(UUID().uuidString.lowercased().replacingOccurrences(of: "-", with: ""))/"))
+        context.setPermissionStatus(.grantedExplicitly, for: .tabs)
+        context.setPermissionStatus(.grantedExplicitly, for: .nativeMessaging)
+        try owner.controller.load(context)
+        let id = context.uniqueIdentifier
+        defer {
+            try? owner.controller.unload(context)
+            owner.popupPaths[id] = nil
+        }
+        let browser = Browser(windowID: UUID())
+        owner.follow(browser)
+        // The first window, whose row the bridge's index reads.
+        let firstWas = owner.browser
+        owner.browser = browser
+        var mini: LinkWindow?
+        defer {
+            mini?.window.close()
+            mini?.window.contentView = nil
+            owner.browser = firstWas
+            owner.unfollow(browser)
+            browser.letGo()
+            try? FileManager.default.removeItem(at: Store.file("session-window-\(browser.windowID!.uuidString).json"))
+        }
+        let front = browser.open(URL(string: "data:text/html,%3Ctitle%3EFront%3C/title%3E")!, foreground: true)
+        try #require(owner.visibleTabs.first === front)
+        let tab = browser.blankTab()
+        browser.prepare(tab)
+        browser.outside.append(tab)
+        tab.go(to: URL(string: "data:text/html,%3Ctitle%3ESmall%3C/title%3E")!)
+        let page = tab.page
+        LinkWindow.present(tab, for: browser)
+        let link = try #require(LinkWindow.owning(page: page))
+        mini = link
+        link.window.setFrameOrigin(NSPoint(x: -30000, y: 0))
+        try await Task.sleep(for: .milliseconds(250))
+        try #require(owner.told(tab) == link.extensionKey)
+        try #require(owner.told(front) == browser.windowID)
+
+        let probe = WKWebView(frame: CGRect(x: 0, y: 0, width: 320, height: 240), configuration: try #require(context.webViewConfiguration))
+        defer { probe.stopLoading() }
+        probe.load(URLRequest(url: context.baseURL.appendingPathComponent("probe.html")))
+        let ready = try await Loaded.until(10) {
+            (try? await probe.evaluateJavaScript("document.readyState === 'complete' && !!chrome.action && !!chrome.tabs")) as? Bool == true
+        }
+        try #require(ready)
+        let set = try await probe.callAsyncJavaScript("""
+            const popups = await chrome.windows.getAll({ populate: true, windowTypes: ["popup"] });
+            if (popups.length !== 1 || popups[0].tabs.length !== 1) return JSON.stringify(popups);
+            const small = popups[0].tabs[0];
+            await chrome.action.setPopup({ tabId: small.id, popup: "other.html" });
+            return "set";
+            """, contentWorld: .page) as? String
+        try #require(set == "set")
+
+        let paths = owner.popupPaths[id] ?? [:]
+        #expect(paths[tab.id.uuidString] == "other.html")
+        #expect(paths[front.id.uuidString] == nil)
+        #expect(paths["*"] == nil)
+    }
+}
+
+/// Two small windows, the later one focused: WebKit lists the focused one
+/// first, and a popup set for its page is still its page's.
+extension LinkWindowHandoffTests {
+    @Test func aPopupSetForTheFocusedOfTwoSmallWindowsIsItsPages() async throws {
+        _ = NSApplication.shared
+        try #require(!NSScreen.screens.isEmpty)
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("yab-link-popups-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        try #"{"manifest_version":3,"name":"Small popups","version":"1.0","permissions":["tabs"],"action":{"default_popup":"popup.html"}}"#
+            .write(to: folder.appendingPathComponent("manifest.json"), atomically: true, encoding: .utf8)
+        for name in ["popup", "other", "probe"] {
+            try "<!doctype html><title>\(name)</title>".write(to: folder.appendingPathComponent("\(name).html"), atomically: true, encoding: .utf8)
+        }
+        try ExtensionShims.prepare(folder, fresh: true)
+
+        let owner = Extensions.shared
+        let context = WKWebExtensionContext(for: try await WKWebExtension(resourceBaseURL: folder))
+        context.baseURL = try #require(URL(string: "\(Extensions.scheme)://smallpopups\(UUID().uuidString.lowercased().replacingOccurrences(of: "-", with: ""))/"))
+        context.setPermissionStatus(.grantedExplicitly, for: .tabs)
+        context.setPermissionStatus(.grantedExplicitly, for: .nativeMessaging)
+        try owner.controller.load(context)
+        let id = context.uniqueIdentifier
+        defer {
+            try? owner.controller.unload(context)
+            owner.popupPaths[id] = nil
+        }
+        let browser = Browser(windowID: UUID())
+        owner.follow(browser)
+        // The bridge answers only with a first window.
+        let firstWas = owner.browser
+        owner.browser = browser
+        var minis: [LinkWindow] = []
+        defer {
+            for mini in minis {
+                mini.window.close()
+                mini.window.contentView = nil
+            }
+            owner.browser = firstWas
+            owner.unfollow(browser)
+            browser.letGo()
+            try? FileManager.default.removeItem(at: Store.file("session-window-\(browser.windowID!.uuidString).json"))
+        }
+        _ = browser.open(URL(string: "data:text/html,%3Ctitle%3EFront%3C/title%3E")!, foreground: true)
+        for name in ["First", "Second"] {
+            let tab = browser.blankTab()
+            browser.prepare(tab)
+            browser.outside.append(tab)
+            tab.go(to: URL(string: "data:text/html,%3Ctitle%3E\(name)%3C/title%3E")!)
+            let page = tab.page
+            LinkWindow.present(tab, for: browser)
+            let link = try #require(LinkWindow.owning(page: page))
+            link.window.setFrameOrigin(NSPoint(x: -30000, y: 0))
+            minis.append(link)
+        }
+        try await Task.sleep(for: .milliseconds(250))
+        let first = minis[0], second = minis[1]
+        try #require(owner.told(first.tab) == first.extensionKey)
+        try #require(owner.told(second.tab) == second.extensionKey)
+        let ownWindow = try #require(owner.window(of: first.tab))
+        owner.controller.didFocusWindow(ownWindow)
+        owner.controller.didFocusWindow(try #require(owner.window(of: second.tab)))
+
+        let probe = WKWebView(frame: CGRect(x: 0, y: 0, width: 320, height: 240), configuration: try #require(context.webViewConfiguration))
+        defer { probe.stopLoading() }
+        probe.load(URLRequest(url: context.baseURL.appendingPathComponent("probe.html")))
+        let ready = try await Loaded.until(10) {
+            (try? await probe.evaluateJavaScript("document.readyState === 'complete' && !!chrome.action && !!chrome.windows")) as? Bool == true
+        }
+        try #require(ready)
+        let set = try await probe.callAsyncJavaScript("""
+            const popups = await chrome.windows.getAll({ populate: true, windowTypes: ["popup"] });
+            const focused = popups.find((w) => w.focused);
+            if (popups.length !== 2 || !focused || popups[0] !== focused) return JSON.stringify(popups.map((w) => [w.id, w.focused]));
+            await chrome.action.setPopup({ tabId: focused.tabs[0].id, popup: "other.html" });
+            return "set";
+            """, contentWorld: .page) as? String
+        try #require(set == "set")
+
+        let paths = owner.popupPaths[id] ?? [:]
+        #expect(paths[second.tab.id.uuidString] == "other.html")
+        #expect(paths[first.tab.id.uuidString] == nil)
+    }
+}
