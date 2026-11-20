@@ -1,7 +1,8 @@
 # Signed, notarized release of this fork in two flavors: Yab with WebKit and Chromium
 # (stock CEF), and WebKit only. Each flavor has its own feed, so an install stays on its own.
 #
-# Versions: upstream's VERSION plus a fork revision, 0.47.19-r3. The revision counts
+# Versions: upstream's newest release (scripts/fork/upstream-version.py: its site's latest
+# build, or VERSION if higher) plus a fork revision, 0.50.2-r3. The revision counts
 # this fork's canary releases of that upstream version and starts at r1 when it
 # changes; both flavors of one run share it. The app shows it as its version.
 # The updater compares only the 12-digit build number, which both flavors share too.
@@ -81,7 +82,7 @@ jobs:
           ENGINES: ${{ inputs.engines }}
         run: |
           set -euo pipefail
-          upstream="$(tr -d '[:space:]' < VERSION)"
+          upstream="$(python3 -I scripts/fork/upstream-version.py)"
           build="$(date -u +%Y%m%d%H%M)"
           publish=false
           [ "$GITHUB_REF" = refs/heads/canary ] && publish=true
