@@ -4,7 +4,9 @@
 # Versions: upstream's newest release (scripts/fork/upstream-version.py: its site's latest
 # build, or VERSION if higher) plus a fork revision, 0.50.2-r3. The revision counts
 # this fork's canary releases of that upstream version and starts at r1 when it
-# changes; both flavors of one run share it. The app shows it as its version.
+# changes; both flavors of one run share it. A run that only adds the flavor the
+# newest r lacks, at the commit that r was built from, reuses that r
+# (scripts/fork/release-plan.py). The app shows it as its version.
 # The updater compares only the 12-digit build number, which both flavors share too.
 #
 # Safety, read before changing this file:
@@ -91,15 +93,11 @@ jobs:
           publish=false
           [ "$GITHUB_REF" = refs/heads/canary ] && publish=true
           if [ "$publish" = true ]; then
-            # Highest r already tagged for this upstream version, either flavor.
-            # An assignment, not a process substitution, so a failed lookup stops the run instead of yielding r1.
-            refs="$(gh api --paginate "repos/$REPO/git/matching-refs/tags/v$upstream-r" --jq '.[].ref')"
-            last=0
-            while IFS= read -r ref; do
-              n="${ref#"refs/tags/v$upstream-r"}"; n="${n%-webkit}"
-              [[ "$n" =~ ^[0-9]+$ ]] && (( 10#$n > last )) && last=$((10#$n))
-            done <<<"$refs"
-            version="$upstream-r$((last + 1))"
+            # Fails on a tag that already exists, so a run never builds for hours toward a collision.
+            refs="$RUNNER_TEMP/refs.json"
+            gh api --paginate "repos/$REPO/git/matching-refs/tags/v$upstream-r" --jq '.[]' | jq -s . > "$refs"
+            version="$(python3 -I scripts/fork/release-plan.py revision --refs "$refs" --upstream "$upstream" \
+              --engines "$ENGINES" --sha "$GITHUB_SHA")"
           else
             version="$upstream-dev.$build"
           fi

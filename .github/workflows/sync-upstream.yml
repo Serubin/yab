@@ -1,5 +1,5 @@
 # Hourly sync of upstream yetanotherbrowser/yab main: main mirrors it, canary merges it, and
-# half an hour later a release of canary when upstream shipped a new version or the fork has changes since the last one.
+# half an hour later a release of each flavor of canary that lacks upstream's newest version or the fork's changes since its last one.
 
 name: Sync upstream
 
@@ -127,37 +127,24 @@ jobs:
             fi
           fi
 
-          # A failed release of this very commit isn't retried every hour; a new commit or a manual run is.
-          read -r last_sha last_conclusion < <(gh run list -R "$REPO" --workflow release.yml --branch canary \
-            --limit 1 --json headSha,conclusion --jq '.[0] | "\(.headSha // "-") \(.conclusion // "-")"' || echo "- -")
-          if [ "$last_sha" = "$head" ] && [ "$last_conclusion" != success ]; then
-            say "release: the last run for ${head:0:12} ended $last_conclusion; not retrying on a timer"
-            exit 0
-          fi
-
-          tag="$(gh release list -R "$REPO" --exclude-drafts --exclude-pre-releases --limit 50 \
-            --json tagName,publishedAt \
-            --jq '[.[] | select(.tagName | startswith("v"))] | sort_by(.publishedAt) | last | .tagName // ""')"
+          # Per flavor: a release when it has none, upstream shipped, or the fork changed since its tag.
+          # A flavor whose last build of this very commit failed isn't retried every hour; a new commit or a manual run is.
+          releases="$RUNNER_TEMP/releases.json" runs="$RUNNER_TEMP/runs.json"
+          gh release list -R "$REPO" --exclude-drafts --exclude-pre-releases --limit 100 \
+            --json tagName,publishedAt,isDraft,isPrerelease > "$releases"
+          ids="$(gh run list -R "$REPO" --workflow release.yml --branch canary --commit "$head" --limit 10 \
+            --json databaseId --jq '.[].databaseId')"
+          for id in $ids; do
+            gh run view "$id" -R "$REPO" --json databaseId,headSha,createdAt,jobs \
+              --jq '{databaseId, headSha, createdAt, jobs: [.jobs[] | {name, conclusion}]}'
+          done | jq -s . > "$runs"
           now="$(python3 -I scripts/fork/upstream-version.py)"
-          reason=""
-          if [ -z "$tag" ]; then
-            reason="no release yet"
-          else
-            base="$(git rev-list -n 1 "refs/tags/$tag")"
-            if [[ "$tag" =~ ^v([0-9.]+)-r[0-9]+(-webkit)?$ ]]; then was="${BASH_REMATCH[1]}"
-            else was="$(git show "$base:VERSION" | tr -d '[:space:]')"; fi
-            if [ "$was" != "$now" ]; then
-              reason="upstream $was -> $now"
-            elif [ "$base" = "$head" ]; then
-              say "release: $tag is canary's head and upstream is still $now"; exit 0
-            else
-              # Fork commits that touch the app; docs and CI alone don't warrant a signed build.
-              changed="$(git rev-list --no-merges --count "$base..HEAD" ^"upstream/$UPSTREAM_BRANCH" \
-                -- . ':(exclude)*.md' ':(exclude)docs' ':(exclude).github')"
-              [ "$changed" = 0 ] || reason="fork changes since $tag: $changed"
-            fi
-          fi
-          if [ -z "$reason" ]; then say "release: nothing new since $tag beyond upstream commits"; exit 0; fi
+          plan="$(python3 -I scripts/fork/release-plan.py sync --releases "$releases" --runs "$runs" \
+            --head "$head" --upstream "$now" --upstream-ref "upstream/$UPSTREAM_BRANCH")"
+          jq -r '.flavors[] | "release \(.flavor): \(if .release then "yes" else "no" end), \(.reason)"' <<<"$plan" \
+            | while IFS= read -r line; do say "$line"; done
+          engines="$(jq -r .engines <<<"$plan")"
+          if [ "$engines" = none ]; then say "release: nothing to start for ${head:0:12}"; exit 0; fi
 
-          gh workflow run release.yml -R "$REPO" --ref canary -f engines=all
-          say "release: started for ${head:0:12} ($reason)"
+          gh workflow run release.yml -R "$REPO" --ref canary -f engines="$engines"
+          say "release: started $engines for ${head:0:12}"
