@@ -30,10 +30,11 @@ ships, so `scripts/fork/upstream-version.py` reads the latest build from
 yetanotherbrowser.com/changelog (or `VERSION`, if higher). The revision
 restarts at r1 when that changes. Don't edit `VERSION` by hand.
 `sync-upstream.yml` syncs upstream on the hour and, at half past, starts a
-release of `canary` when upstream shipped a new version or `canary` has
-fork commits since the last release that touch more than Markdown, `docs/`
-or `.github/`. It
-also reruns a release's failed feed deploy, up to three attempts.
+release of each flavor of `canary` that lacks upstream's new version or
+fork commits since that flavor's last release that touch more than
+Markdown, `docs/` or `.github/` (`scripts/fork/release-plan.py`, tested by
+`python3 -I scripts/fork/test_release_plan.py`). It also reruns a release's
+failed feed deploy, up to three attempts.
 
 ## Build and test
 
