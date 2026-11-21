@@ -1788,6 +1788,7 @@ enum ExtensionShims {
         // evals/extensions/onepassword_profile.py).
         case "background.started":
             owner.trace(id, "worker started")
+            owner.workerDidStart(id, in: context)
             return nil
         case "background.wake":
             guard context.webExtension.hasBackgroundContent else { return nil }
@@ -1808,7 +1809,10 @@ enum ExtensionShims {
                     context.loadBackgroundContent { error in MainActor.assumeIsolated { finish(error) } }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 8) { finish(Unsupported(what: "no answer from WebKit")) }
                 }
-                guard error != nil else { return nil }
+                guard error != nil else {
+                    owner.confirmWorker(id)
+                    return nil
+                }
                 if attempt < 2 { try? await Task.sleep(for: .milliseconds(400)) }
             }
             owner.revive(id, because: "its worker wouldn't start")
@@ -1847,6 +1851,7 @@ enum ExtensionShims {
         // What the worker listens for, its own listeners, and the events it
         // was woken for with none (see the shim's stand-ins).
         case "background.listeners":
+            owner.workerReported(id, events: (first as? [String]) ?? [], in: context)
             owner.heard(id, events: (first as? [String]) ?? [], idle: (args.count > 1 ? args[1] : nil) as? [String: Int] ?? [:])
             return nil
         // A page found the worker gone though WebKit believes it runs (see

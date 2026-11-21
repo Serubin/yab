@@ -138,6 +138,7 @@ final class ExtensionPopup: NSObject, WKUIDelegate, WKNavigationDelegate, NSPopo
         extensionID = context.uniqueIdentifier
         let owner = Extensions.owner(of: context)
         self.owner = owner
+        owner.confirmWorker(context.uniqueIdentifier)
         button = anchor != nil && anchor === owner.anchors[context.uniqueIdentifier]?.view ? anchor : nil
         door = anchor != nil && anchor === owner.anchors[Extensions.menuAnchor]?.view ? anchor : nil
         let page = PopupPage(web: web, owner: owner)
