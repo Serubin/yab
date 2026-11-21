@@ -15,9 +15,11 @@
 # - Secrets live in the `release` environment, not the repository. Restrict
 #   that environment's deployment branches to `canary`, plus any branch you
 #   mean to cut prereleases from (Settings > Environments).
-# - Only `canary` publishes the update feed (GitHub Pages), the "latest"
-#   release and takes an r number. Any other ref yields a prerelease versioned
-#   0.47.19-dev.<build> that no installed copy updates to.
+# - Only `canary` publishes the update feeds (GitHub Pages) and takes an r number.
+#   Its LATEST_FLAVOR release is GitHub's "latest"; the other flavor's never is,
+#   even when LATEST_FLAVOR's build fails. Installs follow their feed, not that mark.
+#   Any other ref yields a prerelease versioned 0.47.19-dev.<build> that no
+#   installed copy updates to.
 # - GitHub-hosted runners only, no cache: a signed build starts from a clean tree.
 # - Everything fetched from outside (CEF, YabCore's tools, dmgbuild by hash)
 #   is in place before the signing key is; the key is imported non-exportable.
@@ -51,6 +53,8 @@ concurrency:
 
 env:
   PANE_BUNDLE_ID: net.serubin.pane
+  # The flavor whose canary release GitHub marks "latest": chromium or webkit.
+  LATEST_FLAVOR: webkit
   # Pinned in docs/cef-packaging.md; fetch.sh only checks the CDN's own index.
   CEF_SHA1: 7359a9d293dd5c480bec3f18b762731b483b0e13
 
@@ -111,6 +115,10 @@ jobs:
             chromium) include="[$chromium]" ;;
             webkit) include="[$webkit]" ;;
             *) echo "::error::unknown engines: $ENGINES"; exit 1 ;;
+          esac
+          case "$LATEST_FLAVOR" in
+            chromium|webkit) ;;
+            *) echo "::error::LATEST_FLAVOR is $LATEST_FLAVOR, not chromium or webkit"; exit 1 ;;
           esac
           {
             echo "upstream=$upstream"
@@ -311,8 +319,8 @@ jobs:
           set -euo pipefail
           channel=(--prerelease)
           if [ "$PUBLISH" = true ]; then
-            channel=(--latest)
-            [ "$FLAVOR" = webkit ] && channel=(--latest=false)
+            channel=(--latest=false)
+            [ "$FLAVOR" != "$LATEST_FLAVOR" ] || channel=(--latest)
           fi
           title="Pane $VERSION"
           engines="Chromium tabs use stock CEF."
