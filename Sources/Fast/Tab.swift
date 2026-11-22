@@ -229,6 +229,12 @@ enum Web {
         // page comes back.
         // yab://task, and the handler only that page can talk to.
         if !LinkGap.cut("diary") { MainActor.assumeIsolated { DiaryPage.attach(config) } }
+        // A DRM extension's overlay pages, iframes and assets a WebKit page
+        // of the site embeds. Inert everywhere else: only those scripts load
+        // that scheme.
+        if #available(macOS 15.4, *) {
+            config.setURLSchemeHandler(ChromiumDRMResources.shared, forURLScheme: "chrome-extension")
+        }
         if !LinkGap.cut("ua") { config.applicationNameForUserAgent = Web.userAgentName }
         if LinkGap.cut("prefs") {
             if !LinkGap.cut("localnet") { MainActor.assumeIsolated { LocalNetwork.protect(config.userContentController) } }
@@ -339,7 +345,11 @@ final class Tab: ObservableObject, Identifiable, Relaying {
     /// own a second page and never construct a WebKit page for another engine.
     var built: PageView? { builtPage?.webKit }
     @ObservationIgnored private(set) var builtPage: (any PageHandle)? {
-        didSet { ChromiumTabGroups.shared.changed() }
+        didSet {
+            ChromiumTabGroups.shared.changed()
+            // A code card's "Fill on" button needs the page waiting for it.
+            if waitingCode != nil, (oldValue == nil) != (builtPage == nil) { MailCodeState.boxMoved() }
+        }
     }
     /// Chromium keeps its browser/controller while the renderer is discarded.
     @ObservationIgnored private var sleepingChromium: ChromiumPage?
@@ -2411,6 +2421,11 @@ final class Tab: ObservableObject, Identifiable, Relaying {
             guard let self else { return }
             (self.delegate as? Browser)?.splitLink(url, from: self)
         }
+        if !shy {
+            web.onPrivateLink = { [weak self] url in
+                (self?.delegate as? Browser)?.newPrivateWindow(opening: url)
+            }
+        }
         web.onHideAt = { [weak self] point in
             guard let self else { return }
             self.page.runInYab("window.__yabVeil && window.__yabVeil.at(\(point.x), \(point.y))")
@@ -2651,13 +2666,19 @@ final class Tab: ObservableObject, Identifiable, Relaying {
     /// Whether the page is dark under that box (`DropFrame.ground`).
     @ObservationIgnored var fieldDark: Bool?
     /// The box asks for a code a site sent, not for an account.
-    struct WaitingCode {
+    struct WaitingCode: Equatable {
         let document: String
         let field: String
         let request: CodeRequest
         let address: URL
     }
-    @ObservationIgnored var waitingCode: WaitingCode?
+    @ObservationIgnored var waitingCode: WaitingCode? {
+        didSet { if Self.codeBoxMoves(from: oldValue, to: waitingCode) { MailCodeState.boxMoved() } }
+    }
+
+    /// The same box, or none, set again, which Forms does on every field
+    /// message, moves nothing.
+    nonisolated static func codeBoxMoves(from old: WaitingCode?, to new: WaitingCode?) -> Bool { old != new }
     @ObservationIgnored var fieldCode = false
     @ObservationIgnored var fieldCodeRequest = CodeRequest()
     /// Where that box last was, in points, for a list that comes up later
