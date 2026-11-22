@@ -43,6 +43,9 @@ ICONS = {
         ("face", SOLO_FACE(NAVY, NAVY, COBALT))]),
     "midnight": dict(title="Midnight", fill=MIDNIGHT, dark=None, layers=[
         ("back", PEEK_BACK), ("front", PEEK_FRONT), ("face", PEEK_FACE)]),
+    "solo-midnight": dict(title="Solo Midnight", fill=MIDNIGHT, dark=None, layers=[
+        ("pane", f'<rect x="15" y="14" width="70" height="70" rx="22" fill="{COBALT}"/>'),
+        ("face", SOLO_FACE("#FFFFFF", "#FFFFFF", PALE))]),
     "stack": dict(title="Stack", fill=LIGHT, dark=MIDNIGHT, layers=[
         ("back", f'<rect x="12" y="41" width="44" height="45" rx="14" fill="{DEEP}"/>'),
         ("middle", f'<rect x="28" y="27" width="44" height="45" rx="14" fill="{COBALT}"/>'),
