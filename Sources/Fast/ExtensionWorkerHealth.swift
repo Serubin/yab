@@ -32,15 +32,14 @@ enum ExtensionWorkerHealth {
     struct ContentProcess: Equatable {
         let pid: Int32
         let pages: Int
-        let runsWorkers: Bool
     }
 
-    /// Processes with no page and no running worker in every one of `censuses`, other than WebKit's
-    /// warmed spare: where WebKit starts a reloaded worker without its bindings (WebKit bug 324754).
-    static func strays(_ censuses: [[ContentProcess]], spare: Set<Int32>) -> [Int32] {
-        let idle = censuses.map { Set($0.filter { $0.pid > 0 && $0.pages == 0 && !$0.runsWorkers }.map(\.pid)) }
-        guard let first = idle.first else { return [] }
-        return idle.dropFirst().reduce(first) { $0.intersection($1) }.subtracting(spare).sorted()
+    /// The extension's former background-page processes (`hosts`, not its `current` one) with no page
+    /// in every one of `censuses`: where WebKit starts its worker without bindings (WebKit bug 324754).
+    static func staleHosts(_ censuses: [[ContentProcess]], hosts: Set<Int32>, current: Int32?, spare: Set<Int32>) -> [Int32] {
+        guard !censuses.isEmpty else { return [] }
+        let pageless = censuses.map { Set($0.filter { $0.pid > 0 && $0.pages == 0 }.map(\.pid)) }
+        return pageless.reduce(hosts.subtracting(current.map { [$0] } ?? [])) { $0.intersection($1) }.subtracting(spare).sorted()
     }
 
     /// At most `limit` restarts in `window`, so a worker that can never start isn't restarted for ever.
