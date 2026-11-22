@@ -54,6 +54,33 @@ struct ExtensionWorkerHealthTests {
         #expect(clock.now - began < .seconds(2))
     }
 
+    @Test func onlyAnIdlePagelessProcessIsAStray() {
+        let processes: [ExtensionWorkerHealth.ContentProcess] = [
+            .init(pid: 10, pages: 1, runsWorkers: true),
+            .init(pid: 11, pages: 2, runsWorkers: false),
+            .init(pid: 12, pages: 0, runsWorkers: true),
+            .init(pid: 13, pages: 0, runsWorkers: false),
+            .init(pid: 14, pages: 0, runsWorkers: false),
+            .init(pid: 0, pages: 0, runsWorkers: false),
+        ]
+        #expect(ExtensionWorkerHealth.strays([processes], spare: [14]) == [13])
+        #expect(ExtensionWorkerHealth.strays([], spare: []).isEmpty)
+    }
+
+    @Test func aProcessBusyInEitherCensusIsNoStray() {
+        let first: [ExtensionWorkerHealth.ContentProcess] = [
+            .init(pid: 20, pages: 0, runsWorkers: false),
+            .init(pid: 21, pages: 0, runsWorkers: false),
+            .init(pid: 22, pages: 0, runsWorkers: false),
+        ]
+        let second: [ExtensionWorkerHealth.ContentProcess] = [
+            .init(pid: 20, pages: 0, runsWorkers: false),
+            .init(pid: 21, pages: 1, runsWorkers: false),
+            .init(pid: 23, pages: 0, runsWorkers: false),
+        ]
+        #expect(ExtensionWorkerHealth.strays([first, second], spare: []) == [20])
+    }
+
     @Test func restartsAreBoundedThenFreedByTime() {
         var restarts = ExtensionWorkerHealth.Restarts()
         for i in 0..<ExtensionWorkerHealth.Restarts.limit {

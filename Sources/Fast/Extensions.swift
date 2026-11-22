@@ -2006,7 +2006,8 @@ final class Extensions: NSObject, ObservableObject {
     private var pressWhenLoaded: String?
 
     /// `checked`: a worker check's restart, bounded by its own budget (ExtensionWorkerHealth.Restarts) rather than the minute.
-    func revive(_ id: String, because reason: String, checked: Bool = false) {
+    /// `clearing`: once it is unloaded, page processes it may have left its worker in are ended first.
+    func revive(_ id: String, because reason: String, checked: Bool = false, clearing: Bool = false) {
         guard let item = installed.first(where: { $0.id == id }), item.enabled,
               checked || Date().timeIntervalSince(revived[id] ?? .distantPast) > 60 else { return }
         revived[id] = Date()
@@ -2016,6 +2017,7 @@ final class Extensions: NSObject, ObservableObject {
         let anchor = anchors[id]?.view?.window != nil ? anchors[id]?.view : anchors[Extensions.menuAnchor]?.view
         unload(id)
         Task {
+            if clearing { await clearStrays(for: id) }
             guard await load(item) else { return }
             confirmWorker(id)
             guard let popup, let context = contexts[id] else { return }
@@ -2104,8 +2106,69 @@ final class Extensions: NSObject, ObservableObject {
                 self.noteError("its worker keeps failing to start; Pane stopped restarting it", for: id)
                 return
             }
-            self.revive(id, because: "its worker isn't running", checked: true)
+            self.revive(id, because: "its worker isn't running", checked: true, clearing: true)
         }
+    }
+
+    /// Ends the page processes WebKit could start this extension's worker in without its bindings
+    /// (ExtensionWorkerHealth.strays), so the reload's worker starts beside its background page.
+    private func clearStrays(for id: String) async {
+        // Its background page's process has to have let go of the extension first, or WebKit
+        // starts another empty process for it at once.
+        try? await Task.sleep(for: .milliseconds(500))
+        guard let before = Self.contentProcesses() else { return }
+        // Idle twice, half a second apart: not a page mid-navigation or a worker just starting.
+        try? await Task.sleep(for: .milliseconds(500))
+        guard let after = Self.contentProcesses() else { return }
+        let strays = ExtensionWorkerHealth.strays([before.all, after.all], spare: before.spare.union(after.spare))
+        guard !strays.isEmpty else { return }
+        let asked = strays.filter(Self.endPageProcess)
+        var left = Set(asked)
+        for _ in 0..<10 where !left.isEmpty {
+            try? await Task.sleep(for: .milliseconds(100))
+            left = Set(Self.contentProcesses()?.all.map(\.pid) ?? []).intersection(asked)
+        }
+        // WebKit says yes to a process of another pool, the web tabs', and leaves it running.
+        let ended = asked.filter { !left.contains($0) }
+        guard !ended.isEmpty else { return }
+        let line = "its worker was left in a page process with no page (WebKit bug 324754); Pane ended "
+            + "\(ended.count == 1 ? "it" : "\(ended.count) such processes"): \(ended.map(String.init).joined(separator: ", "))"
+        noteError(line, for: id, counted: false)
+        NSLog("Extensions: %@ %@", id, line)
+    }
+
+    /// Every WebKit page process, and the spare it warmed for the next tab. Nil on a WebKit without
+    /// the private `+[WKProcessPool _webContentProcessInfo]`. Main thread only (PageProcesses.census).
+    static func contentProcesses() -> (all: [ExtensionWorkerHealth.ContentProcess], spare: Set<Int32>)? {
+        dispatchPrecondition(condition: .onQueue(.main))
+        let info = NSSelectorFromString("_webContentProcessInfo")
+        guard WKProcessPool.responds(to: info) else { return nil }
+        return autoreleasepool {
+            guard let list = WKProcessPool.perform(info)?.takeUnretainedValue() as? [NSObject] else { return nil }
+            let all = list.compactMap { process -> ExtensionWorkerHealth.ContentProcess? in
+                guard ["pid", "webViews", "runningServiceWorkers"].allSatisfy({ process.responds(to: NSSelectorFromString($0)) }),
+                      let pid = (process.value(forKey: "pid") as? NSNumber)?.int32Value else { return nil }
+                // Nil is a process with no page yet; anything else that isn't a list of views is unknown.
+                let views = process.value(forKey: "webViews")
+                guard views == nil || views is [WKWebView] else { return nil }
+                return .init(pid: pid, pages: (views as? [WKWebView])?.count ?? 0,
+                             runsWorkers: (process.value(forKey: "runningServiceWorkers") as? NSNumber)?.boolValue ?? true)
+            }
+            let warmed = NSSelectorFromString("_prewarmedProcessIdentifiersForTesting")
+            let spare = [Web.extensionPool, Web.pool].flatMap { pool -> [NSNumber] in
+                guard pool.responds(to: warmed) else { return [] }
+                return Array((pool.perform(warmed)?.takeUnretainedValue() as? Set<NSNumber>) ?? [])
+            }
+            return (all, Set(spare.map(\.int32Value)))
+        }
+    }
+
+    /// Through WebKit, which ends only a process of this pool. True can still leave one running (`clearStrays`).
+    private static func endPageProcess(_ pid: Int32) -> Bool {
+        let end = NSSelectorFromString("_requestWebProcessTermination:")
+        guard let method = class_getInstanceMethod(WKProcessPool.self, end) else { return false }
+        typealias End = @convention(c) (AnyObject, Selector, Int32) -> Bool
+        return unsafeBitCast(method_getImplementation(method), to: End.self)(Web.extensionPool, end, pid)
     }
 
     static func hasServiceWorker(_ webExtension: WKWebExtension) -> Bool {

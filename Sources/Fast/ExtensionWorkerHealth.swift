@@ -28,6 +28,21 @@ enum ExtensionWorkerHealth {
         took > step * 1.5 ? .zero : step
     }
 
+    /// A WebKit page process as `+[WKProcessPool _webContentProcessInfo]` describes it.
+    struct ContentProcess: Equatable {
+        let pid: Int32
+        let pages: Int
+        let runsWorkers: Bool
+    }
+
+    /// Processes with no page and no running worker in every one of `censuses`, other than WebKit's
+    /// warmed spare: where WebKit starts a reloaded worker without its bindings (WebKit bug 324754).
+    static func strays(_ censuses: [[ContentProcess]], spare: Set<Int32>) -> [Int32] {
+        let idle = censuses.map { Set($0.filter { $0.pid > 0 && $0.pages == 0 && !$0.runsWorkers }.map(\.pid)) }
+        guard let first = idle.first else { return [] }
+        return idle.dropFirst().reduce(first) { $0.intersection($1) }.subtracting(spare).sorted()
+    }
+
     /// At most `limit` restarts in `window`, so a worker that can never start isn't restarted for ever.
     struct Restarts {
         static let window: TimeInterval = 15 * 60
