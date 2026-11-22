@@ -1487,6 +1487,9 @@ final class Extensions: NSObject, ObservableObject {
 
     private func unload(_ id: String) {
         onePasswordAnswered.remove(id)
+        reported[id] = nil
+        healthy[id] = nil
+        workerStarted[id] = nil
         guard let context = contexts[id] else {
             if signIn == nil { ExtensionRules.forget(id, owner: controller) }
             return
@@ -1891,6 +1894,8 @@ final class Extensions: NSObject, ObservableObject {
     /// as a relaunch would, at most once a minute, so one that can never
     /// start doesn't go round in circles.
     private var revived: [String: Date] = [:]
+    /// What the current context's worker last said it listens for, and when: none until its own code has run.
+    private(set) var reported: [String: (at: Date, events: [String])] = [:]
     /// Recent failed native messages, per extension and host.
     private var failures: [String: [Date]] = [:]
     /// Its card up, asking 1Password's people to add Yab in the app (appUnreached).
@@ -2002,9 +2007,11 @@ final class Extensions: NSObject, ObservableObject {
     /// One of those pressed before its turn came.
     private var pressWhenLoaded: String?
 
-    func revive(_ id: String, because reason: String) {
+    /// `checked`: a worker check's restart, bounded by its own budget (ExtensionWorkerHealth.Restarts) rather than the minute.
+    /// `clearing`: once it is unloaded, page processes it may have left its worker in are ended first.
+    func revive(_ id: String, because reason: String, checked: Bool = false, clearing: Bool = false) {
         guard let item = installed.first(where: { $0.id == id }), item.enabled,
-              Date().timeIntervalSince(revived[id] ?? .distantPast) > 60 else { return }
+              checked || Date().timeIntervalSince(revived[id] ?? .distantPast) > 60 else { return }
         revived[id] = Date()
         noteError("had to restart: \(reason)", for: id)
         // Its popup goes with it; it is opened again once the extension is back.
@@ -2012,9 +2019,162 @@ final class Extensions: NSObject, ObservableObject {
         let anchor = anchors[id]?.view?.window != nil ? anchors[id]?.view : anchors[Extensions.menuAnchor]?.view
         unload(id)
         Task {
-            guard await load(item), let popup, let context = contexts[id] else { return }
+            if clearing { await clearStrays(for: id) }
+            guard await load(item) else { return }
+            confirmWorker(id)
+            guard let popup, let context = contexts[id] else { return }
             ExtensionPopup.shared.show(popup, for: context, from: anchor)
         }
+    }
+
+    /// The steps a watchdog takes, on demand, for the bench in a test world.
+    func lifecycleForTesting(_ id: String, _ step: String) async -> [String: Any] {
+        guard Store.testing, let item = installed.first(where: { $0.id == id }) else { return ["error": "not installed"] }
+        let before = contexts[id].map(ObjectIdentifier.init)
+        switch step {
+        case "revive":
+            revived[id] = nil
+            revive(id, because: "the bench asked")
+            for _ in 0..<100 where contexts[id] == nil { try? await Task.sleep(for: .milliseconds(50)) }
+        case "unload": unload(id)
+        case "load": _ = await load(item)
+        case "restart": await restart(id)
+        case "heard":
+            guard let said = reported[id] else { return ["reported": false] }
+            return ["reported": true, "ago": Date().timeIntervalSince(said.at), "events": said.events]
+        case "wake":
+            guard let context = contexts[id] else { return ["error": "not loaded"] }
+            let error: Bool = await withCheckedContinuation { done in
+                context.loadBackgroundContent { error in done.resume(returning: error != nil) }
+            }
+            return ["woke": !error]
+        default: return ["error": "unknown step"]
+        }
+        let after = contexts[id].map(ObjectIdentifier.init)
+        return ["loaded": after != nil, "newContext": after != nil && after != before]
+    }
+
+    /// Each content world's name among the scripts a page's controller holds, with how many distinct worlds share it.
+    static func contentWorldsForTesting(_ controller: WKUserContentController) -> [String: Int] {
+        var worlds: [String: Set<ObjectIdentifier>] = [:]
+        for script in controller.userScripts {
+            guard script.responds(to: NSSelectorFromString("_contentWorld")),
+                  let world = script.value(forKey: "_contentWorld") as? WKContentWorld else { continue }
+            worlds[world.name ?? "page", default: []].insert(ObjectIdentifier(world))
+        }
+        return worlds.mapValues(\.count)
+    }
+
+    /// The page WebKit hosts the worker in, while it is up.
+    static func backgroundView(_ context: WKWebExtensionContext) -> WKWebView? {
+        let key = "_backgroundWebView"
+        guard context.responds(to: NSSelectorFromString(key)) else { return nil }
+        return context.value(forKey: key) as? WKWebView
+    }
+
+    private var confirming: Set<String> = []
+    private var healthy: [String: Date] = [:]
+    private var healthRestarts: [String: ExtensionWorkerHealth.Restarts] = [:]
+    /// When each one's worker last said it started (the shim's background.started).
+    private var workerStarted: [String: Date] = [:]
+
+    func workerDidStart(_ id: String, in context: WKWebExtensionContext) {
+        if contexts[id] === context { workerStarted[id] = Date() }
+    }
+
+    func workerReported(_ id: String, events: [String], in context: WKWebExtensionContext) {
+        if contexts[id] === context { reported[id] = (Date(), events.sorted()) }
+    }
+
+    /// After its worker was started for a page or popup: restarted if it never
+    /// reported its listeners (ExtensionWorkerHealth).
+    func confirmWorker(_ id: String) {
+        guard let context = contexts[id], Self.hasServiceWorker(context.webExtension),
+              Date().timeIntervalSince(healthy[id] ?? .distantPast) > 60,
+              confirming.insert(id).inserted else { return }
+        // Asleep, it is started now: a worker left to start lazily would never report.
+        if Self.backgroundView(context) == nil { context.loadBackgroundContent { _ in } }
+        Task { @MainActor [weak self] in
+            defer { self?.confirming.remove(id) }
+            let isHealthy = { [weak self] in
+                ExtensionWorkerHealth.healthy(started: self?.workerStarted[id], reported: self?.reported[id]?.at)
+            }
+            await ExtensionWorkerHealth.wait(ExtensionWorkerHealth.grace, until: isHealthy)
+            guard let self, self.contexts[id] === context else { return }
+            let fine = isHealthy()
+            self.trace(id, fine ? "worker check: it runs" : "worker check: no word from its worker")
+            if fine { self.healthy[id] = Date(); return }
+            guard self.healthRestarts[id, default: .init()].allow() else {
+                self.noteError("its worker keeps failing to start; Pane stopped restarting it", for: id)
+                return
+            }
+            self.revive(id, because: "its worker isn't running", checked: true, clearing: true)
+        }
+    }
+
+    /// Ends the page processes WebKit could start this extension's worker in without its bindings
+    /// (ExtensionWorkerHealth.strays), so the reload's worker starts beside its background page.
+    private func clearStrays(for id: String) async {
+        // Its background page's process has to have let go of the extension first, or WebKit
+        // starts another empty process for it at once.
+        try? await Task.sleep(for: .milliseconds(500))
+        guard let before = Self.contentProcesses() else { return }
+        // Idle twice, half a second apart: not a page mid-navigation or a worker just starting.
+        try? await Task.sleep(for: .milliseconds(500))
+        guard let after = Self.contentProcesses() else { return }
+        let strays = ExtensionWorkerHealth.strays([before.all, after.all], spare: before.spare.union(after.spare))
+        guard !strays.isEmpty else { return }
+        let asked = strays.filter(Self.endPageProcess)
+        var left = Set(asked)
+        for _ in 0..<10 where !left.isEmpty {
+            try? await Task.sleep(for: .milliseconds(100))
+            left = Set(Self.contentProcesses()?.all.map(\.pid) ?? []).intersection(asked)
+        }
+        // WebKit says yes to a process of another pool, the web tabs', and leaves it running.
+        let ended = asked.filter { !left.contains($0) }
+        guard !ended.isEmpty else { return }
+        let line = "its worker was left in a page process with no page (WebKit bug 324754); Pane ended "
+            + "\(ended.count == 1 ? "it" : "\(ended.count) such processes"): \(ended.map(String.init).joined(separator: ", "))"
+        noteError(line, for: id, counted: false)
+        NSLog("Extensions: %@ %@", id, line)
+    }
+
+    /// Every WebKit page process, and the spare it warmed for the next tab. Nil on a WebKit without
+    /// the private `+[WKProcessPool _webContentProcessInfo]`. Main thread only (PageProcesses.census).
+    static func contentProcesses() -> (all: [ExtensionWorkerHealth.ContentProcess], spare: Set<Int32>)? {
+        dispatchPrecondition(condition: .onQueue(.main))
+        let info = NSSelectorFromString("_webContentProcessInfo")
+        guard WKProcessPool.responds(to: info) else { return nil }
+        return autoreleasepool {
+            guard let list = WKProcessPool.perform(info)?.takeUnretainedValue() as? [NSObject] else { return nil }
+            let all = list.compactMap { process -> ExtensionWorkerHealth.ContentProcess? in
+                guard ["pid", "webViews", "runningServiceWorkers"].allSatisfy({ process.responds(to: NSSelectorFromString($0)) }),
+                      let pid = (process.value(forKey: "pid") as? NSNumber)?.int32Value else { return nil }
+                // Nil is a process with no page yet; anything else that isn't a list of views is unknown.
+                let views = process.value(forKey: "webViews")
+                guard views == nil || views is [WKWebView] else { return nil }
+                return .init(pid: pid, pages: (views as? [WKWebView])?.count ?? 0,
+                             runsWorkers: (process.value(forKey: "runningServiceWorkers") as? NSNumber)?.boolValue ?? true)
+            }
+            let warmed = NSSelectorFromString("_prewarmedProcessIdentifiersForTesting")
+            let spare = [Web.extensionPool, Web.pool].flatMap { pool -> [NSNumber] in
+                guard pool.responds(to: warmed) else { return [] }
+                return Array((pool.perform(warmed)?.takeUnretainedValue() as? Set<NSNumber>) ?? [])
+            }
+            return (all, Set(spare.map(\.int32Value)))
+        }
+    }
+
+    /// Through WebKit, which ends only a process of this pool. True can still leave one running (`clearStrays`).
+    private static func endPageProcess(_ pid: Int32) -> Bool {
+        let end = NSSelectorFromString("_requestWebProcessTermination:")
+        guard let method = class_getInstanceMethod(WKProcessPool.self, end) else { return false }
+        typealias End = @convention(c) (AnyObject, Selector, Int32) -> Bool
+        return unsafeBitCast(method_getImplementation(method), to: End.self)(Web.extensionPool, end, pid)
+    }
+
+    static func hasServiceWorker(_ webExtension: WKWebExtension) -> Bool {
+        (webExtension.manifest["background"] as? [String: Any])?["service_worker"] is String
     }
 
     /// Taken up afresh without a word, its worker started again: what

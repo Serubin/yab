@@ -8946,7 +8946,7 @@ final class Bench {
         case "import":
             importCommand(request, browser: browser, answer)
 
-        case "extensions", "ext-add", "ext-add-frozen", "ext-diagnostics", "ext-background", "ext-folder", "ext-press", "ext-withheld", "ext-remove", "ext-reload", "ext-page", "ext-popup", "ext-popout", "ext-side-panel", "ext-menu", "site-shot", "site-facts", "ext-pin", "ext-tip", "ext-commands", "ext-shot", "ext-answer", "ext-enable", "ext-scan", "ext-bring", "debugger", "ext-search-engines", "answer-links":
+        case "extensions", "ext-add", "ext-add-frozen", "ext-diagnostics", "ext-background", "ext-folder", "ext-press", "ext-withheld", "ext-remove", "ext-reload", "ext-page", "ext-popup", "ext-popout", "ext-side-panel", "ext-menu", "site-shot", "site-facts", "ext-pin", "ext-tip", "ext-commands", "ext-shot", "ext-answer", "ext-enable", "ext-scan", "ext-bring", "debugger", "ext-search-engines", "answer-links", "ext-lifecycle", "ext-worlds":
             guard #available(macOS 15.4, *) else {
                 answer(["error": "extensions need macOS 15.4"])
                 return
@@ -9341,6 +9341,15 @@ final class Bench {
                   let background = Extensions.backgroundViewForTesting(context) else {
                 answer(["error": "No native background view in this test context"]); return
             }
+            if request["await"] as? Bool == true {
+                background.callAsyncJavaScript(script, arguments: [:], in: nil, in: .page) { result in
+                    switch result {
+                    case .success(let value): answer(["value": Bench.plain(value)])
+                    case .failure(let error): answer(["error": error.localizedDescription])
+                    }
+                }
+                return
+            }
             background.evaluateJavaScript(script) { value, error in
                 if let error { answer(["error": error.localizedDescription]) }
                 else { answer(["value": value ?? NSNull()]) }
@@ -9519,6 +9528,25 @@ final class Bench {
                     to: path)
             }
             answer(out)
+        case "ext-lifecycle":
+            // A test world's revive, unload, load or main-thread stall, on demand
+            // (evals/extension-empty-worker).
+            guard Store.testing, let step = request["step"] as? String else {
+                answer(["error": "ext-lifecycle needs a test session and a step"]); return
+            }
+            if step == "stall" {
+                let until = Date().addingTimeInterval(request["seconds"] as? Double ?? 5)
+                while Date() < until { _ = sqrt(Double.random(in: 0...1)) }
+                answer(["stalled": true]); return
+            }
+            guard let id = request["id"] as? String else { answer(["error": "ext-lifecycle needs an id"]); return }
+            Task { @MainActor in answer(await extensions.lifecycleForTesting(id, step)) }
+        case "ext-worlds":
+            guard Store.testing, let tab = find(request, in: browser),
+                  let controller = tab.webKitOnly("WebKit-only bench fixtures", build: false)?.configuration.userContentController else {
+                answer(["error": "ext-worlds needs a test session and a tab"]); return
+            }
+            answer(["worlds": Extensions.contentWorldsForTesting(controller)])
         case "ext-pin":
             guard let id = request["id"] as? String else { answer(["error": "ext-pin needs an id"]); return }
             extensions.setPinned(id, request["on"] as? Bool ?? true)
