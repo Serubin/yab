@@ -2008,8 +2008,7 @@ final class Extensions: NSObject, ObservableObject {
     private var pressWhenLoaded: String?
 
     /// `checked`: a worker check's restart, bounded by its own budget (ExtensionWorkerHealth.Restarts) rather than the minute.
-    /// `clearing`: once it is unloaded, page processes it may have left its worker in are ended first.
-    func revive(_ id: String, because reason: String, checked: Bool = false, clearing: Bool = false) {
+    func revive(_ id: String, because reason: String, checked: Bool = false) {
         guard let item = installed.first(where: { $0.id == id }), item.enabled,
               checked || Date().timeIntervalSince(revived[id] ?? .distantPast) > 60 else { return }
         revived[id] = Date()
@@ -2017,9 +2016,10 @@ final class Extensions: NSObject, ObservableObject {
         // Its popup goes with it; it is opened again once the extension is back.
         let popup = ExtensionPopup.shared.extensionID == id ? ExtensionPopup.shared.view?.url : nil
         let anchor = anchors[id]?.view?.window != nil ? anchors[id]?.view : anchors[Extensions.menuAnchor]?.view
+        let current = noteHost(id)
         unload(id)
         Task {
-            if clearing { await clearStrays(for: id) }
+            await endStaleHosts(of: id, sparing: current)
             guard await load(item) else { return }
             confirmWorker(id)
             guard let popup, let context = contexts[id] else { return }
@@ -2078,12 +2078,39 @@ final class Extensions: NSObject, ObservableObject {
     /// When each one's worker last said it started (the shim's background.started).
     private var workerStarted: [String: Date] = [:]
 
+    /// Each one's background-page processes, by pid and start time so a reused pid isn't taken for one.
+    private var hosts: [String: [Int32: UInt64]] = [:]
+
     func workerDidStart(_ id: String, in context: WKWebExtensionContext) {
-        if contexts[id] === context { workerStarted[id] = Date() }
+        guard contexts[id] === context else { return }
+        workerStarted[id] = Date()
+        noteHost(id)
     }
 
     func workerReported(_ id: String, events: [String], in context: WKWebExtensionContext) {
-        if contexts[id] === context { reported[id] = (Date(), events.sorted()) }
+        guard contexts[id] === context else { return }
+        reported[id] = (Date(), events.sorted())
+        noteHost(id)
+    }
+
+    /// Records the process its background page is in now, and returns it.
+    @discardableResult
+    private func noteHost(_ id: String) -> Int32? {
+        var seen = (hosts[id] ?? [:]).filter { Self.startTime(of: $0.key) == $0.value }
+        defer { hosts[id] = seen }
+        guard let context = contexts[id], let page = Self.backgroundView(context),
+              let pid = (page.value(forKey: "_webProcessIdentifier") as? NSNumber)?.int32Value, pid > 0,
+              let started = Self.startTime(of: pid) else { return nil }
+        seen[pid] = started
+        return pid
+    }
+
+    /// When `pid` started, in microseconds; nil once it is gone.
+    private static func startTime(of pid: Int32) -> UInt64? {
+        var info = proc_bsdinfo()
+        let size = Int32(MemoryLayout<proc_bsdinfo>.size)
+        guard proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &info, size) == size else { return nil }
+        return info.pbi_start_tvsec * 1_000_000 + info.pbi_start_tvusec
     }
 
     /// After its worker was started for a page or popup: restarted if it never
@@ -2101,6 +2128,7 @@ final class Extensions: NSObject, ObservableObject {
             }
             await ExtensionWorkerHealth.wait(ExtensionWorkerHealth.grace, until: isHealthy)
             guard let self, self.contexts[id] === context else { return }
+            self.noteHost(id)
             let fine = isHealthy()
             self.trace(id, fine ? "worker check: it runs" : "worker check: no word from its worker")
             if fine { self.healthy[id] = Date(); return }
@@ -2108,33 +2136,37 @@ final class Extensions: NSObject, ObservableObject {
                 self.noteError("its worker keeps failing to start; Pane stopped restarting it", for: id)
                 return
             }
-            self.revive(id, because: "its worker isn't running", checked: true, clearing: true)
+            self.revive(id, because: "its worker isn't running", checked: true)
         }
     }
 
-    /// Ends the page processes WebKit could start this extension's worker in without its bindings
-    /// (ExtensionWorkerHealth.strays), so the reload's worker starts beside its background page.
-    private func clearStrays(for id: String) async {
-        // Its background page's process has to have let go of the extension first, or WebKit
-        // starts another empty process for it at once.
+    /// Ends its former background-page processes left with no page (ExtensionWorkerHealth.staleHosts),
+    /// so the reload's worker starts beside its new background page.
+    private func endStaleHosts(of id: String, sparing current: Int32?) async {
+        guard let known = hosts[id], !known.keys.allSatisfy({ $0 == current }) else { return }
+        // Its background page has to be gone from its process before that process counts as pageless.
         try? await Task.sleep(for: .milliseconds(500))
         guard let before = Self.contentProcesses() else { return }
-        // Idle twice, half a second apart: not a page mid-navigation or a worker just starting.
+        // Pageless twice, half a second apart: not a process about to take a page.
         try? await Task.sleep(for: .milliseconds(500))
         guard let after = Self.contentProcesses() else { return }
-        let strays = ExtensionWorkerHealth.strays([before.all, after.all], spare: before.spare.union(after.spare))
-        guard !strays.isEmpty else { return }
-        let asked = strays.filter(Self.endPageProcess)
+        let same = Set(known.filter { Self.startTime(of: $0.key) == $0.value }.keys)
+        let stale = ExtensionWorkerHealth.staleHosts([before.all, after.all], hosts: same, current: current,
+                                                     spare: before.spare.union(after.spare))
+        guard !stale.isEmpty else { return }
+        let asked = stale.filter(Self.endPageProcess)
         var left = Set(asked)
-        for _ in 0..<10 where !left.isEmpty {
+        for _ in 0..<20 where !left.isEmpty {
             try? await Task.sleep(for: .milliseconds(100))
-            left = Set(Self.contentProcesses()?.all.map(\.pid) ?? []).intersection(asked)
+            if let now = Self.contentProcesses() { left = Set(now.all.map(\.pid)).intersection(asked) }
         }
-        // WebKit says yes to a process of another pool, the web tabs', and leaves it running.
         let ended = asked.filter { !left.contains($0) }
-        guard !ended.isEmpty else { return }
-        let line = "its worker was left in a page process with no page (WebKit bug 324754); Pane ended "
-            + "\(ended.count == 1 ? "it" : "\(ended.count) such processes"): \(ended.map(String.init).joined(separator: ", "))"
+        for pid in ended { hosts[id]?[pid] = nil }
+        let list = { (pids: [Int32]) in pids.map(String.init).joined(separator: ", ") }
+        let missed = stale.filter { !ended.contains($0) }
+        let line = "its worker was held in a former background-page process with no page left (WebKit bug 324754); Pane "
+            + [ended.isEmpty ? nil : "ended \(list(ended))", missed.isEmpty ? nil : "could not end \(list(missed))"]
+                .compactMap { $0 }.joined(separator: ", ")
         noteError(line, for: id, counted: false)
         NSLog("Extensions: %@ %@", id, line)
     }
@@ -2148,13 +2180,12 @@ final class Extensions: NSObject, ObservableObject {
         return autoreleasepool {
             guard let list = WKProcessPool.perform(info)?.takeUnretainedValue() as? [NSObject] else { return nil }
             let all = list.compactMap { process -> ExtensionWorkerHealth.ContentProcess? in
-                guard ["pid", "webViews", "runningServiceWorkers"].allSatisfy({ process.responds(to: NSSelectorFromString($0)) }),
+                guard ["pid", "webViews"].allSatisfy({ process.responds(to: NSSelectorFromString($0)) }),
                       let pid = (process.value(forKey: "pid") as? NSNumber)?.int32Value else { return nil }
                 // Nil is a process with no page yet; anything else that isn't a list of views is unknown.
                 let views = process.value(forKey: "webViews")
                 guard views == nil || views is [WKWebView] else { return nil }
-                return .init(pid: pid, pages: (views as? [WKWebView])?.count ?? 0,
-                             runsWorkers: (process.value(forKey: "runningServiceWorkers") as? NSNumber)?.boolValue ?? true)
+                return .init(pid: pid, pages: (views as? [WKWebView])?.count ?? 0)
             }
             let warmed = NSSelectorFromString("_prewarmedProcessIdentifiersForTesting")
             let spare = [Web.extensionPool, Web.pool].flatMap { pool -> [NSNumber] in
@@ -2165,7 +2196,7 @@ final class Extensions: NSObject, ObservableObject {
         }
     }
 
-    /// Through WebKit, which ends only a process of this pool. True can still leave one running (`clearStrays`).
+    /// Through WebKit, which ends only a process of this pool. True can still leave one running (`endStaleHosts`).
     private static func endPageProcess(_ pid: Int32) -> Bool {
         let end = NSSelectorFromString("_requestWebProcessTermination:")
         guard let method = class_getInstanceMethod(WKProcessPool.self, end) else { return false }
@@ -2182,7 +2213,9 @@ final class Extensions: NSObject, ObservableObject {
     /// context. For Move from Tampermonkey.
     func restart(_ id: String) async {
         guard contexts[id] != nil, let item = installed.first(where: { $0.id == id }), item.enabled else { return }
+        let current = noteHost(id)
         unload(id)
+        await endStaleHosts(of: id, sparing: current)
         guard await load(item), let context = contexts[id] else { return }
         trace(id, "restart woke the worker")
         context.loadBackgroundContent { _ in }

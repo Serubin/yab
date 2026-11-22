@@ -54,31 +54,39 @@ struct ExtensionWorkerHealthTests {
         #expect(clock.now - began < .seconds(2))
     }
 
-    @Test func onlyAnIdlePagelessProcessIsAStray() {
-        let processes: [ExtensionWorkerHealth.ContentProcess] = [
-            .init(pid: 10, pages: 1, runsWorkers: true),
-            .init(pid: 11, pages: 2, runsWorkers: false),
-            .init(pid: 12, pages: 0, runsWorkers: true),
-            .init(pid: 13, pages: 0, runsWorkers: false),
-            .init(pid: 14, pages: 0, runsWorkers: false),
-            .init(pid: 0, pages: 0, runsWorkers: false),
+    @Test func aFormerHostThatKeptTheWorkerIsStale() {
+        // WebKit's idle unload took the page out of 50471, which kept the worker; reloaded workers failed there.
+        let census: [ExtensionWorkerHealth.ContentProcess] = [
+            .init(pid: 50471, pages: 0),
+            .init(pid: 68186, pages: 1),
+            .init(pid: 54909, pages: 0),
         ]
-        #expect(ExtensionWorkerHealth.strays([processes], spare: [14]) == [13])
-        #expect(ExtensionWorkerHealth.strays([], spare: []).isEmpty)
+        #expect(ExtensionWorkerHealth.staleHosts([census], hosts: [50471, 68186], current: nil, spare: []) == [50471])
     }
 
-    @Test func aProcessBusyInEitherCensusIsNoStray() {
-        let first: [ExtensionWorkerHealth.ContentProcess] = [
-            .init(pid: 20, pages: 0, runsWorkers: false),
-            .init(pid: 21, pages: 0, runsWorkers: false),
-            .init(pid: 22, pages: 0, runsWorkers: false),
+    @Test func onlyItsOwnFormerHostsAreStale() {
+        let census: [ExtensionWorkerHealth.ContentProcess] = [
+            .init(pid: 10, pages: 0),
+            .init(pid: 11, pages: 2),
+            .init(pid: 12, pages: 0),
+            .init(pid: 14, pages: 0),
+            .init(pid: 0, pages: 0),
         ]
-        let second: [ExtensionWorkerHealth.ContentProcess] = [
-            .init(pid: 20, pages: 0, runsWorkers: false),
-            .init(pid: 21, pages: 1, runsWorkers: false),
-            .init(pid: 23, pages: 0, runsWorkers: false),
-        ]
-        #expect(ExtensionWorkerHealth.strays([first, second], spare: []) == [20])
+        #expect(ExtensionWorkerHealth.staleHosts([census], hosts: [10, 11, 13, 14, 0], current: nil, spare: [14]) == [10])
+        #expect(ExtensionWorkerHealth.staleHosts([census], hosts: [], current: nil, spare: []).isEmpty)
+        #expect(ExtensionWorkerHealth.staleHosts([], hosts: [10], current: nil, spare: []).isEmpty)
+    }
+
+    @Test func aHostThatTakesAPageInEitherCensusIsNotStale() {
+        let first: [ExtensionWorkerHealth.ContentProcess] = [.init(pid: 20, pages: 0), .init(pid: 21, pages: 0), .init(pid: 22, pages: 0)]
+        let second: [ExtensionWorkerHealth.ContentProcess] = [.init(pid: 20, pages: 0), .init(pid: 21, pages: 1)]
+        #expect(ExtensionWorkerHealth.staleHosts([first, second], hosts: [20, 21, 22], current: nil, spare: []) == [20])
+    }
+
+    @Test func theHostItWasJustUnloadedFromIsNotStale() {
+        let census: [ExtensionWorkerHealth.ContentProcess] = [.init(pid: 50471, pages: 0), .init(pid: 68186, pages: 0)]
+        #expect(ExtensionWorkerHealth.staleHosts([census], hosts: [50471, 68186], current: 68186, spare: []) == [50471])
+        #expect(ExtensionWorkerHealth.staleHosts([census], hosts: [68186], current: 68186, spare: []).isEmpty)
     }
 
     @Test func restartsAreBoundedThenFreedByTime() {
