@@ -17,7 +17,7 @@
 # - Secrets live in the `release` environment, not the repository. Restrict
 #   that environment's deployment branches to `canary`, plus any branch you
 #   mean to cut prereleases from (Settings > Environments).
-# - Only `canary` publishes the update feeds (GitHub Pages) and takes an r number.
+# - Only `canary` publishes the update feeds and the What's New page (GitHub Pages) and takes an r number.
 #   Its LATEST_FLAVOR release is GitHub's "latest"; the other flavor's never is,
 #   even when LATEST_FLAVOR's build fails. Installs follow their feed, not that mark.
 #   Any other ref yields a prerelease versioned 0.47.19-dev.<build> that no
@@ -64,9 +64,10 @@ jobs:
   meta:
     name: Version and flavors
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     permissions:
       contents: read
+      pull-requests: read
     outputs:
       upstream: ${{ steps.meta.outputs.upstream }}
       version: ${{ steps.meta.outputs.version }}
@@ -77,6 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Version, build number and flavors
@@ -129,6 +131,31 @@ jobs:
           echo "Pane $version (upstream $upstream), build $build, flavors $ENGINES, publish: $publish" \
             | tee -a "$GITHUB_STEP_SUMMARY"
 
+      # Needs the full history and tags the checkout above fetched. Release notes for every ref;
+      # only canary's go on the What's New page (the feed job).
+      - name: What's new
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          UPSTREAM: ${{ steps.meta.outputs.upstream }}
+          BUILD: ${{ steps.meta.outputs.build }}
+          SITE: ${{ steps.meta.outputs.site }}
+        run: |
+          set -euo pipefail
+          python3 -I scripts/fork/whats-new.py notes --version "$VERSION" --upstream "$UPSTREAM" \
+            --head "$GITHUB_SHA" --repo "$REPO" --site "$SITE" \
+            --date "${BUILD:0:4}-${BUILD:4:2}-${BUILD:6:2}" --out "$RUNNER_TEMP/whats-new"
+          cat "$RUNNER_TEMP/whats-new/notes.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the notes for the build and feed jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: whats-new
+          path: ${{ runner.temp }}/whats-new
+          if-no-files-found: error
+          retention-days: 7
+
   build:
     name: Build ${{ matrix.flavor }}
     needs: meta
@@ -155,6 +182,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: whats-new
+          path: ${{ runner.temp }}/whats-new
+
       - name: Toolchain
         env:
           YAB_XCODE: ${{ vars.YAB_XCODE }}
@@ -173,11 +205,14 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
+          # canary's update card opens its entry on the What's New page; any other ref has no page.
+          changelog="https://github.com/$REPO/releases/tag/$TAG"
+          [ "$PUBLISH" != true ] || changelog="$SITE/pane/whats-new/#v$VERSION"
           {
             echo "YAB_VERSION=$VERSION"
             echo "YAB_BUILD_NUMBER=$BUILD"
             echo "YAB_DOWNLOAD_URL=$SITE/${FEED_DIR#.}"
-            echo "YAB_CHANGELOG_URL=https://github.com/$REPO/releases/tag/$TAG"
+            echo "YAB_CHANGELOG_URL=$changelog"
           } >> "$GITHUB_ENV"
           echo "Pane $VERSION ($FLAVOR), build $BUILD, tag $TAG, feed $SITE/${FEED_DIR#.}"
 
@@ -328,9 +363,14 @@ jobs:
           fi
           files=(build/pane.dmg build/pane.zip build/appcast.json)
           [ ! -f build/Pane.app.dSYM.zip ] || files+=(build/Pane.app.dSYM.zip)
+          {
+            cat "$RUNNER_TEMP/whats-new/notes.md"
+            printf '\nUpstream Yab %s, build %s. Built from `%s` at %s. Signed and notarized. %s\n' \
+              "$UPSTREAM" "$BUILD" "$REF_NAME" "$GITHUB_SHA" "$engines"
+          } > "$RUNNER_TEMP/release-notes.md"
           gh release create "$TAG" --repo "$REPO" --target "$GITHUB_SHA" "${channel[@]}" \
             --title "$title" \
-            --notes "Upstream Yab $UPSTREAM, build $BUILD. Built from \`$REF_NAME\` at $GITHUB_SHA. Signed and notarized. $engines" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" \
             "${files[@]}"
 
       - name: Keep the appcast for the feed
@@ -356,16 +396,27 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      # For scripts/fork/whats-new.py.
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
       - uses: actions/download-artifact@v4
         with:
           pattern: feed-*
           path: built
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: whats-new
+          path: whats-new
 
       - name: Assemble the site
         id: site
@@ -393,6 +444,20 @@ jobs:
               *) echo "::error::$live answered $code; not deploying a site without it"; exit 1 ;;
             esac
           done
+          if [ "$shipped" -gt 0 ]; then
+            # Same rule as the feeds: this release's entry joins the live page's, so history survives the deploy.
+            live="$SITE/pane/whats-new/entries.json"
+            args=()
+            code="$(curl -sS --retry 3 -H 'Cache-Control: no-cache' -o "$RUNNER_TEMP/live-entries.json" \
+              -w '%{http_code}' "$live?run=$GITHUB_RUN_ID")"
+            case "$code" in
+              200) args=(--live "$RUNNER_TEMP/live-entries.json") ;;
+              404) echo "no What's New page at $live yet" ;;
+              *) echo "::error::$live answered $code; not deploying a site without it"; exit 1 ;;
+            esac
+            python3 -I scripts/fork/whats-new.py page --entry whats-new/entry.json --site "$SITE" \
+              --out feed/pane/whats-new "${args[@]}"
+          fi
           echo "shipped=$shipped" >> "$GITHUB_OUTPUT"
           find feed -type f
           [ "$shipped" -gt 0 ] || echo "::warning::no flavor shipped; the feeds stay as they are"

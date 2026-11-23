@@ -1,0 +1,128 @@
+[
+  {
+    "number": 101,
+    "title": "feat(tabs): Keep a tab's scroll position",
+    "body": "## Why\r\n\r\nTabs lose their place.\r\n\r\n## What changes\r\n\r\nA tab now keeps its **scroll position** across a `reload`, as [Safari](https://example.com) does.\r\nIt also keeps zoom.\r\n\r\n## Test plan\r\n\r\nRan it.",
+    "merged_at": "2026-11-20T00:00:00Z",
+    "base": {
+      "ref": "canary"
+    },
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/101"
+  },
+  {
+    "number": 102,
+    "title": "fix(mail): Normalize time zones",
+    "body": "## Why\n\nBecause.\n",
+    "merged_at": "2026-11-20T00:00:00Z",
+    "base": {
+      "ref": "canary"
+    },
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/102"
+  },
+  {
+    "number": 103,
+    "title": "Merge upstream main into canary",
+    "body": null,
+    "merged_at": "2026-11-20T00:00:00Z",
+    "base": {
+      "ref": "canary"
+    },
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/103"
+  },
+  {
+    "number": 104,
+    "title": "fix(deps): Bump a thing",
+    "body": null,
+    "merged_at": "2026-11-20T00:00:00Z",
+    "base": {
+      "ref": "canary"
+    },
+    "user": {
+      "login": "dependabot[bot]",
+      "type": "Bot"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/104"
+  },
+  {
+    "number": 105,
+    "title": "ci(release): Release each flavor that is missing a version",
+    "body": "## What changes\n\nSkipped by type.",
+    "merged_at": "2026-11-20T00:00:00Z",
+    "base": {
+      "ref": "canary"
+    },
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/105"
+  },
+  {
+    "number": 106,
+    "title": "fix: <script>alert(1)</script> thanks @octocat",
+    "body": "<!-- note -->\n### What changes\n\n- Handles <b>markup</b> and thanks @octocat for [the link](https://evil.example/x).\n- Second point.",
+    "merged_at": "2026-11-20T00:00:00Z",
+    "base": {
+      "ref": "canary"
+    },
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/106"
+  },
+  {
+    "number": 107,
+    "title": "feat: Never merged",
+    "body": null,
+    "merged_at": null,
+    "base": {
+      "ref": "canary"
+    },
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/107"
+  },
+  {
+    "number": 108,
+    "title": "feat: Merged somewhere else",
+    "body": null,
+    "merged_at": "2026-11-20T00:00:00Z",
+    "base": {
+      "ref": "release-branch"
+    },
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/108"
+  },
+  {
+    "number": 101,
+    "title": "feat(tabs): Keep a tab's scroll position (listed twice)",
+    "body": null,
+    "merged_at": "2026-11-20T00:00:00Z",
+    "base": {
+      "ref": "canary"
+    },
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "html_url": "https://github.com/Serubin/yab/pull/101"
+  }
+]
