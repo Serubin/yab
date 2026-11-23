@@ -19,6 +19,7 @@ friends" board is the final set.
 | `two-pills` | Two Pills | `#F3F6FE` | `#0E1530` | Peek with two pill eyes, no needle. |
 | `inverse` | Inverse | `#2463EB` | — | Solo with colors flipped. |
 | `midnight` | Midnight | `#0E1530` | — | Peek on a navy tile, in both appearances. |
+| `solo-midnight` | Solo Midnight | `#0E1530` | — | Solo on a navy tile, in both appearances. |
 | `stack` | Stack | `#F3F6FE` | `#0E1530` | Three panes stepping up like tabs, face on top. |
 | `old-friend` | Old Friend | `#F5F5F1` | `#141415` | **Yab look-alike, see Legal below.** |
 

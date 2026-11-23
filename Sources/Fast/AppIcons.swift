@@ -12,6 +12,7 @@ enum AppIconStyle: String, CaseIterable, Identifiable {
     case paneTwoPills = "pane-two-pills"
     case paneInverse = "pane-inverse"
     case paneMidnight = "pane-midnight"
+    case paneSoloMidnight = "pane-solo-midnight"
     case paneOldFriend = "pane-old-friend"
     // Halloween 2026 (Halloween.swift): here until November 2, then only
     // the ones worn by then.
