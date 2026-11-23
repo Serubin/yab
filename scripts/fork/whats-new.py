@@ -251,7 +251,7 @@ def build_entry(opts, source):
     prev_upstream = tag_upstream(prev) if prev else None
     if prev and prev_upstream is None:
         raise NotesError(f"{prev} isn't a canary release tag")
-    pulls = source.pulls_between(prev, opts.head)
+    pulls = source.pulls_between(prev, opts.head) if prev else []
     return {"version": opts.version, "tag": f"v{opts.version}", "date": opts.date, "head": opts.head[:7],
             "prev_tag": prev, "url": f"{opts.site.rstrip('/')}/{PAGE_PATH}/#v{opts.version}",
             "upstream": upstream_part(opts.upstream, prev_upstream, prev, opts.feed),
@@ -305,7 +305,8 @@ def counts_text(entry_counts):
 
 def md(text):
     text = re.sub(r"([\\`*_\[\]<>~])", r"\\\1", text)
-    return text.replace("@", "\\@")
+    # A zero-width space entity after @ stops GitHub linking a mention; a backslash escape does not.
+    return text.replace("@", "@&#8203;")
 
 
 def md_link(text, url):

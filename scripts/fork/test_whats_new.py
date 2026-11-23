@@ -11,6 +11,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -144,6 +145,7 @@ class Notes(unittest.TestCase):
         e = entry(prev_tag=None)
         self.assertEqual([u["minor"] for u in e["upstream"]["entries"]], ["0.52"])
         self.assertIsNone(e["prev_tag"])
+        self.assertEqual(e["prs"], [])
 
     def test_filtering(self):
         numbers = [p["number"] for p in wn.fork_prs(PRS, "Serubin/yab")]
@@ -158,8 +160,8 @@ class Notes(unittest.TestCase):
         text, page = wn.render_markdown(e), wn.render_page([e], SITE)
         self.assertNotIn("<script>", page)
         self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", page)
-        self.assertIn("\\@octocat", text)
-        self.assertNotIn(" @octocat", text)
+        self.assertIn("@&#8203;octocat", text)
+        self.assertIsNone(re.search(r"@\w", text))
         self.assertIn("\\<script\\>", text)
         self.assertNotIn("evil.example", text + page)
         hostile = json.loads(json.dumps(e))
