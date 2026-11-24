@@ -121,10 +121,10 @@ final class SyncBridge {
     private(set) var assistantNotificationsUndecided = false
     @ObservationIgnored private var assistantApprovalExpiry: Task<Void, Never>?
 
-    @ObservationIgnored private weak var app: AppModel?
+    @ObservationIgnored private(set) weak var app: AppModel?
     @ObservationIgnored private(set) var engine: PhoneSync?
     @ObservationIgnored private(set) var setup: Setup?
-    @ObservationIgnored private var mirror = SyncMirror() {
+    @ObservationIgnored private(set) var mirror = SyncMirror() {
         // The Macs' tabs of today changed: the spaces' pages read them again.
         didSet {
             if oldValue.elsewhere != mirror.elsewhere { macTodayStamp &+= 1 }
@@ -211,7 +211,7 @@ final class SyncBridge {
 
     /// The Mac's tabs closed from here while it is down: shown dimmed until it wakes.
     private(set) var closingOnMac: [String: SyncTab] = [:]
-    @ObservationIgnored private var ids = IDs()
+    @ObservationIgnored private(set) var ids = IDs()
     @ObservationIgnored private var chatMirror = ChatMirror()
     @ObservationIgnored private var adopted: [Chat.ID: Chat] = [:]
     /// The iPhone's changes go up once the journal or live account is in.
@@ -250,7 +250,7 @@ final class SyncBridge {
     /// Named states: which of the pretend devices is this iPhone.
     @ObservationIgnored var pretendOwnDevice: String?
     @ObservationIgnored let probe: SyncProbe?
-    @ObservationIgnored private let log = Logger(subsystem: "dev.serafim.fast.iphone", category: "sync")
+    @ObservationIgnored let log = Logger(subsystem: "dev.serafim.fast.iphone", category: "sync")
 
     @ObservationIgnored private let settings: SettingsStore
 
@@ -909,7 +909,12 @@ final class SyncBridge {
             UserDefaults.standard.set(person, forKey: DailyActivity.personKey)
         }
         ready = true
-        if !mirror.spaces.isEmpty || setup?.seed == true {
+        // A journal left by a first catch-up cut short holds a page of the
+        // account (Work before the first space), not the account: taking it
+        // then sent the starting Personal up as a second one. Fixture worlds
+        // keep no association to hold the mark, and take theirs as before.
+        let caughtUp = ids.caughtUp || app?.isFixture != false
+        if (!mirror.spaces.isEmpty && caughtUp) || setup?.seed == true {
             // The seed: the world is this iPhone's own, it all goes up as changes.
             takeAccount()
         }
@@ -987,8 +992,14 @@ final class SyncBridge {
         case .live:
             offline = false
             // Caught up: a joining iPhone takes the account's spaces now,
-            // and from here on writes its own.
+            // and from here on writes its own. Kept, so a launch takes the
+            // account from the journal before the line is back.
+            ids.markCaughtUp()
             takeAccount()
+            do { try ids.persist() } catch {
+                log.error("sync keep caught up: \(String(describing: error), privacy: .public)")
+            }
+            repairJoinDuplicate()
             pruneEmptyPersonals()
             countPending()
             wantsHandoff = true
@@ -1404,9 +1415,11 @@ final class SyncBridge {
         let flushed = CACurrentMediaTime()
         let touched = mirror.apply(batch.changes)
         if !writing {
-            // The account's first spaces, on a launch that waited for them
-            // (a batch of chats alone, early in a catch-up, isn't them).
-            if !mirror.spaces.isEmpty { takeAccount() }
+            // The account's first spaces, on a launch that waited for them.
+            // A catch-up page isn't them: it can bring Work before the first
+            // space, and the starting Personal then went up as a second one.
+            // The catch-up's end takes the account (changed(.live)).
+            if line == .live, !mirror.spaces.isEmpty { takeAccount() }
         } else if !touched.isEmpty {
             let arrived = batch.changes.contains { if case .tab = $0 { return true }; return false }
             let left = batch.changes.contains { if case .tabGone = $0 { return true }; return false }
@@ -1573,17 +1586,22 @@ final class SyncBridge {
     /// called Personal: no folders of its own, so its tabs fit in another
     /// space as they are. Renamed, it is a space of the person's own.
     static func mergesIntoFirst(_ space: Space) -> Bool {
-        space.id == BrowserProfile.startSpace && !space.isPrivate && space.folders.isEmpty && space.name == "Personal"
+        space.id == BrowserProfile.startSpace && !space.isPrivate && space.folders.isEmpty
+            && isStartingPersonal(name: space.name, icon: space.emoji)
     }
 
     /// `first` with the starting space's tabs at the end of their lists:
-    /// preserving pins and kept tabs. Blank
-    /// new tabs stay behind; the one in front stays in front.
+    /// preserving pins and kept tabs. Blank new tabs and a pin `first`
+    /// already has at that address stay behind; the one in front stays in front.
     static func merged(_ start: Space, into first: Space) -> Space {
         var out = first
         let have = Set(first.allTabs.map(\.id))
+        // Only real addresses: two blank pins are not the same page.
+        let pinned = Set(first.pins.filter { !isBlank($0) }.compactMap { $0.url.map(address) })
         for tab in start.keptTabs where !isBlank(tab) && !have.contains(tab.id) { out.kept.append(.tab(tab)) }
-        for tab in start.pins where !tab.isPrivate && !isBlank(tab) && !have.contains(tab.id) { out.pins.append(tab) }
+        for tab in start.pins where !tab.isPrivate && !isBlank(tab) && !have.contains(tab.id) && !pinned.contains(tab.url.map(address) ?? "") {
+            out.pins.append(tab)
+        }
         for tab in start.today where !isBlank(tab) && !have.contains(tab.id) { out.today.append(tab) }
         out.placeTabs()
         if let current = start.current, out.tab(current) != nil { out.current = current }
@@ -1635,9 +1653,7 @@ final class SyncBridge {
     /// mirror and the app's spaces in, the synced ids to delete out.
     static func emptyPersonals(_ mirror: SyncMirror, local: (String) -> String, app spaces: [Space],
                                gone: Set<String> = []) -> [String] {
-        func isPersonal(_ space: SyncSpace) -> Bool {
-            space.name.trimmingCharacters(in: .whitespaces) == "Personal" && SpaceSymbols.emoji(space.icon) == "🏠"
-        }
+        func isPersonal(_ space: SyncSpace) -> Bool { isStartingPersonal(name: space.name, icon: space.icon) }
         guard let first = mirror.spaces.values.first(where: \.isFirst) else { return [] }
         let personals = mirror.orderedSpaces.filter { !$0.isFirst && isPersonal($0) }
         var empty = personals.filter { synced in
@@ -2982,6 +2998,9 @@ nonisolated struct IDs: Sendable {
     /// Which sweep of the account's duplicate spaces this iPhone has run
     /// (SyncBridge.duplicateSpaces): each runs once an account.
     private(set) var swept = 0
+    /// This iPhone has caught up with the account once: its journal holds the
+    /// account, not a page of a first catch-up cut short.
+    private(set) var caughtUp = false
 
     private struct Saved: Codable {
         var account: String
@@ -2989,6 +3008,7 @@ nonisolated struct IDs: Sendable {
         var device: String?
         var former: [String]?
         var swept: Int?
+        var caughtUp: Bool?
     }
 
     init() {}
@@ -3009,6 +3029,9 @@ nonisolated struct IDs: Sendable {
         toLocal = Dictionary(uniqueKeysWithValues: toSync.map { ($0.value, $0.key) })
         former = Set(saved.former ?? [])
         swept = saved.swept ?? 0
+        // Saved before the mark was kept: written only once the iPhone wrote
+        // into the account, which it did after catching up.
+        caughtUp = saved.caughtUp ?? true
         if let before = saved.device, let device, before != device {
             former.insert(before)
             rejoined = true
@@ -3027,7 +3050,7 @@ nonisolated struct IDs: Sendable {
         guard dirty, let file else { return }
         let data = try JSONEncoder().encode(Saved(account: account, mapping: toSync, device: device,
                                                   former: former.isEmpty ? nil : former.sorted(),
-                                                  swept: swept == 0 ? nil : swept))
+                                                  swept: swept == 0 ? nil : swept, caughtUp: caughtUp))
         try data.write(to: file, options: .atomic)
         dirty = false
         rejoined = false
@@ -3044,6 +3067,13 @@ nonisolated struct IDs: Sendable {
     }
 
     func local(_ synced: String) -> String { toLocal[synced] ?? synced }
+
+    /// The line reached live once: a launch takes the account from the journal.
+    mutating func markCaughtUp() {
+        guard !caughtUp else { return }
+        caughtUp = true
+        dirty = true
+    }
 
     /// The sweep `version` ran for this account; written with the association.
     mutating func markSwept(_ version: Int) {

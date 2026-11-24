@@ -497,7 +497,7 @@ final class Agents: ObservableObject {
         if now != calling { calling = now }
     }
     /// Waiting on a session to change: long polls from `agent-wait`.
-    private var waiters: [String: [() -> Void]] = [:]
+    private var waiters: [String: [@MainActor @Sendable () -> Void]] = [:]
     private var calm: DispatchWorkItem?
     /// Per attached session, the moment it will have gone quiet (AgentFeed.rest).
     private var quieting: [String: DispatchWorkItem] = [:]
@@ -868,9 +868,9 @@ final class Agents: ObservableObject {
         changed(session)
     }
 
-    func wait(_ id: String, seconds: Double, _ then: @escaping () -> Void) {
+    func wait(_ id: String, seconds: Double, _ then: @escaping @MainActor @Sendable () -> Void) {
         var fired = false
-        let once = { if !fired { fired = true; then() } }
+        let once: @MainActor @Sendable () -> Void = { if !fired { fired = true; then() } }
         waiters[id, default: []].append(once)
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: once)
     }
@@ -950,8 +950,31 @@ final class Agents: ObservableObject {
     }
 
     func detach(_ id: String) {
+        leftUntil[id] = nil
         guard let session = session(id), session.state == .attached, !session.script else { return }
         finish(session, .done)
+    }
+
+    /// Sessions a terminal left waiting for the person (`yab settings --session`), and when each ends unused.
+    private(set) var leftUntil: [String: Date] = [:]
+
+    func leave(_ id: String, for life: TimeInterval = Mcp.keptFor, now: Date = Date()) {
+        guard let session = session(id), session.state == .attached, !session.script else { return }
+        leftUntil[id] = now.addingTimeInterval(life)
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(life))
+            self?.expireLeft()
+        }
+    }
+
+    /// A call in a left session: its time starts again.
+    func used(_ id: String?, now: Date = Date()) {
+        guard let id, leftUntil[id] != nil else { return }
+        leave(id, now: now)
+    }
+
+    func expireLeft(now: Date = Date()) {
+        for (id, until) in leftUntil where until <= now { detach(id) }
     }
 
     // MARK: - agents the browser starts
@@ -2695,7 +2718,7 @@ final class Agents: ObservableObject {
     /// works. Filing it into the subject pages is the daily pass's job.
     static func extractionPrompt(_ session: Session) -> String {
         if let project = Projects.shared.project(session.project), project.memoryOn { return projectExtraction(session, project) }
-        let clock = DateFormatter()
+        let clock = AppDates.formatter()
         clock.dateFormat = "HH:mm"
         return """
         Now, quietly (the user sees nothing of this turn), keep this task's episodic memory. Look back \
