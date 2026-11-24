@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>What’s New in Yab</title>
+    <link>https://yetanotherbrowser.com/changelog</link>
+    <description>Yab release notes</description>
+    <item>
+      <title>Yab 0.52: Grammarly loads again on WebKit tabs, and a closed window lets go of its memory.</title>
+      <link>https://yetanotherbrowser.com/changelog/0.52</link>
+      <guid>https://yetanotherbrowser.com/changelog/0.52</guid>
+      <description>&lt;p&gt;Grammarly loads again on WebKit tabs, and a closed window lets go of its memory.&lt;/p&gt;&lt;h3&gt;Added&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;Privacy&lt;/b&gt; Pages are told you don't want your data sold.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Links&lt;/b&gt; Open Link in Private Window.&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;Fixed&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;Extensions&lt;/b&gt; Grammarly starts again.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Memory&lt;/b&gt; A closed window lets go of its pages.&lt;/li&gt;&lt;li&gt;&lt;b&gt;Tabs&lt;/b&gt; Tabs restore.&lt;/li&gt;&lt;/ul&gt;</description>
+    </item>
+    <item>
+      <title>Yab for iPhone 0.1.55: App Store redirects open the right page.</title>
+      <link>https://yetanotherbrowser.com/changelog/iphone-0.1.55</link>
+      <description>&lt;p&gt;Not a Mac release.&lt;/p&gt;&lt;h3&gt;Fixed&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;Store&lt;/b&gt; Redirects.&lt;/li&gt;&lt;/ul&gt;</description>
+    </item>
+    <item>
+      <title>Yab 0.51: Magic Mouse swipes go back again.</title>
+      <link>https://yetanotherbrowser.com/changelog/0.51</link>
+      <guid>https://yetanotherbrowser.com/changelog/0.51</guid>
+      <description>&lt;p&gt;Magic Mouse swipes go back again.&lt;/p&gt;&lt;h3&gt;Improved&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;MCP&lt;/b&gt; An agent can ask for a screenshot.&lt;/li&gt;&lt;/ul&gt;&lt;h3&gt;Fixed&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;Input&lt;/b&gt; Swipes go back.&lt;/li&gt;&lt;/ul&gt;</description>
+    </item>
+    <item>
+      <title>Yab 0.50: Chromium follows the Mac's swipe setting.</title>
+      <link>https://yetanotherbrowser.com/changelog/0.50</link>
+      <guid>https://yetanotherbrowser.com/changelog/0.50</guid>
+      <description>&lt;p&gt;Chromium follows the Mac's swipe setting.&lt;/p&gt;&lt;h3&gt;Changed&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;Pins&lt;/b&gt; Previews are off by default.&lt;/li&gt;&lt;/ul&gt;</description>
+    </item>
+  </channel>
+</rss>

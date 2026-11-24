@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ElementTree
 
 FEED = "https://yetanotherbrowser.com/changelog/feed.xml"
 PAGE = "https://yetanotherbrowser.com/changelog"
+TITLE = re.compile(r"Yab (\d+\.\d+)(?:\.\d+)?\b")
 
 
 def fetch(source):
@@ -31,7 +32,7 @@ def parse(version):
 def newest_minor(feed):
     """The newest major.minor among the feed's "Yab 0.50: ..." item titles."""
     titles = [item.findtext("title") or "" for item in ElementTree.fromstring(feed).iter("item")]
-    minors = [m.group(1) for t in titles if (m := re.match(r"Yab (\d+\.\d+)(?:\.\d+)?\b", t))]
+    minors = [m.group(1) for t in titles if (m := TITLE.match(t))]
     if not minors:
         raise RuntimeError("no 'Yab X.Y' release titles in the feed")
     return max(minors, key=parse)
