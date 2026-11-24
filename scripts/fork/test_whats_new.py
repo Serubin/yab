@@ -177,6 +177,14 @@ class Notes(unittest.TestCase):
             self.assertNotIn("someone/else", rendered)
         self.assertIn("https://github.com/Serubin/yab/pull/102", wn.render_markdown(entry()))
 
+    def test_character_references_cannot_smuggle_a_mention(self):
+        pulls = [dict(PRS[0], number=202, title="fix: thanks &#64;octocat and &#x40;octocat or a&#64;example.com",
+                      body="## What changes\n\nCredits &#64;octocat.")]
+        text = wn.render_markdown(entry(pulls=pulls))
+        self.assertIn("\\&#64;octocat", text)
+        self.assertIn("\\&#x40;octocat", text)
+        self.assertNotRegex(re.sub(r"\\&#", "", text), r"&#(64|x40);")
+
     def test_bare_urls_in_titles_and_summaries_are_not_autolinked(self):
         pulls = [dict(PRS[0], number=201, title="fix: see https://evil.example/x and www.evil.example",
                       body="## What changes\n\nMirrors http://evil.example/y for ftp://evil.example and a@evil.example.")]

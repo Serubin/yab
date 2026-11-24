@@ -309,7 +309,7 @@ def counts_text(entry_counts):
 # Markdown, for the GitHub release notes.
 
 def md(text):
-    text = re.sub(r"([\\`*_\[\]<>~])", r"\\\1", text)
+    text = re.sub(r"([\\`*_\[\]<>~&])", r"\\\1", text)
     # A zero-width space entity after @ stops GitHub linking a mention; a backslash escape does not.
     text = text.replace("@", "@&#8203;")
     # GitHub autolinks bare http(s):// and www. text; the entity breaks the match and renders as nothing.
