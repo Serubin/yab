@@ -37,7 +37,7 @@ VERSION = re.compile(r"(?P<upstream>\d+(?:\.\d+)*)-r(?P<r>\d+)")
 MERGE_TITLE = re.compile(r"Merge (upstream|branch|remote-tracking|pull request)", re.I)
 # Conventional Commit types that are fork infrastructure, not something a person using Pane sees.
 QUIET_TYPE = re.compile(r"(chore|ci|build|docs|test|style|refactor)(\([^)]*\))?!?:")
-PR_URL = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
+REPO = re.compile(r"[\w.-]+/[\w.-]+")
 UPSTREAM_URL = re.compile(r"https://yetanotherbrowser\.com/changelog(/[\w.-]+)?")
 
 
@@ -253,7 +253,7 @@ def build_entry(opts, source):
         raise NotesError(f"{prev} isn't a canary release tag")
     pulls = source.pulls_between(prev, opts.head) if prev else []
     return {"version": opts.version, "tag": f"v{opts.version}", "date": opts.date, "head": opts.head[:7],
-            "prev_tag": prev, "url": f"{opts.site.rstrip('/')}/{PAGE_PATH}/#v{opts.version}",
+            "repo": opts.repo, "prev_tag": prev, "url": f"{opts.site.rstrip('/')}/{PAGE_PATH}/#v{opts.version}",
             "upstream": upstream_part(opts.upstream, prev_upstream, prev, opts.feed),
             "prs": fork_prs(pulls, opts.repo)}
 
@@ -268,6 +268,7 @@ def check(condition, what):
 def validate(entry):
     check(isinstance(entry, dict), "not an object")
     check(isinstance(entry.get("version"), str) and version_key(entry["version"]), "version")
+    check(isinstance(entry.get("repo"), str) and REPO.fullmatch(entry["repo"]), "repo")
     for key in ("tag", "date", "head", "url"):
         check(isinstance(entry.get(key), str), key)
     check(entry.get("prev_tag") is None or isinstance(entry["prev_tag"], str), "prev_tag")
@@ -293,6 +294,10 @@ def safe_url(url, pattern):
     return url if pattern.fullmatch(url) else None
 
 
+def pr_url(url, repo):
+    return url if re.fullmatch(rf"https://github\.com/{re.escape(repo)}/pull/\d+", url) else None
+
+
 def release_name(tag):
     return tag.removeprefix("v").removesuffix("-webkit")
 
@@ -306,7 +311,9 @@ def counts_text(entry_counts):
 def md(text):
     text = re.sub(r"([\\`*_\[\]<>~])", r"\\\1", text)
     # A zero-width space entity after @ stops GitHub linking a mention; a backslash escape does not.
-    return text.replace("@", "@&#8203;")
+    text = text.replace("@", "@&#8203;")
+    # GitHub autolinks bare http(s):// and www. text; the entity breaks the match and renders as nothing.
+    return re.sub(r"(?i)\b(https?|ftp):(?=//)|\bwww(?=\.)", lambda m: m[0] + "&#8203;", text)
 
 
 def md_link(text, url):
@@ -336,7 +343,7 @@ def render_markdown(entry):
     if entry["prs"]:
         out += ["", "### Pane changes", ""]
         for pr in entry["prs"]:
-            number = md_link("#" + str(pr["number"]), safe_url(pr["url"], PR_URL))
+            number = md_link("#" + str(pr["number"]), pr_url(pr["url"], entry["repo"]))
             line = f"- {md(pr['title'])} ({number})"
             out.append(line + (f": {md(pr['summary'])}" if pr["summary"] else ""))
     return "\n".join(out) + "\n"
@@ -352,7 +359,7 @@ def link(text, url):
     return f'<a href="{esc(url)}">{esc(text)}</a>' if url else esc(text)
 
 
-def render_article(entry):
+def render_article(entry, repo):
     up = entry["upstream"]
     out = [f'<article id="{esc(entry["tag"])}">',
            f'<h2><a href="#{esc(entry["tag"])}">Pane {esc(entry["version"])}</a></h2>',
@@ -378,7 +385,7 @@ def render_article(entry):
     if entry["prs"]:
         out += ["<h3>Pane changes</h3>", "<ul>"]
         for pr in entry["prs"]:
-            number = link("#" + str(pr["number"]), safe_url(pr["url"], PR_URL))
+            number = link("#" + str(pr["number"]), pr_url(pr["url"], repo))
             line = f"<li>{esc(pr['title'])} ({number})"
             out.append(line + (f": {esc(pr['summary'])}" if pr["summary"] else "") + "</li>")
         out.append("</ul>")
@@ -407,9 +414,9 @@ li { margin: .35rem 0; }
 """
 
 
-def render_page(entries, site):
+def render_page(entries, site, repo):
     canonical = f"{site.rstrip('/')}/{PAGE_PATH}/"
-    body = "\n".join(render_article(e) for e in entries)
+    body = "\n".join(render_article(e, repo) for e in entries)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -449,6 +456,7 @@ def notes(opts):
 def page(opts):
     with open(opts.entry, encoding="utf-8") as f:
         entries = [validate(json.load(f))]
+    repo = entries[0]["repo"]
     if opts.live:
         with open(opts.live, encoding="utf-8") as f:
             live = json.load(f)
@@ -458,7 +466,7 @@ def page(opts):
     out = Path(opts.out)
     out.mkdir(parents=True, exist_ok=True)
     (out / "entries.json").write_text(json.dumps(entries, indent=2) + "\n", encoding="utf-8")
-    (out / "index.html").write_text(render_page(entries, opts.site), encoding="utf-8")
+    (out / "index.html").write_text(render_page(entries, opts.site, repo), encoding="utf-8")
     print(f"whats-new: page lists {len(entries)} releases", file=sys.stderr)
 
 

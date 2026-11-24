@@ -64,7 +64,7 @@ jobs:
   meta:
     name: Version and flavors
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read

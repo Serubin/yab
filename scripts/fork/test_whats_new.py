@@ -104,7 +104,7 @@ class Notes(unittest.TestCase):
         e = entry(pulls=[PRS[2], PRS[3], PRS[4]])
         self.assertEqual(e["prs"], [])
         self.assertNotIn("Pane changes", wn.render_markdown(e))
-        self.assertNotIn("Pane changes", wn.render_page([e], SITE))
+        self.assertNotIn("Pane changes", wn.render_page([e], SITE, "Serubin/yab"))
 
     def test_missing_upstream_entry_falls_back_to_a_line_and_a_warning(self):
         result = cli("notes", "--version", "0.53.0-r1", "--upstream", "0.53.0", "--head", "a" * 40,
@@ -157,7 +157,7 @@ class Notes(unittest.TestCase):
 
     def test_untrusted_text_is_escaped_and_foreign_urls_are_dropped(self):
         e = entry()
-        text, page = wn.render_markdown(e), wn.render_page([e], SITE)
+        text, page = wn.render_markdown(e), wn.render_page([e], SITE, "Serubin/yab")
         self.assertNotIn("<script>", page)
         self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", page)
         self.assertIn("@&#8203;octocat", text)
@@ -167,8 +167,23 @@ class Notes(unittest.TestCase):
         hostile = json.loads(json.dumps(e))
         hostile["prs"][0]["url"] = "http://evil.example/pull/1"
         hostile["upstream"]["entries"][0]["link"] = "https://evil.example/changelog/0.52"
-        for rendered in (wn.render_markdown(hostile), wn.render_page([hostile], SITE)):
+        for rendered in (wn.render_markdown(hostile), wn.render_page([hostile], SITE, "Serubin/yab")):
             self.assertNotIn("evil.example", rendered)
+
+    def test_another_repos_pull_request_url_is_dropped(self):
+        e = entry()
+        e["prs"][0]["url"] = "https://github.com/someone/else/pull/101"
+        for rendered in (wn.render_markdown(e), wn.render_page([e], SITE, "Serubin/yab")):
+            self.assertNotIn("someone/else", rendered)
+        self.assertIn("https://github.com/Serubin/yab/pull/102", wn.render_markdown(entry()))
+
+    def test_bare_urls_in_titles_and_summaries_are_not_autolinked(self):
+        pulls = [dict(PRS[0], number=201, title="fix: see https://evil.example/x and www.evil.example",
+                      body="## What changes\n\nMirrors http://evil.example/y for ftp://evil.example and a@evil.example.")]
+        text = wn.render_markdown(entry(pulls=pulls))
+        prose = re.sub(r"\]\([^)]*\)", "]", text)
+        self.assertIsNone(re.search(r"(?i)\b(https?|ftp)://|\bwww\.|@\w", prose))
+        self.assertIn("evil.example", text)
 
     def test_feed_links_outside_upstream_fall_back_to_its_changelog(self):
         feed = Path(FEED).read_text().replace("https://yetanotherbrowser.com/changelog/0.52<",
@@ -286,7 +301,7 @@ class Page(unittest.TestCase):
                                 "--out", str(self.dir / "out")).returncode, 0)
 
     def test_the_page_stands_on_its_own(self):
-        text = wn.render_page([entry(), entry(version="0.52.0-r2", prev_tag=None)], SITE)
+        text = wn.render_page([entry(), entry(version="0.52.0-r2", prev_tag=None)], SITE, "Serubin/yab")
         tags = Tags(text)
         self.assertTrue(tags.has("html", lang="en"))
         self.assertTrue(tags.has("meta", name="viewport", content="width=device-width, initial-scale=1"))
