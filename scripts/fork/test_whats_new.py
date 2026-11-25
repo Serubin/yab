@@ -16,6 +16,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = Path(__file__).resolve().parent
 SCRIPT = HERE / "whats-new.py"
@@ -42,6 +43,32 @@ class FakeSource:
 
     def pulls_between(self, prev, head):
         return self.pulls
+
+
+class RangeSource:
+    """A fake with a history: pull requests per (previous tag, head) range, commits per tag, builds per release."""
+
+    def __init__(self, tags, commits, builds, pulls, ancestors=None):
+        self._tags, self.commits, self.builds, self.ranges = list(tags), commits, builds, pulls
+        self.ancestors = set(tags if ancestors is None else ancestors)
+        self.calls = []
+
+    def tags(self):
+        return self._tags
+
+    def is_ancestor(self, tag, head):
+        return tag in self.ancestors
+
+    def pulls_between(self, prev, head):
+        self.calls.append((prev, head))
+        # Like git: no commits between a tag and its own commit.
+        return [] if self.commits.get(prev) == head else self.ranges.get((prev, head), [])
+
+    def commit(self, tag):
+        return self.commits[tag]
+
+    def release_builds(self):
+        return self.builds
 
 
 def opts(**kw):
@@ -259,6 +286,221 @@ class PreviousTag(unittest.TestCase):
         self.assertEqual(wn.previous_tag(source, "0.52.0-r2", head), "v0.52.0-r1")
 
 
+SHA = {name: name * 40 for name in "abcdef"}
+HISTORY = ["v0.50.2-r1", "v0.50.2-r1-webkit", "v0.51.0-r1-webkit", "v0.51.0-r2", "v0.51.0-r2-webkit",
+           "v0.52.0-r1", "v0.52.0-r1-webkit", "v0.52.0-r2", "v0.53.0-r1",
+           "v0.47.19-202611191115", "v0.52.0-dev.202611230032-webkit", "cef-patched-1"]
+COMMITS = {"v0.50.2-r1": SHA["a"], "v0.50.2-r1-webkit": SHA["a"], "v0.51.0-r1-webkit": SHA["b"],
+           "v0.51.0-r2": SHA["c"], "v0.51.0-r2-webkit": SHA["c"], "v0.52.0-r1": SHA["d"],
+           "v0.52.0-r1-webkit": SHA["d"], "v0.52.0-r2": SHA["d"], "v0.53.0-r1": SHA["e"]}
+BUILDS = {"v0.50.2-r1": "202611200233", "v0.51.0-r1-webkit": "202611202204", "v0.51.0-r2-webkit": "202611210836",
+          "v0.51.0-r2": "202611210836", "v0.52.0-r1": "202611221954", "v0.52.0-r1-webkit": "202611221954",
+          "v0.52.0-r2": "202611230931", "v0.53.0-r1": "202611241806"}
+RANGES = {("v0.50.2-r1", SHA["b"]): [PRS[0], PRS[2]],
+          ("v0.51.0-r1-webkit", SHA["c"]): [PRS[1]],
+          ("v0.51.0-r2", SHA["d"]): [PRS[5]],
+          ("v0.52.0-r1", SHA["d"]): [PRS[0]],
+          ("v0.52.0-r2", SHA["e"]): [PRS[1], PRS[5]]}
+
+
+def history(**kw):
+    base = dict(tags=HISTORY, commits=COMMITS, builds=BUILDS, pulls=RANGES)
+    return RangeSource(**(base | kw))
+
+
+def backfill(source=None, live=(), head="HEAD", feed=FEED):
+    with contextlib.redirect_stderr(io.StringIO()):
+        return wn.backfill_entries(source or history(), head, "Serubin/yab", SITE, wn.feed_entries(feed), live)
+
+
+class Backfill(unittest.TestCase):
+    def test_one_entry_per_version_for_both_flavors_and_a_webkit_only_one_newest_first(self):
+        made = backfill()
+        self.assertEqual([e["version"] for e in made],
+                         ["0.53.0-r1", "0.52.0-r2", "0.52.0-r1", "0.51.0-r2", "0.51.0-r1", "0.50.2-r1"])
+        by = {e["version"]: e for e in made}
+        self.assertEqual({v: e["prev_tag"] for v, e in by.items()},
+                         {"0.53.0-r1": "v0.52.0-r2", "0.52.0-r2": "v0.52.0-r1", "0.52.0-r1": "v0.51.0-r2",
+                          "0.51.0-r2": "v0.51.0-r1-webkit", "0.51.0-r1": "v0.50.2-r1", "0.50.2-r1": None})
+        self.assertEqual({v: [p["number"] for p in e["prs"]] for v, e in by.items()},
+                         {"0.53.0-r1": [102, 106], "0.52.0-r2": [], "0.52.0-r1": [106], "0.51.0-r2": [102],
+                          "0.51.0-r1": [101], "0.50.2-r1": []})
+        self.assertEqual({v: e["date"] for v, e in by.items()},
+                         {"0.53.0-r1": "2026-11-24", "0.52.0-r2": "2026-11-23", "0.52.0-r1": "2026-11-22",
+                          "0.51.0-r2": "2026-11-21", "0.51.0-r1": "2026-11-20", "0.50.2-r1": "2026-11-20"})
+        self.assertEqual(by["0.51.0-r1"]["tag"], "v0.51.0-r1")
+        self.assertEqual(by["0.51.0-r2"]["head"], "c" * 7)
+        self.assertEqual(by["0.51.0-r2"]["url"], f"{SITE}/pane/whats-new/#v0.51.0-r2")
+
+    def test_each_entry_is_what_the_release_would_have_built(self):
+        by = {e["version"]: e for e in backfill()}
+        source = FakeSource(RANGES[("v0.51.0-r1-webkit", SHA["c"])], tags=HISTORY)
+        with contextlib.redirect_stderr(io.StringIO()):
+            live = wn.build_entry(opts(version="0.51.0-r2", upstream="0.51.0", head=SHA["c"], date="2026-11-21",
+                                       prev_tag="auto"), source)
+        self.assertEqual(by["0.51.0-r2"], live)
+
+    def test_the_first_tag_has_no_previous_tag_and_shows_only_the_current_upstream(self):
+        first = backfill()[-1]
+        self.assertEqual(first["version"], "0.50.2-r1")
+        self.assertIsNone(first["prev_tag"])
+        self.assertEqual(first["prs"], [])
+        self.assertEqual([u["minor"] for u in first["upstream"]["entries"]], ["0.50"])
+        self.assertIsNone(first["upstream"]["unchanged_since"])
+
+    def test_a_version_at_the_previous_versions_commit_has_no_changes_and_says_unchanged(self):
+        source = history()
+        by = {e["version"]: e for e in backfill(source)}
+        self.assertEqual(by["0.52.0-r2"]["prs"], [])
+        self.assertEqual(by["0.52.0-r2"]["upstream"]["unchanged_since"], "v0.52.0-r1")
+        self.assertIn("unchanged since Pane 0.52.0-r1", wn.render_markdown(by["0.52.0-r2"]))
+        self.assertIsNotNone(by["0.52.0-r1"]["upstream"]["entries"])
+
+    def test_an_upstream_minor_missing_from_the_feed_falls_back_like_a_live_release(self):
+        by = {e["version"]: e for e in backfill()}
+        self.assertTrue(by["0.53.0-r1"]["upstream"]["missing"])
+        self.assertEqual(by["0.53.0-r1"]["upstream"]["entries"], [])
+        self.assertIn("Its notes:", wn.render_markdown(by["0.53.0-r1"]))
+        gone = {e["version"]: e for e in backfill(feed=str(FIXTURES / "no-such-feed.xml"))}
+        self.assertTrue(all(e["upstream"]["missing"] for e in gone.values()))
+        self.assertEqual([p["number"] for p in gone["0.51.0-r2"]["prs"]], [102])
+
+    def test_live_versions_are_not_rebuilt(self):
+        source = history()
+        made = backfill(source, live=["0.52.0-r2", "0.53.0-r1"])
+        self.assertEqual([e["version"] for e in made], ["0.52.0-r1", "0.51.0-r2", "0.51.0-r1", "0.50.2-r1"])
+        self.assertNotIn(("v0.52.0-r2", SHA["e"]), source.calls)
+        self.assertNotIn(("v0.52.0-r1", SHA["d"]), source.calls)
+
+    def test_only_ancestors_of_head_count(self):
+        source = history(ancestors=[t for t in HISTORY if t != "v0.53.0-r1"])
+        self.assertNotIn("0.53.0-r1", [e["version"] for e in backfill(source)])
+
+    def test_twin_tags_at_different_commits_raise(self):
+        source = history(commits=COMMITS | {"v0.51.0-r2-webkit": SHA["f"]})
+        with self.assertRaisesRegex(wn.NotesError, "0.51.0-r2.*different commits"):
+            backfill(source)
+
+    def test_a_version_without_a_build_number_raises_rather_than_inventing_a_date(self):
+        source = history(builds={k: v for k, v in BUILDS.items() if "0.51.0-r1" not in k})
+        with self.assertRaisesRegex(wn.NotesError, "0.51.0-r1"):
+            backfill(source)
+        with self.assertRaisesRegex(wn.NotesError, "isn't a date"):
+            backfill(history(builds=BUILDS | {"v0.50.2-r1": "202613400233"}))
+
+    def test_the_build_number_comes_only_from_the_release_steps_last_line(self):
+        body = ("- fix: tell me about build 999999999999. now (#1)\n\nUpstream Yab 0.52.0, build 111111111111. Built from"
+                " `x`.\n\nUpstream Yab 0.52.0, build 202611240553. Built from `canary` at abc. Signed and notarized.\n")
+        lines = "\n".join(json.dumps(r) for r in [
+            {"tag_name": "v0.52.0-r4", "body": body}, {"tag_name": "v0.52.0-r3", "body": "no footer, build 202611240553."},
+            {"tag_name": "v0.52.0-r2", "body": None}])
+        done = subprocess.CompletedProcess([], 0, stdout=lines + "\n")
+        with mock.patch.object(wn.subprocess, "run", return_value=done) as run:
+            self.assertEqual(wn.Source("Serubin/yab").release_builds(), {"v0.52.0-r4": "202611240553"})
+        self.assertIn("--paginate", run.call_args.args[0])
+
+    def test_source_commit_resolves_a_tag_to_its_commit(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+        env |= {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t",
+                "GIT_AUTHOR_EMAIL": "t@example.com", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com"}
+
+        def git(*args):
+            return subprocess.run(["git", *args], cwd=tmp.name, env=env, check=True,
+                                  capture_output=True, text=True).stdout.strip()
+
+        git("init", "-q", "-b", "canary")
+        Path(tmp.name, "f").write_text("f")
+        git("add", "f")
+        git("commit", "-q", "-m", "f")
+        git("tag", "-a", "-m", "annotated", "v0.52.0-r1")
+        self.assertEqual(wn.Source("Serubin/yab", cwd=tmp.name).commit("v0.52.0-r1"), git("rev-parse", "HEAD"))
+
+
+class Merge(unittest.TestCase):
+    def test_live_entries_come_through_unchanged_and_the_release_beats_live_beats_seed(self):
+        live = [entry(version="0.52.0-r4", date="2026-11-24"), entry(version="0.52.0-r3")]
+        before = json.dumps(live)
+        seed = [entry(version="0.52.0-r4", date="2020-01-01"), entry(version="0.52.0-r2"), entry(version="0.52.0-r1")]
+        release = entry(version="0.52.0-r3", date="2026-12-01")
+        merged = wn.merge([release], live, seed)
+        self.assertEqual([e["version"] for e in merged], ["0.52.0-r4", "0.52.0-r3", "0.52.0-r2", "0.52.0-r1"])
+        self.assertIs(merged[0], live[0])
+        self.assertEqual(merged[1]["date"], "2026-12-01")
+        self.assertEqual(json.dumps(wn.merge([], live)), before)
+        self.assertEqual(wn.merge([], [], [seed[1], dict(seed[1], date="2020-01-01")])[0]["date"], seed[1]["date"])
+
+    def test_backfilled_entries_merge_with_a_live_list_without_touching_it(self):
+        live = backfill(live=["0.51.0-r1", "0.50.2-r1", "0.51.0-r2", "0.52.0-r1"])[:2]
+        frozen = json.loads(json.dumps(live))
+        seed = backfill(live=[e["version"] for e in live])
+        merged = wn.merge(live, seed)
+        self.assertEqual(len(merged), 6)
+        self.assertEqual([e for e in merged if e["version"] in {x["version"] for x in frozen}], frozen)
+
+
+class Layout(unittest.TestCase):
+    def entries(self, count=12):
+        return [entry(version=f"0.52.0-r{n}") for n in range(count, 0, -1)]
+
+    def test_the_nav_lists_every_version_and_only_the_newest_entries_are_open(self):
+        entries = self.entries()
+        text = wn.render_page(entries, SITE, "Serubin/yab")
+        tags = Tags(text)
+        nav = text[text.index("<nav"):text.index("</nav>")]
+        for e in entries:
+            self.assertIn(f'<a href="#v{e["version"]}">{e["version"]}</a>', nav)
+            self.assertTrue(tags.has("article", id=f"v{e['version']}"))
+        self.assertEqual(text.count("<article"), 12)
+        self.assertEqual(text.count("<details>"), 12 - wn.OPEN_ENTRIES)
+        self.assertEqual(text.count("<summary>"), 12 - wn.OPEN_ENTRIES)
+        newest = text[text.index('id="v0.52.0-r12"'):text.index('id="v0.52.0-r9"')]
+        self.assertNotIn("<details>", newest)
+        older = text[text.index('id="v0.52.0-r9"'):]
+        self.assertIn("<summary><h2>Pane 0.52.0-r9</h2>", older)
+        self.assertRegex(older, r"<span class=\"meta\">2026-11-23, 3 Pane changes, upstream Yab 0\.52\.0</span>")
+
+    def test_a_folded_entry_keeps_the_same_body_and_escaping(self):
+        e = entry()
+        hostile = json.loads(json.dumps(e))
+        hostile["prs"][0]["url"] = "http://evil.example/pull/1"
+        text = wn.render_page([e, e, e, dict(hostile, version="0.51.0-r1", tag="v0.51.0-r1")], SITE, "Serubin/yab")
+        folded = text[text.index('id="v0.51.0-r1"'):]
+        self.assertNotIn("evil.example", folded)
+        self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", folded)
+        self.assertIn("<h3>Pane changes</h3>", folded)
+
+    def test_a_long_page_still_has_no_script_no_sources_and_the_same_csp(self):
+        text = wn.render_page(self.entries(), SITE, "Serubin/yab")
+        tags = Tags(text)
+        self.assertNotIn("script", [t for t, _ in tags.found])
+        self.assertNotIn("<script", text)
+        self.assertTrue(tags.has("meta", **{"http-equiv": "Content-Security-Policy", "content":
+                        "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"}))
+        for tag, attrs in tags.found:
+            self.assertNotIn("src", attrs, tag)
+            if attrs.get("href") and tag != "link":
+                self.assertTrue(attrs["href"].startswith(("https://", "#")), attrs["href"])
+        self.assertNotIn(chr(0x2014), text)
+
+
+class Seed(unittest.TestCase):
+    def test_the_committed_seed_loads_and_every_entry_is_valid_unique_and_newest_first(self):
+        seed = json.loads((HERE / "whats-new-seed.json").read_text())
+        self.assertIsInstance(seed, list)
+        self.assertTrue(seed)
+        for e in seed:
+            wn.validate(e)
+            self.assertEqual(e["tag"], f"v{e['version']}")
+            self.assertRegex(e["date"], r"\d{4}-\d\d-\d\d")
+        keys = [wn.version_key(e["version"]) for e in seed]
+        self.assertEqual(len(set(keys)), len(keys))
+        self.assertEqual(keys, sorted(keys, reverse=True))
+        self.assertNotIn(chr(0x2014), (HERE / "whats-new-seed.json").read_text(encoding="utf-8"))
+        wn.render_page(seed, SITE, "Serubin/yab")
+
+
 class Page(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
@@ -270,10 +512,12 @@ class Page(unittest.TestCase):
         path.write_text(value if isinstance(value, str) else json.dumps(value))
         return str(path)
 
-    def page(self, e, live=None):
+    def page(self, e, live=None, seed=None):
         args = ["page", "--entry", self.write("entry.json", e), "--site", SITE, "--out", str(self.dir / "out")]
         if live is not None:
             args += ["--live", self.write("live.json", live)]
+        if seed is not None:
+            args += ["--seed", self.write("seed.json", seed)]
         return cli(*args)
 
     def listed(self):
@@ -307,6 +551,34 @@ class Page(unittest.TestCase):
             self.assertFalse((self.dir / "out").exists())
         self.assertNotEqual(cli("page", "--entry", self.write("bad.json", "{"), "--site", SITE,
                                 "--out", str(self.dir / "out")).returncode, 0)
+
+    def test_a_seed_fills_in_history_below_live_and_the_release(self):
+        live = [entry(version="0.52.0-r3", date="2026-11-23")]
+        seed = [entry(version="0.52.0-r3", date="2020-01-01"), entry(version="0.52.0-r2"), entry(version="0.52.0-r1")]
+        result = self.page(entry(version="0.52.0-r4"), live, seed)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.listed(), ["0.52.0-r4", "0.52.0-r3", "0.52.0-r2", "0.52.0-r1"])
+        kept = {e["version"]: e for e in json.loads((self.dir / "out" / "entries.json").read_text())}
+        self.assertEqual(kept["0.52.0-r3"], live[0])
+        self.assertNotIn("::warning::", result.stderr)
+
+    def test_a_malformed_seed_warns_and_is_skipped_while_the_page_still_renders(self):
+        good = entry(version="0.52.0-r4")
+        live = [entry(version="0.52.0-r3")]
+        for seed in ({"not": "a list"}, [{"version": "0.52.0-r1"}], ["x"], [dict(good, prs=[{"number": "1"}])],
+                     [entry(version="0.52.0-r2"), dict(good, version="oops")], "{"):
+            result = self.page(good, live, seed)
+            self.assertEqual(result.returncode, 0, (seed, result.stderr))
+            self.assertIn("::warning::whats-new: skipping the seed", result.stderr)
+            self.assertEqual(self.listed(), ["0.52.0-r4", "0.52.0-r3"])
+            self.assertIn('id="v0.52.0-r3"', (self.dir / "out" / "index.html").read_text())
+
+    def test_a_missing_seed_file_is_fine_and_silent(self):
+        result = cli("page", "--entry", self.write("entry.json", entry()), "--site", SITE, "--out", str(self.dir / "out"),
+                     "--seed", str(self.dir / "no-such-seed.json"))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("warning", result.stderr)
+        self.assertEqual(self.listed(), ["0.52.0-r3"])
 
     def test_the_page_stands_on_its_own(self):
         text = wn.render_page([entry(), entry(version="0.52.0-r2", prev_tag=None)], SITE, "Serubin/yab")

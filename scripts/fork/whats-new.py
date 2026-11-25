@@ -2,9 +2,11 @@
 """Pane's What's New: release notes for one canary release, and the hosted page that keeps them all.
 
 usage: python3 -I scripts/fork/whats-new.py notes --version V --upstream U --head SHA --repo OWNER/NAME --site URL --date YYYY-MM-DD --out DIR [--prev-tag TAG|auto] [--feed URL|PATH] [--prs FILE]
-       python3 -I scripts/fork/whats-new.py page --entry FILE --site URL --out DIR [--live FILE]
+       python3 -I scripts/fork/whats-new.py page --entry FILE --site URL --out DIR [--live FILE] [--seed FILE]
+       python3 -I scripts/fork/whats-new.py backfill --head REF --repo OWNER/NAME --site URL --out DIR [--live FILE] [--feed URL|PATH]
 """
 import argparse
+import datetime
 import html
 import importlib.util
 import json
@@ -37,6 +39,10 @@ VERSION = re.compile(r"(?P<upstream>\d+(?:\.\d+)*)-r(?P<r>\d+)")
 MERGE_TITLE = re.compile(r"Merge (upstream|branch|remote-tracking|pull request)", re.I)
 # Conventional Commit types that are fork infrastructure, not something a person using Pane sees.
 QUIET_TYPE = re.compile(r"(chore|ci|build|docs|test|style|refactor)(\([^)]*\))?!?:")
+# The last line of a release's notes, which the release step writes itself.
+BUILD_LINE = re.compile(r"^Upstream Yab [\w.]+, build (\d{12})\. Built from ", re.M)
+# Entries shown open; older ones fold into a <details> so dozens still scroll on a phone.
+OPEN_ENTRIES = 3
 REPO = re.compile(r"[\w.-]+/[\w.-]+")
 UPSTREAM_URL = re.compile(r"https://yetanotherbrowser\.com/changelog(/[\w.-]+)?")
 
@@ -87,6 +93,22 @@ class Source:
             pulls += json.loads(out)
         return pulls
 
+    def commit(self, tag):
+        return self.git("rev-parse", f"refs/tags/{tag}^{{commit}}").stdout.strip()
+
+    def release_builds(self):
+        """{tag: 12-digit build number} of every release whose notes end with the release step's build line."""
+        out = subprocess.run(["gh", "api", "--paginate", f"repos/{self.repo}/releases",
+                              "--jq", ".[] | {tag_name, body} | tojson"],
+                             check=True, capture_output=True, text=True).stdout
+        builds = {}
+        for line in out.splitlines():
+            release = json.loads(line)
+            found = BUILD_LINE.findall((release.get("body") or "").replace("\r\n", "\n"))
+            if found and isinstance(release.get("tag_name"), str):
+                builds[release["tag_name"]] = found[-1]
+        return builds
+
 
 class FilePulls:
     """Pull requests read from a JSON list in the API's shape, for tests and offline dry runs."""
@@ -104,6 +126,12 @@ class FilePulls:
 
     def pulls_between(self, prev, head):
         return self.pulls
+
+    def commit(self, tag):
+        return self.source.commit(tag)
+
+    def release_builds(self):
+        return self.source.release_builds()
 
 
 def previous_tag(source, version, head):
@@ -219,13 +247,17 @@ def upstream_entries(feed):
     return sorted(entries, key=lambda e: upstream_version.parse(e["minor"]), reverse=True)
 
 
-def upstream_part(upstream, prev_upstream, prev_tag, feed_source):
-    part = {"version": upstream, "unchanged_since": None, "missing": False, "entries": []}
+def feed_entries(feed_source):
+    """Upstream's Mac entries, or [] (with a warning) when the feed can't be read."""
     try:
-        entries = upstream_entries(upstream_version.fetch(feed_source))
+        return upstream_entries(upstream_version.fetch(feed_source))
     except Exception as error:
         warn(f"can't read upstream's changelog feed: {error}")
-        entries = []
+        return []
+
+
+def upstream_part(upstream, prev_upstream, prev_tag, entries):
+    part = {"version": upstream, "unchanged_since": None, "missing": False, "entries": []}
     minor = minor_of(upstream)
     current = next((e for e in entries if e["minor"] == minor), None)
     if current is None:
@@ -246,16 +278,73 @@ def upstream_part(upstream, prev_upstream, prev_tag, feed_source):
     return part
 
 
-def build_entry(opts, source):
+def build_entry(opts, source, entries=None):
     prev = previous_tag(source, opts.version, opts.head) if opts.prev_tag == "auto" else opts.prev_tag or None
     prev_upstream = tag_upstream(prev) if prev else None
     if prev and prev_upstream is None:
         raise NotesError(f"{prev} isn't a canary release tag")
     pulls = source.pulls_between(prev, opts.head) if prev else []
+    if entries is None:
+        entries = feed_entries(opts.feed)
     return {"version": opts.version, "tag": f"v{opts.version}", "date": opts.date, "head": opts.head[:7],
             "repo": opts.repo, "prev_tag": prev, "url": f"{opts.site.rstrip('/')}/{PAGE_PATH}/#v{opts.version}",
-            "upstream": upstream_part(opts.upstream, prev_upstream, prev, opts.feed),
+            "upstream": upstream_part(opts.upstream, prev_upstream, prev, entries),
             "prs": fork_prs(pulls, opts.repo)}
+
+
+def build_date(build):
+    """YYYY-MM-DD of a 12-digit YYYYMMDDHHMM build number, as the release step derives it."""
+    try:
+        return datetime.datetime.strptime(build[:8], "%Y%m%d").strftime("%Y-%m-%d")
+    except ValueError:
+        raise NotesError(f"build number {build} isn't a date") from None
+
+
+def release_versions(source, head):
+    """{version: {flavor: tag}} of every canary release tag that is an ancestor of head."""
+    found = {}
+    for tag in source.tags():
+        parsed = release_plan.parse_tag(tag)
+        if parsed and source.is_ancestor(tag, head):
+            found.setdefault(f"{parsed[0]}-r{parsed[1]}", {})[parsed[2]] = tag
+    return found
+
+
+def backfill_entries(source, head, repo, site, entries, live_versions=()):
+    """What each release's own run would have published, for every past version not in live_versions.
+
+    `entries` is upstream's parsed feed. Newest first.
+    """
+    skip = {version_key(v) for v in live_versions}
+    builds = None
+    made = []
+    for version, flavors in release_versions(source, head).items():
+        if version_key(version) in skip:
+            continue
+        commits = {source.commit(tag) for tag in flavors.values()}
+        if len(commits) != 1:
+            raise NotesError(f"Pane {version}'s flavor tags point at different commits")
+        builds = source.release_builds() if builds is None else builds
+        # Both flavors share a build; a later run that adds the missing flavor reuses the version, not the build.
+        known = sorted(builds[t] for t in flavors.values() if t in builds)
+        if not known:
+            raise NotesError(f"no release notes with a build number for Pane {version}")
+        tag = flavors.get("chromium") or flavors["webkit"]
+        made.append(validate(build_entry(argparse.Namespace(
+            version=version, upstream=tag_upstream(tag), head=commits.pop(), repo=repo, site=site,
+            date=build_date(known[0]), prev_tag="auto", feed=None), source, entries)))
+    return sorted(made, key=lambda e: version_key(e["version"]), reverse=True)
+
+
+def merge(*lists):
+    """The entries of every list, newest first; where a version repeats, the earlier list wins."""
+    seen, merged = set(), []
+    for entries in lists:
+        for e in entries:
+            if version_key(e["version"]) not in seen:
+                seen.add(version_key(e["version"]))
+                merged.append(e)
+    return sorted(merged, key=lambda e: version_key(e["version"]), reverse=True)
 
 
 # Validation of entries, ours or the live page's.
@@ -359,12 +448,26 @@ def link(text, url):
     return f'<a href="{esc(url)}">{esc(text)}</a>' if url else esc(text)
 
 
-def render_article(entry, repo):
+def fold_meta(entry):
+    """The one line an older entry shows while folded: date, Pane change count, upstream state."""
+    up, count = entry["upstream"], len(entry["prs"])
+    parts = [entry["date"]]
+    if count:
+        parts.append(f"{count} Pane change{'' if count == 1 else 's'}")
+    parts.append("upstream unchanged" if up["unchanged_since"] else f"upstream Yab {up['version']}")
+    return ", ".join(parts)
+
+
+def render_article(entry, repo, folded=False):
     up = entry["upstream"]
-    out = [f'<article id="{esc(entry["tag"])}">',
-           f'<h2><a href="#{esc(entry["tag"])}">Pane {esc(entry["version"])}</a></h2>',
-           f'<p class="meta">Released {esc(entry["date"])}, built from <code>{esc(entry["head"])}</code>.</p>',
-           "<h3>Upstream Yab</h3>"]
+    tag = esc(entry["tag"])
+    if folded:
+        out = [f'<article id="{tag}" class="older">', "<details>",
+               f'<summary><h2>Pane {esc(entry["version"])}</h2> <span class="meta">{esc(fold_meta(entry))}</span></summary>']
+    else:
+        out = [f'<article id="{tag}">', f'<h2><a href="#{tag}">Pane {esc(entry["version"])}</a></h2>']
+    out += [f'<p class="meta">Released {esc(entry["date"])}, built from <code>{esc(entry["head"])}</code>.</p>',
+            "<h3>Upstream Yab</h3>"]
     page = link("yetanotherbrowser.com/changelog", upstream_version.PAGE)
     if up["missing"]:
         out.append(f'<p>Based on upstream Yab {esc(up["version"])}, by Serafim Korablev. Its notes: {page}.</p>')
@@ -389,7 +492,7 @@ def render_article(entry, repo):
             line = f"<li>{esc(pr['title'])} ({number})"
             out.append(line + (f": {esc(pr['summary'])}" if pr["summary"] else "") + "</li>")
         out.append("</ul>")
-    out.append("</article>")
+    out += ["</details>", "</article>"] if folded else ["</article>"]
     return "\n".join(out)
 
 
@@ -405,6 +508,15 @@ h1 { font-size: 1.75rem; margin: 0 0 .5rem; }
 h2 { font-size: 1.35rem; margin: 0 0 .25rem; }
 h3 { font-size: 1.05rem; margin: 1.25rem 0 .25rem; }
 h2 a { color: inherit; }
+nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: .25rem .75rem; margin: .25rem 0 0; padding: 0; }
+nav li { margin: 0; }
+article { scroll-margin-top: 1rem; }
+article.older { margin-top: 0; padding-top: .75rem; }
+summary { cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary h2 { display: inline; font-size: 1.1rem; }
+summary h2::before { content: "\\25B8\\00a0"; }
+details[open] > summary h2::before { content: "\\25BE\\00a0"; }
 a { color: var(--link); text-decoration: underline; }
 article { border-top: 1px solid var(--rule); margin-top: 2rem; padding-top: 1.5rem; }
 .meta { color: var(--muted); font-size: .9rem; margin: .25rem 0; }
@@ -416,7 +528,8 @@ li { margin: .35rem 0; }
 
 def render_page(entries, site, repo):
     canonical = f"{site.rstrip('/')}/{PAGE_PATH}/"
-    body = "\n".join(render_article(e, repo) for e in entries)
+    body = "\n".join(render_article(e, repo, folded=i >= OPEN_ENTRIES) for i, e in enumerate(entries))
+    jump = "\n".join(f'<li><a href="#{esc(e["tag"])}">{esc(e["version"])}</a></li>' for e in entries)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -432,6 +545,12 @@ def render_page(entries, site, repo):
 <main>
 <h1>What's New in Pane</h1>
 <p class="meta">Pane is a fork of Yab. Each canary release adds an entry, newest first. Upstream's own notes are linked, not copied.</p>
+<nav aria-label="Releases">
+<p class="meta">Jump to a release:</p>
+<ul>
+{jump}
+</ul>
+</nav>
 {body}
 </main>
 </body>
@@ -453,21 +572,54 @@ def notes(opts):
     print(f"whats-new: previous tag {entry['prev_tag'] or 'none'}, {len(entry['prs'])} fork changes", file=sys.stderr)
 
 
-def page(opts):
-    with open(opts.entry, encoding="utf-8") as f:
-        entries = [validate(json.load(f))]
-    repo = entries[0]["repo"]
-    if opts.live:
-        with open(opts.live, encoding="utf-8") as f:
-            live = json.load(f)
-        check(isinstance(live, list), "live entries aren't a list")
-        entries += [e for e in map(validate, live) if e["version"] != entries[0]["version"]]
-    entries.sort(key=lambda e: version_key(e["version"]), reverse=True)
-    out = Path(opts.out)
+def load_entries(path):
+    with open(path, encoding="utf-8") as f:
+        entries = json.load(f)
+    check(isinstance(entries, list), "entries aren't a list")
+    return [validate(e) for e in entries]
+
+
+def load_seed(path):
+    """The seed's entries, or [] when it's absent or bad: history is optional, the feeds deploy isn't."""
+    if not path or not Path(path).exists():
+        return []
+    try:
+        return load_entries(path)
+    except (NotesError, OSError, ValueError) as error:
+        warn(f"skipping the seed {path}: {error}")
+        return []
+
+
+def write_page(entries, site, repo, out):
+    out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     (out / "entries.json").write_text(json.dumps(entries, indent=2) + "\n", encoding="utf-8")
-    (out / "index.html").write_text(render_page(entries, opts.site, repo), encoding="utf-8")
+    (out / "index.html").write_text(render_page(entries, site, repo), encoding="utf-8")
+
+
+def page(opts):
+    with open(opts.entry, encoding="utf-8") as f:
+        release = validate(json.load(f))
+    live = load_entries(opts.live) if opts.live else []
+    entries = merge([release], live, load_seed(opts.seed))
+    write_page(entries, opts.site, release["repo"], opts.out)
     print(f"whats-new: page lists {len(entries)} releases", file=sys.stderr)
+
+
+def backfill(opts):
+    source = Source(opts.repo)
+    live = load_entries(opts.live) if opts.live else []
+    made = backfill_entries(source, opts.head, opts.repo, opts.site, feed_entries(opts.feed),
+                            [e["version"] for e in live])
+    for e in made:
+        numbers = " ".join(f"#{pr['number']}" for pr in e["prs"]) or "none"
+        print(f"whats-new: {e['version']} {e['date']} previous {e['prev_tag'] or 'none'}, PRs {numbers}",
+              file=sys.stderr)
+    out = Path(opts.out)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "seed.json").write_text(json.dumps(made, indent=2) + "\n", encoding="utf-8")
+    write_page(merge(live, made), opts.site, opts.repo, out)
+    print(f"whats-new: backfilled {len(made)} releases onto {len(live)} live ones", file=sys.stderr)
 
 
 def main():
@@ -483,9 +635,15 @@ def main():
     for flag in ("entry", "site", "out"):
         p.add_argument(f"--{flag}", required=True)
     p.add_argument("--live")
+    p.add_argument("--seed")
+    b = commands.add_parser("backfill")
+    for flag in ("head", "repo", "site", "out"):
+        b.add_argument(f"--{flag}", required=True)
+    b.add_argument("--live")
+    b.add_argument("--feed", default=upstream_version.FEED)
     opts = args.parse_args()
     try:
-        {"notes": notes, "page": page}[opts.command](opts)
+        {"notes": notes, "page": page, "backfill": backfill}[opts.command](opts)
     except (NotesError, subprocess.CalledProcessError, OSError, ValueError) as error:
         detail = (error.stderr or "").strip() if isinstance(error, subprocess.CalledProcessError) else ""
         print(f"whats-new: {error} {detail}".strip(), file=sys.stderr)

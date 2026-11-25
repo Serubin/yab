@@ -1,0 +1,291 @@
+[
+  {
+    "version": "0.52.0-r3",
+    "tag": "v0.52.0-r3",
+    "date": "2026-11-23",
+    "head": "8991844",
+    "repo": "Serubin/yab",
+    "prev_tag": "v0.52.0-r2",
+    "url": "https://serubin.github.io/yab/pane/whats-new/#v0.52.0-r3",
+    "upstream": {
+      "version": "0.52.0",
+      "unchanged_since": "v0.52.0-r2",
+      "missing": false,
+      "entries": [
+        {
+          "minor": "0.52",
+          "title": "Yab 0.52",
+          "headline": "Grammarly loads again on WebKit tabs, Bitwarden fills there too, a closed window lets go of its memory, and text you were typing survives a Chromium restart.",
+          "link": "https://yetanotherbrowser.com/changelog/0.52",
+          "counts": [
+            {
+              "name": "added",
+              "count": 2
+            },
+            {
+              "name": "improved",
+              "count": 2
+            },
+            {
+              "name": "fixed",
+              "count": 19
+            }
+          ]
+        }
+      ]
+    },
+    "prs": []
+  },
+  {
+    "version": "0.52.0-r2",
+    "tag": "v0.52.0-r2",
+    "date": "2026-11-23",
+    "head": "8991844",
+    "repo": "Serubin/yab",
+    "prev_tag": "v0.52.0-r1",
+    "url": "https://serubin.github.io/yab/pane/whats-new/#v0.52.0-r2",
+    "upstream": {
+      "version": "0.52.0",
+      "unchanged_since": "v0.52.0-r1",
+      "missing": false,
+      "entries": [
+        {
+          "minor": "0.52",
+          "title": "Yab 0.52",
+          "headline": "Grammarly loads again on WebKit tabs, Bitwarden fills there too, a closed window lets go of its memory, and text you were typing survives a Chromium restart.",
+          "link": "https://yetanotherbrowser.com/changelog/0.52",
+          "counts": [
+            {
+              "name": "added",
+              "count": 2
+            },
+            {
+              "name": "improved",
+              "count": 2
+            },
+            {
+              "name": "fixed",
+              "count": 19
+            }
+          ]
+        }
+      ]
+    },
+    "prs": [
+      {
+        "number": 28,
+        "title": "fix(extensions): End the old process that holds a dead worker",
+        "url": "https://github.com/Serubin/yab/pull/28",
+        "summary": "A restarted extension's worker now starts beside its background page instead of in the stale process it kept failing in."
+      },
+      {
+        "number": 29,
+        "title": "feat(icons): Add Solo Midnight, Solo on a navy tile",
+        "url": "https://github.com/Serubin/yab/pull/29",
+        "summary": null
+      }
+    ]
+  },
+  {
+    "version": "0.52.0-r1",
+    "tag": "v0.52.0-r1",
+    "date": "2026-11-22",
+    "head": "79bb2fd",
+    "repo": "Serubin/yab",
+    "prev_tag": "v0.51.0-r3",
+    "url": "https://serubin.github.io/yab/pane/whats-new/#v0.52.0-r1",
+    "upstream": {
+      "version": "0.52.0",
+      "unchanged_since": null,
+      "missing": false,
+      "entries": [
+        {
+          "minor": "0.52",
+          "title": "Yab 0.52",
+          "headline": "Grammarly loads again on WebKit tabs, Bitwarden fills there too, a closed window lets go of its memory, and text you were typing survives a Chromium restart.",
+          "link": "https://yetanotherbrowser.com/changelog/0.52",
+          "counts": [
+            {
+              "name": "added",
+              "count": 2
+            },
+            {
+              "name": "improved",
+              "count": 2
+            },
+            {
+              "name": "fixed",
+              "count": 19
+            }
+          ]
+        }
+      ]
+    },
+    "prs": []
+  },
+  {
+    "version": "0.51.0-r3",
+    "tag": "v0.51.0-r3",
+    "date": "2026-11-22",
+    "head": "79bb2fd",
+    "repo": "Serubin/yab",
+    "prev_tag": "v0.51.0-r2",
+    "url": "https://serubin.github.io/yab/pane/whats-new/#v0.51.0-r3",
+    "upstream": {
+      "version": "0.51.0",
+      "unchanged_since": "v0.51.0-r2",
+      "missing": false,
+      "entries": [
+        {
+          "minor": "0.51",
+          "title": "Yab 0.51",
+          "headline": "Magic Mouse swipes go back again, a second Mac keeps the agent's memory, and sharing a screen no longer grows memory.",
+          "link": "https://yetanotherbrowser.com/changelog/0.51",
+          "counts": [
+            {
+              "name": "improved",
+              "count": 3
+            },
+            {
+              "name": "fixed",
+              "count": 15
+            }
+          ]
+        }
+      ]
+    },
+    "prs": [
+      {
+        "number": 27,
+        "title": "fix(extensions): Restart dead workers beside their page",
+        "url": "https://github.com/Serubin/yab/pull/27",
+        "summary": "Bitwarden's popup no longer spins until Pane is restarted."
+      }
+    ]
+  },
+  {
+    "version": "0.51.0-r2",
+    "tag": "v0.51.0-r2",
+    "date": "2026-11-21",
+    "head": "4910a83",
+    "repo": "Serubin/yab",
+    "prev_tag": "v0.51.0-r1-webkit",
+    "url": "https://serubin.github.io/yab/pane/whats-new/#v0.51.0-r2",
+    "upstream": {
+      "version": "0.51.0",
+      "unchanged_since": "v0.51.0-r1-webkit",
+      "missing": false,
+      "entries": [
+        {
+          "minor": "0.51",
+          "title": "Yab 0.51",
+          "headline": "Magic Mouse swipes go back again, a second Mac keeps the agent's memory, and sharing a screen no longer grows memory.",
+          "link": "https://yetanotherbrowser.com/changelog/0.51",
+          "counts": [
+            {
+              "name": "improved",
+              "count": 3
+            },
+            {
+              "name": "fixed",
+              "count": 15
+            }
+          ]
+        }
+      ]
+    },
+    "prs": [
+      {
+        "number": 22,
+        "title": "fix(extensions): Let narrowed access bypass the script budget",
+        "url": "https://github.com/Serubin/yab/pull/22",
+        "summary": null
+      },
+      {
+        "number": 23,
+        "title": "fix(small-window): Set a small window's popup on its own page",
+        "url": "https://github.com/Serubin/yab/pull/23",
+        "summary": null
+      },
+      {
+        "number": 21,
+        "title": "feat(about): Credit Pane in About and drop upstream feedback",
+        "url": "https://github.com/Serubin/yab/pull/21",
+        "summary": null
+      }
+    ]
+  },
+  {
+    "version": "0.51.0-r1",
+    "tag": "v0.51.0-r1",
+    "date": "2026-11-20",
+    "head": "e823e88",
+    "repo": "Serubin/yab",
+    "prev_tag": "v0.50.2-r1",
+    "url": "https://serubin.github.io/yab/pane/whats-new/#v0.51.0-r1",
+    "upstream": {
+      "version": "0.51.0",
+      "unchanged_since": null,
+      "missing": false,
+      "entries": [
+        {
+          "minor": "0.51",
+          "title": "Yab 0.51",
+          "headline": "Magic Mouse swipes go back again, a second Mac keeps the agent's memory, and sharing a screen no longer grows memory.",
+          "link": "https://yetanotherbrowser.com/changelog/0.51",
+          "counts": [
+            {
+              "name": "improved",
+              "count": 3
+            },
+            {
+              "name": "fixed",
+              "count": 15
+            }
+          ]
+        }
+      ]
+    },
+    "prs": [
+      {
+        "number": 19,
+        "title": "feat: Ship the fork as Pane and keep main an upstream mirror",
+        "url": "https://github.com/Serubin/yab/pull/19",
+        "summary": null
+      }
+    ]
+  },
+  {
+    "version": "0.50.2-r1",
+    "tag": "v0.50.2-r1",
+    "date": "2026-11-20",
+    "head": "6c44c94",
+    "repo": "Serubin/yab",
+    "prev_tag": null,
+    "url": "https://serubin.github.io/yab/pane/whats-new/#v0.50.2-r1",
+    "upstream": {
+      "version": "0.50.2",
+      "unchanged_since": null,
+      "missing": false,
+      "entries": [
+        {
+          "minor": "0.50",
+          "title": "Yab 0.50",
+          "headline": "Chromium follows the Mac's swipe setting, local tab controls keep their room, and Dark pages follows sync.",
+          "link": "https://yetanotherbrowser.com/changelog/0.50",
+          "counts": [
+            {
+              "name": "changed",
+              "count": 2
+            },
+            {
+              "name": "fixed",
+              "count": 5
+            }
+          ]
+        }
+      ]
+    },
+    "prs": []
+  }
+]

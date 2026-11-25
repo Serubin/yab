@@ -456,7 +456,7 @@ jobs:
               *) echo "::error::$live answered $code; not deploying a site without it"; exit 1 ;;
             esac
             python3 -I scripts/fork/whats-new.py page --entry whats-new/entry.json --site "$SITE" \
-              --out feed/pane/whats-new "${args[@]}"
+              --seed scripts/fork/whats-new-seed.json --out feed/pane/whats-new "${args[@]}"
           fi
           echo "shipped=$shipped" >> "$GITHUB_OUTPUT"
           find feed -type f

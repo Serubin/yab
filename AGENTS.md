@@ -27,7 +27,8 @@ fork's earlier Yab-named builds and are only carried over. Each canary
 release also adds its entry to `pane/whats-new/` on Pages
 (`scripts/fork/whats-new.py`, tested by
 `python3 -I scripts/fork/test_whats_new.py`); it links to upstream's notes
-instead of copying them. A release
+instead of copying them; `scripts/fork/whats-new-seed.json` holds the earlier
+releases it adds when missing, made by `whats-new.py backfill`. A release
 is versioned as upstream's newest release plus a fork revision,
 `0.50.2-r3`. Upstream doesn't bump `VERSION` in the public repo when it
 ships, so `scripts/fork/upstream-version.py` reads the latest build from
