@@ -3216,7 +3216,7 @@ final class Bench {
                     "windowDark": DarkPages.windowDark, "tabs": tabs, "arm": PageScripts.report, "version": DarkPages.version])
 
         case "sleep":
-            // Now rather than after four hours, but past every other check
+            // Now rather than after an hour, but past every other check
             // a tab has to clear, the answer says which one kept it awake.
             guard let tab = find(request, in: browser) else { answer(missing(request)); return }
             browser.sleep(tab) { said in answer(["said": said, "asleep": tab.asleep]) }

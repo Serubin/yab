@@ -2,9 +2,8 @@ import AppKit
 import Testing
 @testable import Fast
 
-/// How long a tab waits before the timer puts it to sleep, as gentle as
-/// Chrome's Memory Saver at its middle setting: four hours, one while saving
-/// power, and never a tab you keep coming back to.
+/// How long a tab waits before the timer puts it to sleep: an hour, half
+/// that while saving power, and never a tab you keep coming back to.
 struct SleepTimerTests {
     /// A window with `count` hidden pages behind the one on screen, none of
     /// them among the last few used.
@@ -25,14 +24,14 @@ struct SleepTimerTests {
         return (browser, hidden, front, done)
     }
 
-    @MainActor @Test func fourHoursOrOneWhileSavingPower() {
-        #expect(Browser.usualSleepAfter == 4 * 3600)
-        #expect(Browser.sleepAfter(set: 0, thrift: false) == 4 * 3600)
-        #expect(Browser.sleepAfter(set: 0, thrift: true) == 3600)
-        // The bench's own wait, shortened by saving power only past an hour.
+    @MainActor @Test func anHourOrHalfWhileSavingPower() {
+        #expect(Browser.usualSleepAfter == 3600)
+        #expect(Browser.sleepAfter(set: 0, thrift: false) == 3600)
+        #expect(Browser.sleepAfter(set: 0, thrift: true) == 1800)
+        // The bench's own wait, shortened by saving power only past half an hour.
         #expect(Browser.sleepAfter(set: 60, thrift: false) == 60)
         #expect(Browser.sleepAfter(set: 60, thrift: true) == 60)
-        #expect(Browser.sleepAfter(set: 7200, thrift: true) == 3600)
+        #expect(Browser.sleepAfter(set: 7200, thrift: true) == 1800)
     }
 
     @MainActor @Test func switchingToATabCountsAVisit() async throws {

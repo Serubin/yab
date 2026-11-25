@@ -14,8 +14,8 @@ import SwiftUI
 // What stays, whatever its age: the page on screen, pinned tabs, the tabs
 // kept above the line (Kept.swift), and anything
 // sleep keeps awake, sound, a call, a download, a video out in the little
-// window, something typed and not sent. When tabs don't sleep, sleep's
-// reasons are asked here directly.
+// window, something typed and not sent. Sleep's reasons are asked here
+// directly, whether or not tabs sleep.
 //
 // It only looks when you come back, never in the middle of reading: a tab
 // disappearing from under you while you work is not tidying.
@@ -238,9 +238,6 @@ extension Browser {
     private func tidyable(_ tab: Tab) -> Bool {
         if onScreen(tab.id) || tab.pin != nil || tab.kept || tab.bench || tab.isBlank || tasksHold(tab) { return false }
         if tab.asleep { return true }
-        // Awake this long while tabs sleep means something kept it awake,
-        // and that something is the reason to leave it be.
-        if prefs.sleepsTabs { return false }
         return awake(because: tab) == nil
     }
 }

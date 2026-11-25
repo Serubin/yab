@@ -97,7 +97,7 @@ final class FeedbackDiagnostics {
 
         @MainActor static func now() -> Memory {
             let set = Store.settings.double(forKey: "sleep.after"), thrift = Thrift.on
-            return Memory(sample: MemoryCeiling.sample, sleepsTabs: Store.settings.bool(forKey: "tabs.sleep"),
+            return Memory(sample: MemoryCeiling.sample, sleepsTabs: Preferences.sleepsTabsDefault(Store.settings.object(forKey: "tabs.sleep")),
                           configuredSleepAfterSeconds: Browser.sleepAfter(set: set, thrift: false),
                           sleepAfterSeconds: Browser.sleepAfter(set: set, thrift: thrift),
                           lowPower: ProcessInfo.processInfo.isLowPowerModeEnabled, thrift: thrift)

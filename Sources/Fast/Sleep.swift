@@ -7,17 +7,13 @@ import WebKit
 // A page open in a tab keeps its whole content process, a hundred to three
 // hundred megabytes, running its timers, holding its sockets, for as long as
 // the tab exists. Twenty tabs is two or three gigabytes spent on the nineteen
-// nobody is looking at. So, with Put idle tabs to sleep on in Settings, a tab
-// left alone for four hours gives its page back, and keeps what it takes to
-// come back exactly where it was: its history, its scroll position, and a
-// picture to show while the page is rebuilt underneath (see Tab.sleep). Four
-// hours is Chrome's Memory Saver at its middle setting, and like Memory
-// Saver the timer is off until turned on: a page put
-// down costs a wait and sometimes what it held, and a tab loaded again on
-// return is what people wrote in about. Memory running out (below) does the
-// urgent work whatever the switch says.
+// nobody is looking at. So, unless Put idle tabs to sleep is turned off in
+// Settings, a tab left alone for an hour gives its page back, and keeps what
+// it takes to come back where it was: its history, its scroll position, and
+// a picture to show while the page is rebuilt underneath (see Tab.sleep).
+// Memory running out (below) does the urgent work whatever the switch says.
 //
-// Four hours of the Mac awake, that is: a lid closed over lunch is no time
+// An hour of the Mac awake, that is: a lid closed over lunch is no time
 // spent away from a tab, or every tab would go at the first look after it
 // (AwakeClock).
 //
@@ -63,18 +59,18 @@ import WebKit
 // processes itself (feedback #44).
 //
 // Saving power (Settings › Tabs › Energy Saver, when the person turned it
-// on and it holds), the four hours are one. Chrome's Energy Saver throttles
-// background pages and puts none to sleep; Yab shortens the wait to an hour
-// as well, a page asleep being one that spends nothing at all.
+// on and it holds), the hour is half of one. Chrome's Energy Saver throttles
+// background pages and puts none to sleep; Yab shortens the wait as well, a
+// page asleep being one that spends nothing at all.
 
 extension Browser {
-    /// How long a tab has to go without being looked at: four hours, one
+    /// How long a tab has to go without being looked at: an hour, half that
     /// while saving power, or `sleep.after` in seconds, for the bench and
     /// the measurements.
     static var sleepAfter: TimeInterval { sleepAfter(set: Store.settings.double(forKey: "sleep.after"), thrift: Thrift.on) }
 
-    static let usualSleepAfter: TimeInterval = 4 * 3600
-    static let thriftSleepAfter: TimeInterval = 3600
+    static let usualSleepAfter: TimeInterval = 3600
+    static let thriftSleepAfter: TimeInterval = 1800
 
     static func sleepAfter(set: TimeInterval, thrift: Bool) -> TimeInterval {
         let usual = set > 0 ? set : usualSleepAfter
@@ -166,7 +162,7 @@ extension Browser {
         pressure = source
 
         // Going over to saving power puts down at once what has already
-        // gone an hour unwatched, rather than at the next minute's look.
+        // gone half an hour unwatched, rather than at the next minute's look.
         Thrift.watch(self) { [weak self] on in
             if on { self?.sleepIdle() }
         }
