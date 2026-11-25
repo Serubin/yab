@@ -7,8 +7,8 @@ out=${YAB_FARM_OUT:?}
 curl -fL 'https://8hauzhgbhxiipn9a.public.blob.vercel-storage.com/releases/yab-0.46.7-202611030445.zip' -o "$out/before.zip"
 mkdir "$out/published"
 ditto -x -k "$out/before.zip" "$out/published"
-before=$(find "$out/published" -path '*/Contents/MacOS/yab' -type f | head -1)
-python3 evals/golden/saved_page_names.py --app "${before%/Contents/MacOS/yab}" --out "$out/before" --before --keep-signature
+before=$(find "$out/published" -path '*/Contents/MacOS/pane' -type f | head -1)
+python3 evals/golden/saved_page_names.py --app "${before%/Contents/MacOS/pane}" --out "$out/before" --before --keep-signature
 python3 - "${1:?signed build job}" "$out/candidate.zip" "${2:-}" <<'PY'
 import importlib.util
 import json

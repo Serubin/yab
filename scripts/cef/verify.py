@@ -101,7 +101,7 @@ def launch(app, out, result):
     run(['defaults', 'write', 'dev.serafim.fast.test.' + world, 'bench', '-bool', 'true'])
     run(['defaults', 'write', 'dev.serafim.fast.test.' + world, 'welcomed', '-bool', 'true'])
     pid = None
-    bench = Bench(Path.home() / ('Library/Application Support/Yab (' + world + ')/bench.sock'))
+    bench = Bench(Path.home() / ('Library/Application Support/Pane (' + world + ')/bench.sock'))
     try:
         run(['open', '-g', '-n', '-a', str(bundle), '--stdout', browser_log, '--stderr', browser_log,
              '--env', 'YAB_PROBE=' + world, '--env', 'YAB_MEASURE=1'], timeout=30)

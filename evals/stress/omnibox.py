@@ -40,7 +40,7 @@ def seed_cold(world):
                            capture_output=True, timeout=10)
     if probe.returncode == 0:
         raise RuntimeError("stop this test world's app before seeding its cold-start session")
-    folder = Path.home() / "Library" / "Application Support" / f"Yab ({world})"
+    folder = Path.home() / "Library" / "Application Support" / f"Pane ({world})"
     session = folder / "session.json"
     if session.exists():
         saved = json.loads(session.read_text())

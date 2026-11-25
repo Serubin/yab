@@ -48,7 +48,7 @@ def main():
     else:
         apps.mkdir(parents=True, exist_ok=True)
         logged(['./build.sh'], out / 'build-candidate.log')
-        subprocess.run(['ditto', 'build/yab Dev.app', str(apps / 'candidate.app')], check=True)
+        subprocess.run(['ditto', 'build/Pane Dev.app', str(apps / 'candidate.app')], check=True)
         logged(['bash', 'scripts/runs/rev_app.sh', base, str(apps / 'base.app')], out / 'build-base.log')
     return subprocess.call([sys.executable, '-u', 'evals/horizontal-wheel/check.py',
         '--base-app', str(apps / 'base.app'), '--app', str(apps / 'candidate.app'), '--out', str(out / 'proof')])

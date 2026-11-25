@@ -132,7 +132,7 @@ def main():
     args = parser.parse_args()
     if args.seconds < 2 or args.timeout <= 0:
         parser.error('--seconds must be at least 2 and --timeout positive')
-    if args.socket.parent.name == 'Yab' or not args.socket.parent.name.startswith('Yab ('):
+    if args.socket.parent.name == 'Pane' or not args.socket.parent.name.startswith('Pane ('):
         parser.error('Use an isolated YAB_PROBE world socket')
     return run(args)
 

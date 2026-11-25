@@ -4,7 +4,7 @@
 #   ./fresh.sh          wipe the test world and open yab as a newcomer
 #   ./fresh.sh again    open the test copy as it was left, no wipe
 #
-#   YAB_PROBE=NAME ./fresh.sh   the same for a named world, "Yab (NAME)"
+#   YAB_PROBE=NAME ./fresh.sh   the same for a named world, "Pane (NAME)"
 #
 # A run with YAB_PROBE=1 keeps everything apart from the real one: its own
 # folder under Application Support, its own settings suite, its own WebKit

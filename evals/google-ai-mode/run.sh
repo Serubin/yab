@@ -9,5 +9,5 @@ shift || true
 export YAB_TASK_NAME="$task_name"
 evidence="$(dirname "${APP:?run through the display-enabled farm}")"
 ./build.sh 2>&1 | tee "$evidence/build.log"
-ditto "build/yab Dev.app" "$evidence/$task_name.app"
+ditto "build/Pane Dev.app" "$evidence/$task_name.app"
 python3 evals/google-ai-mode/run.py --app "$evidence/$task_name.app" --task "$task_name" "$@"

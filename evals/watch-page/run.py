@@ -80,7 +80,7 @@ subprocess.run(['defaults', 'write', domain, 'sidebar', '-bool', 'true'], check=
 support = yab_socket.support(world)
 sock = support / 'bench.sock'
 env = dict(os.environ, YAB_PROBE=world, YAB_HISTORY='own')
-app = launch(ROOT / 'build/yab Dev.app', env, OUT, task_name='Watch a page')
+app = launch(ROOT / 'build/Pane Dev.app', env, OUT, task_name='Watch a page')
 ask = yab_socket.asker(sock)
 client = None
 try:

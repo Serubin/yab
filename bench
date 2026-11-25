@@ -162,8 +162,8 @@
 Needs Settings › General › "Let a script drive yab" switched on in the
 running app. IDs are the first characters of a tab's id, as `tabs` prints
 them. With --test, talks to a YAB_PROBE run instead of the real one;
-with --world NAME, to a YAB_PROBE=NAME run, the world "Yab (NAME)";
-with --dev, to the development build, yab Dev, instead of yab.
+with --world NAME, to a YAB_PROBE=NAME run, the world "Pane (NAME)";
+with --dev, to the development build, Pane Dev, instead of Pane.
 """
 
 import base64
@@ -179,7 +179,7 @@ import time
 import zlib
 
 def folder(world, dev=False):
-    name = f"Yab ({world})" if world else ("Yab Dev" if dev else "Yab")
+    name = f"Pane ({world})" if world else ("Pane Dev" if dev else "Pane")
     return os.path.expanduser(f"~/Library/Application Support/{name}")
 
 def ask(path, request):

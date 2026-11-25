@@ -15,7 +15,7 @@ import yab_socket  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = f"strip-review-{os.getpid()}"
 SCRATCH = Path(tempfile.mkdtemp(prefix="yab-strip-review-"))
-SUPPORT = Path.home() / "Library" / "Application Support" / f"Yab ({WORLD})"
+SUPPORT = Path.home() / "Library" / "Application Support" / f"Pane ({WORLD})"
 SOCKET = SUPPORT / "bench.sock"
 OUT = ROOT / ".build" / "strip-folders-review"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -52,7 +52,7 @@ def set_open(want):
 
 
 def main():
-    binary = Path(os.environ["APP"]) / "Contents" / "MacOS" / "yab"
+    binary = Path(os.environ["APP"]) / "Contents" / "MacOS" / "pane"
     subprocess.run(["defaults", "write", DOMAIN, "bench", "-bool", "true"], check=True)
     env = dict(os.environ, YAB_PROBE=WORLD, FAST_PROBE=WORLD, HOME=str(SCRATCH))
     process = subprocess.Popen([str(binary)], cwd=ROOT, env=env,

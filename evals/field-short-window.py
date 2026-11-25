@@ -26,7 +26,7 @@ if OPTS.mail:
     threading.Thread(target=fake.serve, args=(GMAIL,), daemon=True).start()
 OUT = os.environ.get("YAB_FARM_OUT") or tempfile.mkdtemp(prefix="yab-field-short-")
 WORLD = "fieldshort"
-SOCK = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})/bench.sock")
+SOCK = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})/bench.sock")
 SUITE = f"dev.serafim.fast.test.{WORLD}"
 ask = yab_socket.asker(SOCK, timeout=None)
 
@@ -48,7 +48,7 @@ for item in OPTS.app:
     subprocess.run(["defaults", "delete", SUITE], stderr=subprocess.DEVNULL)
     for key in ("bench", "welcomed", "spaces") + (("mail.agents",) if OPTS.mail else ()):
         subprocess.run(["defaults", "write", SUITE, key, "-bool", "true"])
-    folder = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
+    folder = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})")
     for old in ("session.json", "mail"):
         if os.path.exists(os.path.join(folder, old)):
             os.replace(os.path.join(folder, old), os.path.join(OUT, f"{old}-old-{time.time()}"))

@@ -21,7 +21,7 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
 WORLD = f"field-bookmarks-{os.getpid()}"
-SUPPORT = Path.home() / "Library" / "Application Support" / f"Yab ({WORLD})"
+SUPPORT = Path.home() / "Library" / "Application Support" / f"Pane ({WORLD})"
 SOCKET = SUPPORT / "bench.sock"
 DOMAIN = f"dev.serafim.fast.test.{WORLD}"
 NOW = time.time()
@@ -98,7 +98,7 @@ def main():
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     if not args.bin:
-        apps = sorted(ROOT.glob("build/*.app/Contents/MacOS/yab"), key=lambda path: path.stat().st_mtime)
+        apps = sorted(ROOT.glob("build/*.app/Contents/MacOS/pane"), key=lambda path: path.stat().st_mtime)
         assert apps, "No build/*.app: run ./build.sh first"
         args.bin = str(apps[-1])
     print(f"Using {args.bin}")

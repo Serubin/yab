@@ -5,7 +5,7 @@ back comes to where the page before was left, and forward to where that one was,
 already there when travel answers, before a frame is drawn: never the page's
 top first and then a jump.
 
-    evals/settings-top/check.py --bin "build/yab Dev.app/Contents/MacOS/yab"
+    evals/settings-top/check.py --bin "build/Pane Dev.app/Contents/MacOS/pane"
 """
 import argparse
 import os

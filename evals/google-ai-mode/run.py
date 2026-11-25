@@ -54,7 +54,7 @@ QUESTIONS = [
 ]
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--app", default="build/yab Dev.app")
+parser.add_argument("--app", default="build/Pane Dev.app")
 parser.add_argument("--task", default="AI Mode Google")
 parser.add_argument("--runs", type=int, default=3)
 parser.add_argument("--seconds", type=float, default=35)
@@ -138,7 +138,7 @@ def yab(way, n):
     lists = cut == "lists"
     cut = "" if lists else cut
     world = "ai-mode-" + uuid.uuid4().hex[:8]
-    support = Path.home() / "Library/Application Support" / ("Yab (" + world + ")")
+    support = Path.home() / "Library/Application Support" / ("Pane (" + world + ")")
     domain = "dev.serafim.fast.test." + world
     for key in ("bench", "welcomed"):
         subprocess.run(["defaults", "write", domain, key, "-bool", "true"], check=True)

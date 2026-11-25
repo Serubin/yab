@@ -81,8 +81,8 @@ class SocketTests(unittest.TestCase):
 
     def test_paths(self):
         home = Path("/Users/x")
-        self.assertEqual(Path("/Users/x/Library/Application Support/Yab (w)/bench.sock"), yab_socket.socket_path("w", home))
-        self.assertEqual(Path("/Users/x/Library/Application Support/Yab (w)"), yab_socket.support("w", home))
+        self.assertEqual(Path("/Users/x/Library/Application Support/Pane (w)/bench.sock"), yab_socket.socket_path("w", home))
+        self.assertEqual(Path("/Users/x/Library/Application Support/Pane (w)"), yab_socket.support("w", home))
         missing = self.folder / "nope.sock"
         self.assertEqual(missing, yab_socket.first_existing([missing, self.folder / "other"]))
         self.assertEqual(self.folder, yab_socket.first_existing([missing, self.folder]))

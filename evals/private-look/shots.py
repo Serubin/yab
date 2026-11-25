@@ -43,7 +43,7 @@ def run(app, out, url, look):
     domain = "dev.serafim.fast.test." + world
     for key in ("bench", "welcomed"):
         subprocess.run(["defaults", "write", domain, key, "-bool", "true"], check=True)
-    support = Path.home() / "Library/Application Support" / ("Yab (" + world + ")")
+    support = Path.home() / "Library/Application Support" / ("Pane (" + world + ")")
 
     def ask(verb, **fields):
         with socket.socket(socket.AF_UNIX) as connection:

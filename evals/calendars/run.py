@@ -6,7 +6,7 @@ calendar list, the pin's Today lists every calendar it shows, a meeting in
 two of them once, the other calendar's name beside its own; without the
 list, the primary alone, and the list never asked for.
 
-    python3 evals/calendars/run.py --app "build/yab Dev.app"
+    python3 evals/calendars/run.py --app "build/Pane Dev.app"
 """
 import argparse, json, os, socket, subprocess, sys, time, urllib.request
 
@@ -17,7 +17,7 @@ from fake_gmail import FakeGmail  # noqa: E402
 import yab_socket  # noqa: E402
 
 WORLD = "calendars-" + os.environ.get("SLOT", "x")[-8:]
-FOLDER = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
+FOLDER = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})")
 SOCK = os.path.join(FOLDER, "bench.sock")
 ME = "mira@ternlabs.com"
 TEAM = "c_team@group.calendar.google.com"

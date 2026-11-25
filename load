@@ -44,7 +44,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # YAB_LOAD_WORLD=NAME for a second run beside the first.
 WORLD = os.environ.get("YAB_LOAD_WORLD", "load")
 SUITE = f"net.serubin.pane.test.{WORLD}"
-FOLDER = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
+FOLDER = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})")
 SOCK = os.path.join(FOLDER, "bench.sock")
 
 # What "nothing hangs" means, as numbers.

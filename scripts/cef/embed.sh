@@ -1,5 +1,5 @@
 #!/bin/bash
-# Usage: embed.sh Yab.app CEF_DISTRIBUTION HELPER_EXECUTABLE IDENTITY [APP_ENTITLEMENTS]
+# Usage: embed.sh Pane.app CEF_DISTRIBUTION HELPER_EXECUTABLE IDENTITY [APP_ENTITLEMENTS]
 # Seals the app last, without --deep (which would overwrite helper entitlements).
 set -euo pipefail
 [ "$#" -ge 4 ] && [ "$#" -le 5 ] || { echo "usage: $0 APP CEF_DIR HELPER IDENTITY [APP_ENTITLEMENTS]" >&2; exit 2; }

@@ -8,4 +8,4 @@ mkdir -p "$out"
 YAB_PROBE="private-look-tests-${YAB_FARM_JOB}" YAB_HISTORY=own \
     swift test --scratch-path .build/dev-optimized -c debug -Xswiftc -O --filter 'PrivateNormalWindowTests' \
     2>&1 | tee "$out/tests.log"
-python3 -u evals/private-look/shots.py --app "build/yab Dev.app" --out "$out/shots"
+python3 -u evals/private-look/shots.py --app "build/Pane Dev.app" --out "$out/shots"

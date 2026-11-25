@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A model the agent's copy can't take, end to end, on the real CLIs.
 
-    python3 evals/agent-models/check.py --app "build/yab Dev.app" [--codex PATH] [--claude PATH]
+    python3 evals/agent-models/check.py --app "build/Pane Dev.app" [--codex PATH] [--claude PATH]
 
 The ChatGPT app writes `model = "gpt-6.1-sol"` into ~/.codex/config.toml;
 an older Codex (Homebrew's 0.157) sends it on and is turned away with "not
@@ -46,7 +46,7 @@ def check(what, ok, detail=""):
 class World:
     def __init__(self, name, stand_ins):
         self.name = name
-        self.sock = os.path.expanduser(f"~/Library/Application Support/Yab ({name})/bench.sock")
+        self.sock = os.path.expanduser(f"~/Library/Application Support/Pane ({name})/bench.sock")
         suite = f"dev.serafim.fast.test.{name}"
         subprocess.run(["defaults", "delete", suite], stderr=subprocess.DEVNULL)
         for key in ("bench", "welcomed"):
