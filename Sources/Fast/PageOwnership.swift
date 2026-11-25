@@ -19,7 +19,7 @@ struct PageEngineFactory {
 
     static var requestedEngine: PageEngineKind? {
         PageEngineSelection.requested(defaults: Store.settings.string(forKey: PageEngineSelection.key),
-                                      environment: ProcessInfo.processInfo.environment["YAB_ENGINE"],
+                                      environment: PageEngineSelection.environment,
                                       permitted: Store.development || Store.testing,
                                       bundledChromium: PageEngineSelection.bundledChromium)
     }

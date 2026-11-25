@@ -117,7 +117,7 @@ enum EngineRules {
     /// PageEngineFactory.chromiumAvailable, read off the main actor too.
     static var available: Bool {
         let requested = PageEngineSelection.requested(defaults: Store.settings.string(forKey: PageEngineSelection.key),
-                                                      environment: ProcessInfo.processInfo.environment["YAB_ENGINE"],
+                                                      environment: PageEngineSelection.environment,
                                                       permitted: Store.development || Store.testing,
                                                       bundledChromium: PageEngineSelection.bundledChromium)
         return PageEngineSelection.supportsChromium && (PageEngineSelection.bundledChromium || requested == .chromium)
@@ -127,7 +127,7 @@ enum EngineRules {
     /// A test world that names its engine keeps it, whatever a busy farm Mac's
     /// memory says, or its checks quietly run on the other engine.
     static var memoryTight: Bool {
-        if Store.testing, Pressure.forced == nil, ProcessInfo.processInfo.environment["YAB_ENGINE"]?.isEmpty == false { return false }
+        if Store.testing, Pressure.forced == nil, PageEngineSelection.environment?.isEmpty == false { return false }
         return (Pressure.level ?? 1) >= 2
     }
 
