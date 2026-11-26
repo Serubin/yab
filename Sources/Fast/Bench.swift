@@ -3504,8 +3504,9 @@ final class Bench {
             guard Store.testing else { answer(["error": "tidy only works on a --test run"]); return }
             let before = browser.tabs.count
             browser.ageForTidy(hours: request["hours"] as? Double ?? 13)
-            browser.tidy()
-            answer(["before": before, "after": browser.tabs.count, "tabs": browser.tabs.map(describe)])
+            browser.tidy {
+                answer(["before": before, "after": browser.tabs.count, "tabs": browser.tabs.map(self.describe)])
+            }
 
         case "live":
             // Live folders (LiveFolders.swift), driven and read: "make" one

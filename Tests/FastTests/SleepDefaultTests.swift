@@ -99,20 +99,127 @@ struct SleepDefaultTests {
         #expect(hidden.allSatisfy { !$0.asleep })
     }
 
+    /// A window as `world`, set to tidy after 12 h.
+    private func tidyWorld(_ count: Int) async throws -> (Browser, [Tab], Tab, () -> Void) {
+        let (browser, hidden, front, done) = try await world(count)
+        let before = Store.settings.object(forKey: "tabs.tidy")
+        browser.prefs.tidyAfter = .halfDay
+        return (browser, hidden, front, {
+            Store.settings.set(before, forKey: "tabs.tidy")
+            done()
+        })
+    }
+
+    private func age(_ tabs: [Tab]) {
+        for tab in tabs { tab.touch(at: Date().addingTimeInterval(-13 * 3600)) }
+    }
+
+    private func tidy(_ browser: Browser) async {
+        await withCheckedContinuation { continuation in browser.tidy { continuation.resume() } }
+    }
+
+    private func holds(_ browser: Browser, _ tab: Tab) -> Bool { browser.tabs.contains { $0 === tab } }
+
+    /// `html` put in the tab's page, then `act` done there as a person would,
+    /// so that the app's own form script sees the input.
+    private func fill(_ tab: Tab, _ html: String, then act: String) async throws {
+        let web = try #require(tab.builtPage)
+        _ = try await web.run("document.body.innerHTML = `\(html)`; \(act); true", in: .yab, gesture: false)
+        let unsent = try await web.run("window.__yabForms.unsaved()", in: .yab, gesture: false)
+        try #require(unsent as? Bool == true, "the page reports unsent input")
+    }
+
     /// Tidy closes the same tabs whatever the sleep switch says.
     @Test func tidyStillClosesAnAwakeTabLeftLongEnough() async throws {
-        let (browser, hidden, front, done) = try await world(2)
+        let (browser, hidden, front, done) = try await tidyWorld(2)
         defer { done() }
         #expect(browser.prefs.sleepsTabs)
-        let before = Store.settings.object(forKey: "tabs.tidy")
-        defer { Store.settings.set(before, forKey: "tabs.tidy") }
-        browser.prefs.tidyAfter = .halfDay
         hidden[1].pin = "Pinned"
-        for tab in hidden { tab.touch(at: Date().addingTimeInterval(-13 * 3600)) }
+        age(hidden)
         #expect(!hidden[0].asleep)
-        browser.tidy()
-        #expect(!browser.tabs.contains { $0 === hidden[0] })
-        #expect(browser.tabs.contains { $0 === hidden[1] })
-        #expect(browser.tabs.contains { $0 === front })
+        await tidy(browser)
+        #expect(!holds(browser, hidden[0]))
+        #expect(holds(browser, hidden[1]))
+        #expect(holds(browser, front))
+    }
+
+    @Test func tidyKeepsAnAwakeTabHoldingTypedInput() async throws {
+        let (browser, hidden, _, done) = try await tidyWorld(2)
+        defer { done() }
+        try await fill(hidden[0], "<textarea id='t'></textarea>",
+                       then: "document.getElementById('t').focus(); document.execCommand('insertText', false, 'not sent')")
+        age(hidden)
+        await tidy(browser)
+        #expect(holds(browser, hidden[0]))
+        #expect(!holds(browser, hidden[1]))
+    }
+
+    @Test func tidyKeepsAnAwakeTabHoldingAPickedInput() async throws {
+        let (browser, hidden, _, done) = try await tidyWorld(2)
+        defer { done() }
+        try await fill(hidden[0], "<form><input type='checkbox' id='c'></form>",
+                       then: "document.getElementById('c').click()")
+        age(hidden)
+        await tidy(browser)
+        #expect(holds(browser, hidden[0]))
+        #expect(!holds(browser, hidden[1]))
+    }
+
+    /// A "nothing" that comes too late is no answer.
+    @Test func tidyKeepsAnAwakeTabThatDoesNotAnswerInTime() async throws {
+        let (browser, hidden, _, done) = try await tidyWorld(1)
+        defer { done() }
+        let web = try #require(hidden[0].builtPage)
+        let late = Int(2000 * Browser.pageAnswer)
+        _ = try await web.run("""
+            window.__yabForms = {unsaved() { const end = Date.now() + \(late); while (Date.now() < end) {} return false; }}; true
+            """, in: .yab, gesture: false)
+        age(hidden)
+        await tidy(browser)
+        #expect(holds(browser, hidden[0]))
+        #expect(browser.tidied.isEmpty)
+    }
+
+    @Test func aTabVisitedWhileTidyAsksStays() async throws {
+        let (browser, hidden, front, done) = try await tidyWorld(2)
+        defer { done() }
+        age(hidden)
+        await withCheckedContinuation { continuation in
+            browser.tidy { continuation.resume() }
+            #expect(holds(browser, hidden[0]) && holds(browser, hidden[1]), "still asking")
+            browser.select(hidden[0])
+            browser.select(front)
+        }
+        #expect(holds(browser, hidden[0]))
+        #expect(!holds(browser, hidden[1]))
+    }
+
+    @Test func aSecondTidyWhileOneAsksAddsNoBatch() async throws {
+        let (browser, hidden, _, done) = try await tidyWorld(2)
+        defer { done() }
+        age(hidden)
+        var landed: [Int] = []
+        await withCheckedContinuation { continuation in
+            browser.tidy { landed.append(browser.tabs.count) }
+            browser.tidy {
+                landed.append(browser.tabs.count)
+                continuation.resume()
+            }
+            #expect(landed.isEmpty)
+        }
+        #expect(landed == [1, 1])
+        #expect(browser.tidied.count == 1)
+    }
+
+    @Test func aWindowClosedWhileTidyAsksDropsIt() async throws {
+        let (browser, hidden, _, done) = try await tidyWorld(2)
+        defer { done() }
+        age(hidden)
+        await withCheckedContinuation { continuation in
+            browser.tidy { continuation.resume() }
+            browser.stopWatching()
+        }
+        #expect(hidden.allSatisfy { holds(browser, $0) })
+        #expect(browser.tidied.isEmpty)
     }
 }

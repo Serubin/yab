@@ -2884,6 +2884,8 @@ final class Browser: NSObject, ObservableObject, Relaying {
     /// Coming back to the app, or the Mac waking: when the tidy-up looks.
     /// See Tidy.swift.
     @ObservationIgnored var tidyWatch = Set<AnyCancellable>()
+    /// Non-nil while a tidy-up waits on pages: who to tell once it lands.
+    @ObservationIgnored var tidyWaiting: [() -> Void]?
     /// The batches tidy-ups put away, latest last, so ⌘⇧T and the notice's
     /// Undo bring them back as they went: quietly, in place, nothing loaded.
     @ObservationIgnored var tidied: [UUID] = []

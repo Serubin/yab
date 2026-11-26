@@ -15,7 +15,9 @@ import SwiftUI
 // kept above the line (Kept.swift), and anything
 // sleep keeps awake, sound, a call, a download, a video out in the little
 // window. Sleep's reasons are asked here directly, whether or not tabs
-// sleep; its check for typed, unsent input is not.
+// sleep. So is its question about typed or picked, unsent input: an awake
+// page stays unless it answers that it holds none. Clear, a click of your
+// own, doesn't ask it.
 //
 // It only looks when you come back, never in the middle of reading: a tab
 // disappearing from under you while you work is not tidying.
@@ -65,20 +67,85 @@ extension Browser {
     /// Every tab gone long enough unseen, put away in one batch. At launch
     /// it runs while the session is read, before anything is drawn: the
     /// window opens already tidy, and the notice follows once it is up.
-    func tidy(atLaunch: Bool = false) {
-        guard let wait = tidyAfter else { return }
+    /// With an awake one among them it lands once every page asked has
+    /// answered or run out of time. `done` is called when it has landed.
+    func tidy(atLaunch: Bool = false, then done: (() -> Void)? = nil) {
+        if tidyWaiting != nil {
+            if let done { tidyWaiting?.append(done) }
+            return
+        }
+        let old = whole(due())
+        let awake = old.filter { !$0.asleep }
+        guard !awake.isEmpty else {
+            putAwayTidied(old, atLaunch: atLaunch)
+            done?()
+            return
+        }
+        tidyWaiting = done.map { [$0] } ?? []
+        // Ids only: a hung page holds its reply, and must not hold tabs too.
+        let candidates = Set(old.map(\.id)), asked = Set(awake.map(\.id))
+        var empty = Set<Tab.ID>(), unheard = asked.count
+        let heard = { [weak self] (id: Tab.ID, typed: Bool?) in
+            if typed == false { empty.insert(id) }
+            unheard -= 1
+            guard unheard == 0, let self else { return }
+            let waiting = tidyWaiting ?? []
+            tidyWaiting = nil
+            // A window closed meanwhile has nothing left to tidy.
+            if !stoppedWatching {
+                // Asked again after the wait, and never of a tab new to it.
+                // One asked goes only on its "nothing", asleep by now or not.
+                let still = due().filter { tab in
+                    candidates.contains(tab.id) && !self.dusting.contains(tab.id)
+                        && (asked.contains(tab.id) ? empty.contains(tab.id) : tab.asleep)
+                }
+                putAwayTidied(whole(still), atLaunch: atLaunch)
+            }
+            for done in waiting { done() }
+        }
+        // Chromium's a few at a time, as in `sleepIdle`.
+        let chromium = awake.filter { $0.builtPage?.engine == .chromium }
+        let others = awake.filter { $0.builtPage?.engine != .chromium }
+        askUnsaved(others, width: others.count, heard: heard)
+        askUnsaved(chromium, width: 6, heard: heard)
+    }
+
+    /// Each page asked what sleep asks it, a batch after the last has answered.
+    private func askUnsaved(_ tabs: [Tab], width: Int, heard: @escaping (Tab.ID, Bool?) -> Void) {
+        guard !tabs.isEmpty else { return }
+        let batch = tabs.prefix(width), rest = Array(tabs.dropFirst(width))
+        var left = batch.count
+        for tab in batch {
+            let id = tab.id
+            tab.unsaved(within: Browser.pageAnswer) { [weak self] typed in
+                left -= 1
+                heard(id, typed)
+                if left == 0 { self?.askUnsaved(rest, width: width, heard: heard) }
+            }
+        }
+    }
+
+    /// The tabs old enough to tidy that nothing keeps, input aside.
+    private func due() -> [Tab] {
+        guard let wait = tidyAfter else { return [] }
         let now = Date()
         // With today's in every window, a tab looked at in another window
         // is no older here: closed here, it would close there too.
         let elsewhere = seenElsewhere()
-        var old = tabs.filter { tab in
+        return tabs.filter { tab in
             let seen = elsewhere[KeptEverywhere.key(tab)].map { max($0, tab.touched) } ?? tab.touched
             return now.timeIntervalSince(seen) >= wait && tidyable(tab)
         }
-        // A search's folder goes whole or not at all, one batch, as it came.
+    }
+
+    /// A search's folder goes whole or not at all, one batch, as it came.
+    private func whole(_ old: [Tab]) -> [Tab] {
         let going = Set(old.map(\.id))
         let staying = Set(tabs.compactMap { tab in tab.nest.flatMap { $0.today && !going.contains(tab.id) ? ObjectIdentifier($0) : nil } })
-        if !staying.isEmpty { old.removeAll { $0.nest.map { staying.contains(ObjectIdentifier($0)) } ?? false } }
+        return old.filter { tab in !(tab.nest.map { staying.contains(ObjectIdentifier($0)) } ?? false) }
+    }
+
+    private func putAwayTidied(_ old: [Tab], atLaunch: Bool) {
         guard !old.isEmpty, let batch = putAway(old) else { return }
         WrappedLedger.shared.add(.tabsTidied, Double(old.count))
         tidied.append(batch)
