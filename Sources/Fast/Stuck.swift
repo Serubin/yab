@@ -380,7 +380,7 @@ extension Browser {
 
     /// A page grown too big. Out of sight, it sleeps as any tab does, its
     /// picture kept, loaded again when you come back; nothing is said, as
-    /// nothing is when a tab sleeps after four hours. One an agent works
+    /// nothing is when a tab sleeps on the timer. One an agent works
     /// in is loaded again where it is, and the agent told with its next
     /// look, since a page gone from under it would leave it lost.
     private func lighten(_ pid: Int32, _ group: [Tab]) -> Bool {

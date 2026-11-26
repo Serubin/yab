@@ -2884,6 +2884,8 @@ final class Browser: NSObject, ObservableObject, Relaying {
     /// Coming back to the app, or the Mac waking: when the tidy-up looks.
     /// See Tidy.swift.
     @ObservationIgnored var tidyWatch = Set<AnyCancellable>()
+    /// Non-nil while a tidy-up waits on pages: who to tell once it lands.
+    @ObservationIgnored var tidyWaiting: [() -> Void]?
     /// The batches tidy-ups put away, latest last, so ⌘⇧T and the notice's
     /// Undo bring them back as they went: quietly, in place, nothing loaded.
     @ObservationIgnored var tidied: [UUID] = []
@@ -5154,7 +5156,7 @@ final class Browser: NSObject, ObservableObject, Relaying {
         writeSession(now: true)
     }
 
-    /// The ones that can sleep, asleep now rather than in four hours.
+    /// The ones that can sleep, asleep now rather than on the timer.
     /// `byHand`, from a menu: past what only keeps a tab from the clock
     /// (a pin, a kept row, a site that may notify). The current page may
     /// sleep by hand too, after its draft has been checked; never a visible

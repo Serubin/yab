@@ -248,6 +248,7 @@ struct NativeSetting {
         boolean("upload-finder", "Choose files to upload in Finder", \.uploadsInFinder),
         boolean("small-links", "Small windows for links", \.smallLinks),
         boolean("mail-motion", "Mail animations", \.mailAnimations),
+        boolean("sleep", "Put idle tabs to sleep", \.sleepsTabs),
         boolean("link-folders", "⌘-clicking links makes folders", \.linkFolders),
         boolean("folder-emoji", "Add emoji to new folders", \.folderEmoji),
         boolean("opt-shift-folders", "⌥⇧-click puts a tab in a folder", \.optShiftFolders),

@@ -472,6 +472,13 @@ struct TabsPage: View {
             }
         }
         Section {
+            SettingsRow("Put idle tabs to sleep") {
+                Toggle(SettingsWords.text("Put idle tabs to sleep"), isOn: $prefs.sleepsTabs)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+            }
+            .settingsAnchor("sleep")
             SettingsRow("Energy Saver", detail: "Saves battery by limiting background activity and visual effects, such as smooth scrolling and video frame rates.") {
                 DropMenu("Energy Saver", options: EnergySaver.allCases.map { (title: SettingsWords.text($0.title), value: $0.rawValue) },
                          selection: Binding(get: { energySaver }, set: {

@@ -313,6 +313,8 @@ struct SettingsItem: Identifiable, Hashable {
                      shown: { $0.usesSpaces }),
         SettingsItem(id: "awake-sites", page: .tabs, title: "Always keep these sites awake",
                      words: "keep active never sleep suspend hibernate exceptions whatsapp slack discord gmail spotify memory saver reload discard ram"),
+        SettingsItem(id: "sleep", page: .tabs, title: "Put idle tabs to sleep",
+                     words: "sleep suspend discard hibernate memory saver idle inactive tabs ram free unload reload"),
         // Chrome's Settings › Performance › Energy Saver (EnergySaver).
         SettingsItem(id: "energy-saver", page: .tabs, title: "Energy Saver",
                      words: "battery saver power saving low power mode energy battery life unplugged 20% frame rate fps smooth scrolling video performance chrome"),

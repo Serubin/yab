@@ -690,7 +690,7 @@ final class Preferences: ObservableObject, Relaying {
         willSet { relay.send(\.offerDevMode, newValue) }
         didSet { store.set(offerDevMode, forKey: "dev.offer") }
     }
-    /// Tabs nobody has looked at for four hours give their page back and
+    /// Tabs nobody has looked at for an hour give their page back and
     /// keep where they were. On unless turned off.
     var sleepsTabs: Bool {
         willSet { relay.send(\.sleepsTabs, newValue) }
@@ -1065,6 +1065,7 @@ final class Preferences: ObservableObject, Relaying {
         willSet { relay.send(\.floatsAway, newValue) }
         didSet { store.set(floatsAway, forKey: "float.away") }
     }
+    static func sleepsTabsDefault(_ stored: Any?) -> Bool { stored as? Bool ?? true }
     init() {
         // Glass from Settings › Experimental, put in the looks first.
         Spaces.glazeOnce()
@@ -1192,9 +1193,9 @@ final class Preferences: ObservableObject, Relaying {
         // picked in a welcome that no longer asks, so it is left unread.
         glyph = store.string(forKey: "tabs.glyph").flatMap(Glyph.init) ?? .icons
         density = Density.saved
-        // Off unless turned on: memory running
+        // On unless turned off, and not written until chosen: memory running
         // out puts tabs down whatever this says (Sleep.swift).
-        sleepsTabs = store.object(forKey: "tabs.sleep") as? Bool ?? false
+        sleepsTabs = Self.sleepsTabsDefault(store.object(forKey: "tabs.sleep"))
         instantLinks = store.object(forKey: "field.instant") as? Bool ?? true
         tidyAfter = (store.object(forKey: "tabs.tidy") as? Int).flatMap(Tidy.init) ?? .halfDay
         shielded = store.object(forKey: "shield") as? Bool ?? true
