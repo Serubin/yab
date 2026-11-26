@@ -23,7 +23,7 @@ def main():
     out = Path(os.environ["YAB_FARM_OUT"])
     world = "address-bar-rebinding-" + uuid.uuid4().hex[:8]
     domain = "dev.serafim.fast.test." + world
-    sock = Path.home() / "Library/Application Support" / f"Yab ({world})" / "bench.sock"
+    sock = Path.home() / "Library/Application Support" / f"Pane ({world})" / "bench.sock"
     report = {"world": world, "checks": [], "states": {}, "pictures": []}
     app = None
 

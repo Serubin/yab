@@ -34,7 +34,7 @@ OPTS = parser.parse_args()
 OUT = OPTS.out or os.environ.get("YAB_FARM_OUT") or os.path.join(tempfile.mkdtemp(prefix="yab-made-"), "agent-made")
 os.makedirs(OUT, exist_ok=True)
 WORLD = "agentmade" + os.environ.get("SLOT", "x")[-6:]
-FOLDER = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
+FOLDER = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})")
 SUITE = f"dev.serafim.fast.test.{WORLD}"
 FAILS = []
 MARK = 0.0

@@ -4,7 +4,7 @@ long page, and on a page the pick has just switched to. For each case the row's
 anchor must be missing from SettingsAnchorsShown before the pick and shown
 after it. Exits 1 when a case misses.
 
-    python3 evals/settings-search-reach.py --app "build/yab Dev.app" [--runs 2]
+    python3 evals/settings-search-reach.py --app "build/Pane Dev.app" [--runs 2]
 """
 import argparse, json, os, socket, subprocess, sys, tempfile, time
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +17,7 @@ parser.add_argument("--runs", type=int, default=1)
 OPTS = parser.parse_args()
 OUT = os.environ.get("YAB_FARM_OUT") or tempfile.mkdtemp(prefix="yab-search-reach-")
 WORLD = "searchreach"
-SOCK = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})/bench.sock")
+SOCK = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})/bench.sock")
 SUITE = f"dev.serafim.fast.test.{WORLD}"
 ask = yab_socket.asker(SOCK, timeout=None)
 

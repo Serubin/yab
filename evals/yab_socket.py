@@ -1,7 +1,7 @@
 """Talking to a running Yab through its bench socket, shared by the harnesses.
 
 The app listens on `bench.sock` in its support folder,
-`~/Library/Application Support/Yab (WORLD)/bench.sock` for a probe world
+`~/Library/Application Support/Pane (WORLD)/bench.sock` for a probe world
 (Sources/Fast/Bench.swift). One connection carries one request: a JSON object
 on one line out, one JSON object on one line back, then the app closes the
 connection. Everything here is that round trip, plus the small things nearly
@@ -35,8 +35,8 @@ __all__ = ["support", "socket_path", "first_existing", "exchange", "ask", "asker
 # MARK: - where the socket is
 
 def support(world, home=None):
-    """A probe world's support folder: `~/Library/Application Support/Yab (WORLD)`."""
-    return Path(home or Path.home()) / "Library/Application Support" / ("Yab (" + world + ")")
+    """A probe world's support folder: `~/Library/Application Support/Pane (WORLD)`."""
+    return Path(home or Path.home()) / "Library/Application Support" / ("Pane (" + world + ")")
 
 
 def socket_path(world, home=None):

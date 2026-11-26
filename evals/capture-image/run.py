@@ -88,8 +88,8 @@ def main():
     page = f"http://127.0.0.1:{server.server_address[1]}/page.html"
 
     home = Path(tempfile.mkdtemp())
-    SOCKET = home / "Library" / "Application Support" / f"Yab ({WORLD})" / "bench.sock"
-    fallback = Path.home() / "Library" / "Application Support" / f"Yab ({WORLD})" / "bench.sock"
+    SOCKET = home / "Library" / "Application Support" / f"Pane ({WORLD})" / "bench.sock"
+    fallback = Path.home() / "Library" / "Application Support" / f"Pane ({WORLD})" / "bench.sock"
     binary = subprocess.run(["swift", "build", "--show-bin-path"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
     subprocess.run(["defaults", "write", DOMAIN, "bench", "-bool", "true"], check=True)
     subprocess.run(["defaults", "write", DOMAIN, "welcomed", "-bool", "true"], check=True)

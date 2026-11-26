@@ -115,7 +115,7 @@ def main():
             raise RuntimeError('build failed; no candidate app is accepted')
         if app.exists():
             raise RuntimeError('refusing to overwrite an existing app in this job slot')
-        shutil.copytree(ROOT / 'build/yab Dev.app', app, symlinks=True)
+        shutil.copytree(ROOT / 'build/Pane Dev.app', app, symlinks=True)
         state['app'] = str(app)
         state['binary_sha256'] = json.loads(provenance.read_text())['binary_sha256']
         info = plistlib.loads((app / 'Contents/Info.plist').read_bytes())

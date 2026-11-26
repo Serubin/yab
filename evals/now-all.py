@@ -19,7 +19,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = f"now-all-{os.getpid()}"
-SUPPORT = Path.home() / "Library" / "Application Support" / f"Yab ({WORLD})"
+SUPPORT = Path.home() / "Library" / "Application Support" / f"Pane ({WORLD})"
 SOCKET = SUPPORT / "bench.sock"
 DOMAIN = f"dev.serafim.fast.test.{WORLD}"
 
@@ -65,7 +65,7 @@ def main():
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     if not args.bin:
-        apps = sorted(ROOT.glob("build/*.app/Contents/MacOS/yab"), key=lambda path: path.stat().st_mtime)
+        apps = sorted(ROOT.glob("build/*.app/Contents/MacOS/pane"), key=lambda path: path.stat().st_mtime)
         assert apps, "No build/*.app: run ./build.sh first"
         args.bin = str(apps[-1])
     print(f"Using {args.bin}")

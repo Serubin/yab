@@ -32,7 +32,7 @@ OPTS = parser.parse_args()
 OUT = os.path.join(os.environ["YAB_FARM_OUT"], "close-tabs") if os.environ.get("YAB_FARM_OUT") else OPTS.out or os.path.join(tempfile.mkdtemp(prefix="yab-close-"), "close-tabs")
 os.makedirs(OUT, exist_ok=True)
 WORLD = "closetabs" + uuid.uuid4().hex[:6]
-FOLDER = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
+FOLDER = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})")
 SUITE = f"dev.serafim.fast.test.{WORLD}"
 FAILS = []
 ask = yab_socket.asker(os.path.join(FOLDER, "bench.sock"))

@@ -16,7 +16,7 @@ Checks: a crossed-out sentence takes its line out of USER.md and Undo puts
 it back; a fixed one is kept as the user's words; a picked answer is kept; an
 added snippet is in the snippets; Not Now is kept as put away.
 
-    python3 evals/know-me/page.py --app "build/Yab Dev.app" --out /tmp/know-page
+    python3 evals/know-me/page.py --app "build/Pane Dev.app" --out /tmp/know-page
 """
 import argparse
 import json
@@ -28,7 +28,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import yab_socket  # noqa: E402
 
 WORLD = "know-page"
-FOLDER = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
+FOLDER = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})")
 SOCK = os.path.join(FOLDER, "bench.sock")
 
 BRIEF = """# User Briefing

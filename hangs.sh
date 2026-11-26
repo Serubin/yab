@@ -27,10 +27,10 @@ swift build 2>&1 | grep -E "error:|Compiling|Build complete" | grep -v "^Compili
 [ -x .build/debug/Fast ] || { echo "no build"; exit 1; }
 
 # The same wipe as ./fresh.sh, for this world: a first launch every time.
-rm -rf "$HOME/Library/Application Support/Yab ($WORLD)"
+rm -rf "$HOME/Library/Application Support/Pane ($WORLD)"
 defaults delete "net.serubin.pane.test.$WORLD" 2>/dev/null || true
 
-DIR="$HOME/Library/Application Support/Yab ($WORLD)"
+DIR="$HOME/Library/Application Support/Pane ($WORLD)"
 LOG="$DIR/hangs.log"
 SAMPLE="$(mktemp -t yab-hangs).txt"
 echo "bringing from ${FROM:-the default browser}${ONLY:+ ($ONLY)}, macOS may ask for its keychain key"

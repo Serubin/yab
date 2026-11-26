@@ -13,7 +13,7 @@ the real binary's MCP server and CLI against a stand-in browser socket:
   15 seconds saying what Yab asks and to tell the user;
 - `yab "task"` run by an agent: exit 3 within about 15 seconds, the same.
 
-    python3 evals/agent-needs-user/check.py --bin build/Yab.app/Contents/MacOS/Yab --out OUT
+    python3 evals/agent-needs-user/check.py --bin build/Pane.app/Contents/MacOS/pane --out OUT
 """
 import argparse
 import glob

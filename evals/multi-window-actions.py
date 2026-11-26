@@ -20,7 +20,7 @@ import yab_socket  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 WORLD = f"window-actions-{os.getpid()}"
-SUPPORT = Path.home() / "Library" / "Application Support" / f"Yab ({WORLD})"
+SUPPORT = Path.home() / "Library" / "Application Support" / f"Pane ({WORLD})"
 SOCKET = SUPPORT / "bench.sock"
 DOMAIN = f"dev.serafim.fast.test.{WORLD}"
 SOURCE = "https://example.com/yab-window-source"

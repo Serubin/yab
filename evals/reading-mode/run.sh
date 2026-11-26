@@ -9,7 +9,7 @@ app="$out/apps/${YAB_TASK_NAME:?}.app"
 shasum -a 256 Sources/Fast/Reader.swift Sources/Fast/Tab.swift Tests/FastTests/ReaderTests.swift evals/golden/reading_mode.py evals/reading-mode/x-article.html > "$out/frozen-inputs.sha256"
 python3 -u evals/reading-mode/unit.py 2>&1 | tee "$out/reader-unit.log"
 ./build.sh 2>&1 | tee "$out/build-after.log"
-ditto 'build/yab Dev.app' "$app"
+ditto 'build/Pane Dev.app' "$app"
 python3 - "$app/Contents/Info.plist" "$YAB_TASK_NAME" <<'PY'
 import plistlib, sys
 info = plistlib.load(open(sys.argv[1], 'rb'))

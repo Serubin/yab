@@ -8,6 +8,8 @@ import Darwin
 /// overrides stay development-only.
 enum PageEngineSelection {
     static let key = "YabPageEngine"
+    /// The YAB_ENGINE development and test override, read once per process.
+    static let environment: String? = ProcessInfo.processInfo.environment["YAB_ENGINE"]
 
     static var supportsChromium: Bool {
         #if arch(arm64)

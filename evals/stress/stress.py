@@ -3,7 +3,7 @@
 
     ./stress.py --bin PATH [--steps 5,10,20,40] [--pages 3] [--model haiku]
 
-Each step starts N agents together in one world, Yab (stress), through the
+Each step starts N agents together in one world, Pane (stress), through the
 bench socket, each told to open its own K pages in tabs of its own, read the
 code word on each and save "worker:code" there. The pages (a small server on
 stress.localtest.me) write down every save, so the step is graded by what
@@ -84,7 +84,7 @@ def serve():
 
 class Yab:
     def __init__(self, world):
-        self.sock = os.path.join(REAL_HOME, f"Library/Application Support/Yab ({world})/bench.sock")
+        self.sock = os.path.join(REAL_HOME, f"Library/Application Support/Pane ({world})/bench.sock")
 
     def __call__(self, request, timeout=60):
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:

@@ -16,11 +16,12 @@ public enum Store {
     /// place a bare binary runs from: a renamed copy in a scratch folder
     /// once took the yab command for itself, so anything not inside an app
     /// bundle is a test run too.
-    public static var testing: Bool {
+    /// Read once: set YAB_PROBE before anything reads Store (LaunchArrivalPreview).
+    public static let testing: Bool = {
         if ProcessInfo.processInfo.environment["YAB_PROBE"] != nil { return true }
         guard let path = Bundle.main.executablePath else { return true }
         return path.contains("/.build/") || !path.contains(".app/Contents/MacOS/")
-    }
+    }()
 
     /// A test world on a Mac with nobody at it: take macOS to have said yes
     /// about Yab, for the camera, the microphone and where you are.
@@ -69,9 +70,7 @@ public enum Store {
     /// browser does where test runs otherwise differ, hidden pages slowed
     /// the way WebKit slows them, App Nap left to macOS, so what gets
     /// measured is what people get.
-    public static var measuring: Bool {
-        testing && ProcessInfo.processInfo.environment["YAB_MEASURE"] != nil
-    }
+    public static let measuring: Bool = testing && ProcessInfo.processInfo.environment["YAB_MEASURE"] != nil
 
     /// A test world filmed for a demo (YAB_RECORDING beside YAB_PROBE,
     /// demos/world.py): the windows Yab keeps out of screen shares, a

@@ -53,7 +53,7 @@ def run(app, out, port):
     out.mkdir(parents=True, exist_ok=True)
     world = 'opens-in-' + uuid.uuid4().hex[:8]
     domain = 'dev.serafim.fast.test.' + world
-    sock = Path.home() / 'Library/Application Support' / f'Yab ({world})' / 'bench.sock'
+    sock = Path.home() / 'Library/Application Support' / f'Pane ({world})' / 'bench.sock'
     defaults = out / 'defaults.plist'
     # localhost stands in for a service on the DRM list: Recommended means WebKit there.
     defaults.write_bytes(plistlib.dumps({'bench': True, 'welcomed': True, 'mail': False, 'hints.noticing': False,

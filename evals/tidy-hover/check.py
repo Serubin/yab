@@ -41,7 +41,7 @@ def run(app_path, out, mode, expected_threshold, real_pointer=False):
     out.mkdir(parents=True, exist_ok=True)
     world = "tidy-hover-" + uuid.uuid4().hex[:8]
     domain = "dev.serafim.fast.test." + world
-    support = Path.home() / "Library/Application Support" / ("Yab (" + world + ")")
+    support = Path.home() / "Library/Application Support" / ("Pane (" + world + ")")
     sock = support / "bench.sock"
     server = ThreadingHTTPServer(("127.0.0.1", 0), Pages)
     threading.Thread(target=server.serve_forever, daemon=True).start()

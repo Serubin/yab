@@ -6,7 +6,7 @@
 set -o pipefail
 cd "$(dirname "$0")/../.."
 ./build.sh 2>&1 | tee /tmp/crash34-build-$$.log | tail -5 || exit 1
-APP=$(ls -dt build/*.app | head -1); BIN="$APP/Contents/MacOS/yab"
+APP=$(ls -dt build/*.app | head -1); BIN="$APP/Contents/MacOS/pane"
 echo "== app $APP on $(hostname -s)"
 CODEX=$(command -v codex || ls /opt/homebrew/bin/codex ~/.local/bin/codex 2>/dev/null | head -1)
 REPORTS=~/Library/Logs/DiagnosticReports

@@ -44,7 +44,7 @@ def main():
     print(f"Using {args.bin}")
 
     world = f"now-hand-{os.getpid()}"
-    support = Path.home() / "Library" / "Application Support" / f"Yab ({world})"
+    support = Path.home() / "Library" / "Application Support" / f"Pane ({world})"
     sock = support / "bench.sock"
     domain = f"dev.serafim.fast.test.{world}"
 

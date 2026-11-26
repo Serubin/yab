@@ -2,7 +2,7 @@
 """Memory and energy of Yab beside Chrome, at 20/50/200 tabs, clean or with
 extensions, and Yab's A/B variants (YAB_ flags) in one job on one Mac.
 
-    python3 -u evals/memory/night.py --app "build/yab Dev.app" --out DIR \
+    python3 -u evals/memory/night.py --app "build/Pane Dev.app" --out DIR \
         [--browsers yab,chrome] [--profiles clean,adblock,passwords-fresh] [--tabs 20,50,200] \
         [--variant base] [--variant name:YAB_X=1,YAB_Y=2] [--rounds 3] [--quiet 30] [--soak 0]
 

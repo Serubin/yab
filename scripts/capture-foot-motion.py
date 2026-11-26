@@ -12,7 +12,7 @@ import time
 
 world = f"foot-motion-{os.getpid()}"
 scratch = Path(tempfile.mkdtemp(prefix="yab-foot-motion-"))
-support = Path.home() / "Library" / "Application Support" / f"Yab ({world})"
+support = Path.home() / "Library" / "Application Support" / f"Pane ({world})"
 sock = support / "bench.sock"
 out = Path.cwd() / ".build" / "foot-states-current"
 out.mkdir(parents=True, exist_ok=True)

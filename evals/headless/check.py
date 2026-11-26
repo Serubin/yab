@@ -118,7 +118,7 @@ class Probe:
         self.home = None if keychain else os.path.join(scratch, "home")
         if self.home:
             os.makedirs(self.home, exist_ok=True)
-        self.sock = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})/bench.sock")
+        self.sock = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})/bench.sock")
         self.helper = os.path.join(scratch, "helper")
         with open(self.helper + ".swift", "w") as f:
             f.write(HELPER)
@@ -690,7 +690,7 @@ def c_linger(p):
 def c_cookies(p):
     if p.home:
         raise Skip("needs --keychain (the real HOME's keychain)")
-    service = f"{p.bundle_id}.session-cookies.Yab ({WORLD})"
+    service = f"{p.bundle_id}.session-cookies.Pane ({WORLD})"
     subprocess.run(["security", "delete-generic-password", "-s", service], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
     name = f"k{int(time.time())}"
 
@@ -810,7 +810,7 @@ def main():
         if os.path.exists(fake_log) and probe.evidence != scratch:
             shutil.copy2(fake_log, os.path.join(probe.evidence, "fake-agent.log"))
         subprocess.call(["defaults", "delete", f"dev.serafim.fast.test.{WORLD}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        shutil.rmtree(os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})"), ignore_errors=True)
+        shutil.rmtree(os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})"), ignore_errors=True)
         shutil.rmtree(scratch, ignore_errors=True)
     print(f"\n{tally['pass']} pass, {tally['fail']} fail, {tally['skip']} skip")
     return 1 if tally["fail"] else 0

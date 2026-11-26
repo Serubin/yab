@@ -31,7 +31,7 @@ OPTS = parser.parse_args()
 OUT = os.path.join(os.environ["YAB_FARM_OUT"], "save-page") if os.environ.get("YAB_FARM_OUT") else OPTS.out or os.path.join(tempfile.mkdtemp(prefix="yab-save-page-"), "save-page")
 os.makedirs(OUT, exist_ok=True)
 WORLD = "savepage" + os.environ.get("SLOT", "x")[-6:]
-FOLDER = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
+FOLDER = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})")
 SUITE = f"dev.serafim.fast.test.{WORLD}"
 FAILS = []
 ask = yab_socket.asker(os.path.join(FOLDER, "bench.sock"))

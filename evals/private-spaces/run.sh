@@ -14,4 +14,4 @@ apps="$(dirname "${APP:?run through farm}")/private-spaces"
 mkdir -p "$apps"
 bash scripts/runs/rev_app.sh "$base" "$apps/base.app" 2>&1 | tee "$out/baseline-build.log"
 python3 -u evals/private-spaces/check.py --base-app "$apps/base.app" \
-    --app "build/yab Dev.app" --out "$out/private-spaces"
+    --app "build/Pane Dev.app" --out "$out/private-spaces"

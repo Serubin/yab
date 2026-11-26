@@ -25,7 +25,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     requests = []
     results = []
-    app_path = ROOT / 'build/yab Dev.app'
+    app_path = ROOT / 'build/Pane Dev.app'
     info = plistlib.loads((app_path / 'Contents/Info.plist').read_bytes())
     task_name = os.environ['YAB_TASK_NAME']
     assert info['CFBundleName'] == info['CFBundleDisplayName'] == task_name
@@ -98,7 +98,7 @@ def main():
             phase = 'on' if enabled else 'off'
             world = 'safe-browsing-' + phase + '-' + uuid.uuid4().hex[:8]
             domain = 'dev.serafim.fast.test.' + world
-            support = Path.home() / 'Library/Application Support' / f'Yab ({world})'
+            support = Path.home() / 'Library/Application Support' / f'Pane ({world})'
             sock = support / 'bench.sock'
             for key in ('bench', 'welcomed'):
                 subprocess.run(['defaults', 'write', domain, key, '-bool', 'true'], check=True)

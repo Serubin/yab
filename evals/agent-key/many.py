@@ -7,7 +7,7 @@ key removed. Pictures of Settings › AI › Models with them all, light and
 dark, and of the key page.
 
     ./farm exec --display --needs capture -- bash -c 'set -o pipefail; ./build.sh 2>&1 | tee build.log; \
-        python3 evals/agent-key/many.py --bin "build/yab Dev.app/Contents/MacOS/yab" --out "$YAB_FARM_OUT"'
+        python3 evals/agent-key/many.py --bin "build/Pane Dev.app/Contents/MacOS/pane" --out "$YAB_FARM_OUT"'
 
 Made-up keys only, checked by YAB_AGENT_KEY_CHECK, never sent anywhere.
 Prints one JSON line per check and exits 1 if any failed.

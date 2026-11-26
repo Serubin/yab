@@ -9,7 +9,7 @@ and come back. Every few seconds it writes a line: the time, whether the
 display is asleep and the screen locked, the page's visibilityState, and
 its animation frames and 100 ms timer ticks since the line before.
 
-    evals/headless/sleep.py --app "build/yab Dev.app" [--minutes 5] [--every 5]
+    evals/headless/sleep.py --app "build/Pane Dev.app" [--minutes 5] [--every 5]
 
 It starts the app as a test world of its own, hidden and serving
 (`--headless --serve`), opens a page drawn by animation frames, reads it
@@ -71,7 +71,7 @@ def main():
         subprocess.call(["defaults", "write", f"dev.serafim.fast.test.{WORLD}", key, kind, value])
     subprocess.call(["open", "-g", "-j", "-n", "--env", f"YAB_PROBE={WORLD}", "--env", f"FAST_PROBE={WORLD}", "-a", app,
                      "--args", "--headless", "--serve"])
-    sock = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})/bench.sock")
+    sock = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})/bench.sock")
     for _ in range(100):
         try:
             socket.socket(socket.AF_UNIX).connect(sock)

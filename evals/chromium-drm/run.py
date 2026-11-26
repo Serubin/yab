@@ -135,7 +135,7 @@ def run(app, out, site, cookies=True, extensions=True):
     out.mkdir(parents=True, exist_ok=True)
     world = 'chromium-drm-' + uuid.uuid4().hex[:8]
     domain = 'dev.serafim.fast.test.' + world
-    sock = Path.home() / 'Library/Application Support' / f'Yab ({world})' / 'bench.sock'
+    sock = Path.home() / 'Library/Application Support' / f'Pane ({world})' / 'bench.sock'
     defaults = out / 'defaults.plist'
     defaults.write_bytes(plistlib.dumps({'bench': True, 'welcomed': True, 'mail': False,
                                         'hints.noticing': False, 'searchSuggest': False}))

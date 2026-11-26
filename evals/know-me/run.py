@@ -4,9 +4,9 @@ yab's own Get to know me in a world of Mira's own pages (server.py), and
 what it leaves is held to what the pages say. Then a Luma form, filled from
 what it left and nothing typed.
 
-    ./run.py --app "build/yab Dev.app"    (over ssh on adhd: open, for the keychain)
+    ./run.py --app "build/Pane Dev.app"    (over ssh on adhd: open, for the keychain)
     ./run.py --bin <copy of .build/debug/Fast>
-    ./run.py --app "build/yab Dev.app" --cli codex --runs 3 [--effort high]
+    ./run.py --app "build/Pane Dev.app" --cli codex --runs 3 [--effort high]
 
 The world is its own ("know-me"): its own history only (YAB_HISTORY=own:
 the agent must never see this Mac's other browsers and wander to real
@@ -57,7 +57,7 @@ pages = load("know_me_pages", os.path.join(HERE, "server.py"))
 browse_server = load("browse_pages", os.path.join(HERE, "..", "browse", "server.py"))
 
 WORLD = "know-me"
-FOLDER = os.path.expanduser(f"~/Library/Application Support/Yab ({WORLD})")
+FOLDER = os.path.expanduser(f"~/Library/Application Support/Pane ({WORLD})")
 
 
 def bench(request, timeout=60):

@@ -103,7 +103,7 @@ class World:
         self.count, self.hidden, self.glass, self.flank = count, hidden, glass, flank
         self.world = 'startup-pair-' + uuid.uuid4().hex[:10]
         self.domain = 'dev.serafim.fast.test.' + self.world
-        self.support = Path.home() / 'Library/Application Support' / f'Yab ({self.world})'
+        self.support = Path.home() / 'Library/Application Support' / f'Pane ({self.world})'
         self.sock = self.support / 'bench.sock'
         self.proc = None
         self.out.mkdir(parents=True); self.support.mkdir(parents=True)

@@ -30,7 +30,7 @@ HALVES = [ITEMS[:11], ITEMS[11:]]
 def run(binary, out, look, part):
     items = HALVES[part]
     world = f"now-icons-{look}-{part}-{os.getpid()}"
-    support = Path.home() / "Library" / "Application Support" / f"Yab ({world})"
+    support = Path.home() / "Library" / "Application Support" / f"Pane ({world})"
     sock = support / "bench.sock"
     domain = f"dev.serafim.fast.test.{world}"
 

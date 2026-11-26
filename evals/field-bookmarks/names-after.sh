@@ -16,7 +16,7 @@ source = source.replace('  Sources/Fast/SystemIntents.swift "$INTENTS/bridge.swi
 Path(sys.argv[1]).write_text(source)
 PY
 YAB_APP_CACHE=0 bash "$out/build-names.sh" 2>&1 | tee "$out/build.log"
-app="build/yab Dev.app"
+app="build/Pane Dev.app"
 ditto "$app" "$out/${YAB_TASK_NAME:?}.app"
 app="$out/$YAB_TASK_NAME.app"
 codesign --verify --deep --strict "$app"

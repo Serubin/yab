@@ -5,7 +5,7 @@ none at rest, a thread as the rows scroll, gone a second after, wider under
 the pointer. Pictures in-process (winshot) for the timing, and from the
 screen (./stage shot) where there is a test screen.
 
-    python3 evals/column-thread/run.py --app "build/yab Dev.app" --out shots/
+    python3 evals/column-thread/run.py --app "build/Pane Dev.app" --out shots/
 """
 import argparse, http.server, json, os, subprocess, sys, threading, time
 

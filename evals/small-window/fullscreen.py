@@ -3,7 +3,7 @@
 
 Run against an already prepared app, with no build in this eval:
     ./farm exec --display --needs accessibility,pointer --name "Small Window fullscreen" -- \
-        python3 evals/small-window/fullscreen.py --app "build/yab Dev.app"
+        python3 evals/small-window/fullscreen.py --app "build/Pane Dev.app"
 
 An isolated Yab probe receives a localhost URL through LaunchServices. Fresh,
 owned TextEdit instances hold full-screen windows on every attached display.

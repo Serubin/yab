@@ -55,7 +55,7 @@ def run(app, out, port):
     out.mkdir(parents=True, exist_ok=True)
     world = 'engine-ui-' + uuid.uuid4().hex[:8]
     domain = 'dev.serafim.fast.test.' + world
-    sock = Path.home() / 'Library/Application Support' / f'Yab ({world})' / 'bench.sock'
+    sock = Path.home() / 'Library/Application Support' / f'Pane ({world})' / 'bench.sock'
     defaults = out / 'defaults.plist'
     # localhost stands in for a protected-video service; two rules of the
     # owner's own, as drawn.

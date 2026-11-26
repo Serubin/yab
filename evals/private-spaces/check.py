@@ -30,7 +30,7 @@ def run(app, out, baseline=False):
     domain = "dev.serafim.fast.test." + world
     for key in ("bench", "welcomed"):
         subprocess.run(["defaults", "write", domain, key, "-bool", "true"], check=True)
-    support = Path.home() / "Library/Application Support" / ("Yab (" + world + ")")
+    support = Path.home() / "Library/Application Support" / ("Pane (" + world + ")")
     checks = []
 
     def ask(verb, **fields):
