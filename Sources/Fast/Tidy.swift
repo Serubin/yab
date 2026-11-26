@@ -14,8 +14,8 @@ import SwiftUI
 // What stays, whatever its age: the page on screen, pinned tabs, the tabs
 // kept above the line (Kept.swift), and anything
 // sleep keeps awake, sound, a call, a download, a video out in the little
-// window, something typed and not sent. Sleep's reasons are asked here
-// directly, whether or not tabs sleep.
+// window. Sleep's reasons are asked here directly, whether or not tabs
+// sleep; its check for typed, unsent input is not.
 //
 // It only looks when you come back, never in the middle of reading: a tab
 // disappearing from under you while you work is not tidying.
@@ -205,8 +205,8 @@ extension Browser {
     }
 
     /// Today's, and nothing keeping it: sound, a call, a download, a video
-    /// out, something typed, a task's. Awake is no reason here, it may just
-    /// have been looked at.
+    /// out, a task's. Awake is no reason here, it may just have been looked
+    /// at.
     private func sweepable(_ tab: Tab) -> Bool {
         if onScreen(tab.id) || tab.pin != nil || tab.kept || tab.bench || tab.isBlank || tasksHold(tab) { return false }
         return tab.asleep || awake(because: tab) == nil

@@ -5154,7 +5154,7 @@ final class Browser: NSObject, ObservableObject, Relaying {
         writeSession(now: true)
     }
 
-    /// The ones that can sleep, asleep now rather than in four hours.
+    /// The ones that can sleep, asleep now rather than on the timer.
     /// `byHand`, from a menu: past what only keeps a tab from the clock
     /// (a pin, a kept row, a site that may notify). The current page may
     /// sleep by hand too, after its draft has been checked; never a visible

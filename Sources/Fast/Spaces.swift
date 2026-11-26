@@ -14,7 +14,7 @@ import WebKit
 // spaces on signs nobody out.
 //
 // Switching swaps the row: the tabs left behind are parked as they are,
-// sound and all, and sleep after half an hour as any tab does, pins too.
+// sound and all, and sleep on the timer as any tab does (Sleep.swift).
 // ⌃1 to ⌃9 switch, the space's icon at the foot of the column or the head of
 // the strip opens its menu, and two fingers sideways over the column go to
 // the next one or back.

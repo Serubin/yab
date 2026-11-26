@@ -8,8 +8,8 @@ import WebKit
 // not reload, does not lose its scroll position, and does not forget what you
 // typed into it. That is the whole trick behind switching feeling instant.
 //
-// Kept alive, that is, while it is worth what it costs. A tab nobody has
-// looked at for four hours gives its view back (see `sleep(picture:)`) and
+// Kept alive, that is, while it is worth what it costs. A tab left alone
+// long enough (Sleep.swift) gives its view back (see `sleep(picture:)`) and
 // keeps what it takes to come back exactly where it was.
 
 enum Web {

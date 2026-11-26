@@ -13,8 +13,8 @@ import YabCoreClient
 ///
 /// Both engines follow the one choice: Chromium through the pref Chrome's
 /// page writes, which Chromium itself weighs against the battery, and Yab's
-/// own saving (Thrift: tabs asleep after an hour, WebKit pages at 60, no
-/// spare page) by the same rule, read here.
+/// own saving (Thrift: a shorter wait before tabs sleep, WebKit pages at
+/// 60, no spare page) by the same rule, read here.
 ///
 /// macOS Low Power Mode is not one of them, as in Chromium: its Energy Saver
 /// reads only the power source and the battery's level on a Mac
