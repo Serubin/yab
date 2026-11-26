@@ -258,6 +258,20 @@ struct CalcTests {
         #expect(answer("days until new year")?.result == "98 days")
     }
 
+    /// A day some way off is answered when it can be written right, past
+    /// the year 9999 too. Before year 1 the year came out without its era,
+    /// from ten million years on as nothing, and a count that made the
+    /// product reach Int.max answered today, or crashed the field past it.
+    @Test func aDayTooFarOffHasNoAnswer() {
+        #expect(answer("2025 years ago")?.result == "Sep 25, 0001")
+        #expect(answer("in 7974 years")?.result == "Sep 25, 10000")
+        #expect(answer("2026 years ago") == nil)
+        #expect(answer("3000 years ago") == nil)
+        #expect(answer("in 10000000 years") == nil)
+        #expect(answer("in 1317624576693539401 weeks") == nil)
+        #expect(answer("in 1317624576693539402 weeks") == nil)
+    }
+
     /// Words that can't be a question aren't read as one at all, and every
     /// kind of question still gets past the first look.
     @Test func onlyWhatCouldBeAQuestionIsRead() {
